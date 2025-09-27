@@ -101,6 +101,33 @@ else:
 
 redis_client = redis.from_url(REDIS_URL)
 
+# Utilidades para Chatwoot
+def extract_chatwoot_payload(api_response: Any) -> List[Dict[str, Any]]:
+    """Extrai a lista de itens retornada pela API do Chatwoot independentemente do formato.
+
+    Algumas versões retornam em payload no topo (data["payload"]) e outras retornam em data.payload.
+    Esta função tenta ambos os formatos e retorna sempre uma lista.
+    """
+    try:
+        if not isinstance(api_response, dict):
+            return []
+
+        # Formato 1: { "payload": [...] }
+        if "payload" in api_response and isinstance(api_response["payload"], list):
+            return api_response["payload"]
+
+        # Formato 2: { "data": { "payload": [...] } }
+        data_obj = api_response.get("data")
+        if isinstance(data_obj, dict) and isinstance(data_obj.get("payload"), list):
+            return data_obj["payload"]
+
+        # Formato 3: { "data": [...] }
+        if isinstance(data_obj, list):
+            return data_obj
+    except Exception:
+        pass
+    return []
+
 # Modelos Pydantic
 class WebhookPayload(BaseModel):
     """Modelo para webhook do Chatwoot"""
@@ -385,7 +412,7 @@ async def send_message_to_chatwoot(conversation_id: int, content: str, account_i
         url = f"{CHATWOOT_URL}/api/v1/accounts/{account_id}/conversations/{conversation_id}/messages"
         
         headers = {
-            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "api_access_token": CHATWOOT_API_TOKEN,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -555,7 +582,7 @@ async def get_conversations():
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "api_access_token": CHATWOOT_API_TOKEN,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -564,18 +591,10 @@ async def get_conversations():
             response = await client.get(url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            
-            logger.info(f"Raw API response structure: {list(data.keys())}")
-            if "data" in data:
-                logger.info(f"Data structure: {list(data['data'].keys())}")
-                if "payload" in data["data"]:
-                    logger.info(f"Found {len(data['data']['payload'])} conversations in payload")
-            
-            # Processar conversas para o frontend
-            conversations = []
-            # Chatwoot retorna dados em data.payload, não diretamente em payload
-            payload = data.get("data", {}).get("payload", [])
-            logger.info(f"Processing {len(payload)} conversations")
+
+            # Extrair payload independentemente da versão
+            payload = extract_chatwoot_payload(data)
+            logger.info(f"Processing {len(payload)} conversations from Chatwoot")
             
             for conv in payload:
                 # Extrair dados do contato
@@ -654,7 +673,7 @@ async def get_conversation_messages(
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "api_access_token": CHATWOOT_API_TOKEN,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -666,7 +685,7 @@ async def get_conversation_messages(
             
             # Processar mensagens para o frontend (inclui áudio)
             messages: List[Dict[str, Any]] = []
-            for msg in data.get("payload", []):
+            for msg in extract_chatwoot_payload(data):
                 content = msg.get("content") or ""
                 # Mapear remetente
                 sender = "user" if msg.get("message_type") == 1 else "contact"
@@ -737,7 +756,7 @@ async def send_message_to_conversation(conversation_id: int, message_data: dict)
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "api_access_token": CHATWOOT_API_TOKEN,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -824,7 +843,7 @@ async def debug_conversations():
         
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "api_access_token": CHATWOOT_API_TOKEN,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
