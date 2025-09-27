@@ -44,8 +44,8 @@ class AttachmentService:
                 id=attachment_data.get("id"),
                 message_id=attachment_data.get("message_id"),
                 conversation_id=message_data.get("conversation", {}).get("id"),
-                filename=attachment_data.get("extension"),  # Chatwoot usa extension como filename
-                content_type=attachment_data.get("file_type"),
+                filename=attachment_data.get("extension") or "image.jpg",  # Fallback se extension for None
+                content_type=attachment_data.get("file_type") or "image/jpeg",  # Fallback se file_type for None
                 file_size=attachment_data.get("file_size"),
                 blob_key=None,  # Será extraído da data_url se necessário
                 data_url=attachment_data.get("data_url"),
@@ -60,21 +60,26 @@ class AttachmentService:
     
     def _is_image_attachment(self, attachment_data: Dict[str, Any]) -> bool:
         """Verifica se o attachment é uma imagem"""
-        file_type = attachment_data.get("file_type", "").lower()
+        file_type = attachment_data.get("file_type", "")
         filename = attachment_data.get("extension", "")
+        
+        # Garantir que não sejam None
+        file_type = file_type or ""
+        filename = filename or ""
         
         logger.info(f"Verificando attachment: file_type='{file_type}', filename='{filename}', data={attachment_data}")
         
         # Verificar por tipo MIME
-        if file_type.startswith("image/"):
+        if file_type.lower().startswith("image/"):
             logger.info(f"✅ Attachment detectado como imagem por MIME: {file_type}")
             return True
         
-        # Verificar por extensão de arquivo
-        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
-        if any(filename.lower().endswith(ext) for ext in image_extensions):
-            logger.info(f"✅ Attachment detectado como imagem por extensão: {filename}")
-            return True
+        # Verificar por extensão de arquivo (só se filename não for vazio)
+        if filename:
+            image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+            if any(filename.lower().endswith(ext) for ext in image_extensions):
+                logger.info(f"✅ Attachment detectado como imagem por extensão: {filename}")
+                return True
         
         logger.info(f"❌ Attachment não é imagem: {file_type} / {filename}")
         return False
