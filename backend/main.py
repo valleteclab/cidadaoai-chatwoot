@@ -713,7 +713,7 @@ async def get_conversation_messages(
             response.raise_for_status()
             data = response.json()
             
-            # Processar mensagens para o frontend (inclui áudio)
+            # Processar mensagens para o frontend (inclui áudio e imagens)
             messages: List[Dict[str, Any]] = []
             for msg in extract_chatwoot_payload(data):
                 content = msg.get("content") or ""
@@ -731,6 +731,38 @@ async def get_conversation_messages(
                     if not content:
                         content = "🎵 Mensagem de áudio"
 
+                # Processar imagens nos attachments (NOVA FUNCIONALIDADE)
+                image_attachments = []
+                try:
+                    # Criar uma mensagem temporária para processar imagens
+                    temp_message = {
+                        "attachments": attachments,
+                        "id": msg.get("id"),
+                        "conversation_id": conversation_id
+                    }
+                    
+                    # Processar imagens usando o attachment_service
+                    processed_images = await attachment_service.process_message_attachments(temp_message)
+                    if processed_images:
+                        image_attachments = [
+                            {
+                                "id": img.id,
+                                "filename": img.filename,
+                                "content_type": img.content_type,
+                                "file_size": img.file_size,
+                                "data_url": img.data_url
+                            } for img in processed_images
+                        ]
+                        
+                        # Se não há content, exibir rótulo amigável
+                        if not content:
+                            content = "📷 Imagem enviada"
+                            
+                        logger.info(f"🖼️ Processadas {len(image_attachments)} imagens para mensagem {msg.get('id')}")
+                except Exception as e:
+                    logger.warning(f"Erro ao processar imagens na API: {e}")
+                    # Não falhar se houver erro no processamento de imagens
+
                 message = {
                     "id": msg.get("id"),
                     "conversation_id": conversation_id,
@@ -740,6 +772,7 @@ async def get_conversation_messages(
                     "status": msg.get("status", "sent"),
                     "audio_url": audio_url,
                     "attachments": attachments,
+                    "image_attachments": image_attachments,  # NOVA FUNCIONALIDADE
                 }
                 messages.append(message)
             
