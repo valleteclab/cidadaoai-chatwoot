@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     python3-dev \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar arquivos de requisitos primeiro (para melhor cache)
