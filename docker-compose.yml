@@ -1,7 +1,7 @@
 services:
   cidadaoai_app:
     image: cidadaoai:latest
-    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+    command: python -m backend.main
     networks:
       - LomeServer
     environment:
@@ -27,32 +27,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-      labels:
-        # Rota principal para /tecnico
-        - traefik.enable=true
-        - traefik.http.routers.cidadaoai-tecnico.rule=Host(`chat.sisgov.app.br`) && PathPrefix(`/tecnico`)
-        - traefik.http.routers.cidadaoai-tecnico.entrypoints=websecure
-        - traefik.http.routers.cidadaoai-tecnico.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.cidadaoai-tecnico.service=cidadaoai
-        - traefik.http.services.cidadaoai.loadbalancer.server.port=8000
-        
-        # Rota para arquivos estáticos
-        - traefik.http.routers.cidadaoai-static.rule=Host(`chat.sisgov.app.br`) && PathPrefix(`/static`)
-        - traefik.http.routers.cidadaoai-static.entrypoints=websecure
-        - traefik.http.routers.cidadaoai-static.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.cidadaoai-static.service=cidadaoai
-        
-        # Rota para API
-        - traefik.http.routers.cidadaoai-api.rule=Host(`chat.sisgov.app.br`) && PathPrefix(`/api`)
-        - traefik.http.routers.cidadaoai-api.entrypoints=websecure
-        - traefik.http.routers.cidadaoai-api.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.cidadaoai-api.service=cidadaoai
-        
-        # Rota para WebSocket
-        - traefik.http.routers.cidadaoai-ws.rule=Host(`chat.sisgov.app.br`) && PathPrefix(`/socket.io`)
-        - traefik.http.routers.cidadaoai-ws.entrypoints=websecure
-        - traefik.http.routers.cidadaoai-ws.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.cidadaoai-ws.service=cidadaoai
 
 networks:
   LomeServer:
