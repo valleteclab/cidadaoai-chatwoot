@@ -72,11 +72,17 @@ app.add_middleware(
 )
 
 # Servir arquivos estáticos do frontend
-app.mount("/static", StaticFiles(directory="frontend/tecnico/js"), name="static")
+app.mount("/static", StaticFiles(directory="frontend/tecnico"), name="static")
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
-# Servir diretório raiz do frontend
-app.mount("/", StaticFiles(directory="frontend/tecnico", html=True), name="frontend")
+# Rotas explícitas para a página HTML
+@app.get("/", include_in_schema=False)
+async def index():
+    return FileResponse("frontend/tecnico/index.html")
+
+@app.get("/tecnico", include_in_schema=False)
+async def tecnico():
+    return FileResponse("frontend/tecnico/index.html")
 
 # Configurações
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
