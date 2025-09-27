@@ -69,8 +69,8 @@ class AttachmentService:
         
         logger.info(f"Verificando attachment: file_type='{file_type}', filename='{filename}', data={attachment_data}")
         
-        # Verificar por tipo MIME
-        if file_type.lower().startswith("image/"):
+        # Verificar por tipo MIME (aceitar tanto "image" quanto "image/...")
+        if file_type.lower() == "image" or file_type.lower().startswith("image/"):
             logger.info(f"✅ Attachment detectado como imagem por MIME: {file_type}")
             return True
         
