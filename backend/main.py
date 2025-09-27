@@ -72,8 +72,11 @@ app.add_middleware(
 )
 
 # Servir arquivos estáticos do frontend
-app.mount("/static", StaticFiles(directory="frontend/tecnico"), name="static")
+app.mount("/static", StaticFiles(directory="frontend/tecnico/js"), name="static")
 app.mount("/media", StaticFiles(directory="media"), name="media")
+
+# Servir diretório raiz do frontend
+app.mount("/", StaticFiles(directory="frontend/tecnico", html=True), name="frontend")
 
 # Configurações
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -541,11 +544,6 @@ async def delete_webhook(webhook_id: int):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Endpoints para o frontend técnico
-@app.get("/", tags=["Frontend"])
-async def tecnico_panel():
-    """Painel técnico - Frontend"""
-    return FileResponse("frontend/tecnico/index.html")
-
 @app.get("/api/conversations", tags=["Frontend API"])
 async def get_conversations():
     """Listar conversas para o painel técnico"""
