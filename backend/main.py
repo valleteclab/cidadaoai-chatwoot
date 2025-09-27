@@ -734,6 +734,8 @@ async def get_conversation_messages(
                 # Processar imagens nos attachments (NOVA FUNCIONALIDADE)
                 image_attachments = []
                 try:
+                    logger.info(f"🔍 API: Verificando attachments para mensagem {msg.get('id')}: {len(attachments)} attachments")
+                    
                     # Criar uma mensagem temporária para processar imagens
                     temp_message = {
                         "attachments": attachments,
@@ -743,6 +745,8 @@ async def get_conversation_messages(
                     
                     # Processar imagens usando o attachment_service
                     processed_images = await attachment_service.process_message_attachments(temp_message)
+                    logger.info(f"🖼️ API: Processadas {len(processed_images)} imagens para mensagem {msg.get('id')}")
+                    
                     if processed_images:
                         image_attachments = [
                             {
@@ -758,9 +762,13 @@ async def get_conversation_messages(
                         if not content:
                             content = "📷 Imagem enviada"
                             
-                        logger.info(f"🖼️ Processadas {len(image_attachments)} imagens para mensagem {msg.get('id')}")
+                        logger.info(f"✅ API: Adicionadas {len(image_attachments)} image_attachments para mensagem {msg.get('id')}")
+                    else:
+                        logger.info(f"❌ API: Nenhuma imagem processada para mensagem {msg.get('id')}")
                 except Exception as e:
                     logger.warning(f"Erro ao processar imagens na API: {e}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
                     # Não falhar se houver erro no processamento de imagens
 
                 message = {
