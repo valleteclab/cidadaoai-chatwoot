@@ -61,9 +61,13 @@ app.mount("/socket.io", socketio_app)
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=[
+        "https://tecnico.sisgov.app.br",
+        "http://tecnico.sisgov.app.br",
+        "https://chat.sisgov.app.br"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -111,11 +115,6 @@ class MessageData(BaseModel):
     inbox: Dict[str, Any]
 
 # Endpoints básicos
-@app.get("/", tags=["Frontend"])
-async def tecnico_panel():
-    """Painel técnico - Frontend"""
-    return FileResponse("frontend/tecnico/index.html")
-
 @app.get("/health", tags=["Status"])
 async def health_check():
     """Health check endpoint"""
@@ -542,6 +541,11 @@ async def delete_webhook(webhook_id: int):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Endpoints para o frontend técnico
+@app.get("/", tags=["Frontend"])
+async def tecnico_panel():
+    """Painel técnico - Frontend"""
+    return FileResponse("frontend/tecnico/index.html")
+
 @app.get("/api/conversations", tags=["Frontend API"])
 async def get_conversations():
     """Listar conversas para o painel técnico"""
