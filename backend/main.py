@@ -563,7 +563,7 @@ async def get_conversations():
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
             "Content-Type": "application/json"
         }
         
@@ -654,7 +654,7 @@ async def get_conversation_messages(
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
             "Content-Type": "application/json"
         }
         
@@ -736,7 +736,7 @@ async def send_message_to_conversation(conversation_id: int, message_data: dict)
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
             "Content-Type": "application/json"
         }
         
@@ -822,7 +822,7 @@ async def debug_conversations():
         
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
             "Content-Type": "application/json"
         }
         
