@@ -602,6 +602,7 @@ async def get_conversations():
             payload = extract_chatwoot_payload(data)
             logger.info(f"Processing {len(payload)} conversations from Chatwoot")
             
+            conversations = []
             for conv in payload:
                 # Extrair dados do contato
                 meta = conv.get("meta", {})
