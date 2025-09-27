@@ -616,11 +616,16 @@ function createMessageElement(message) {
     
     // Verificar se tem áudio
     let audioHtml = '';
+    let imageHtml = '';
     let messageContent = message.content || '';
     
     // Verificar áudio em attachments ou URL direta
     const hasAudio = message.audio_url || (message.attachments && message.attachments.some(a => a.file_type === 'audio'));
     const audioAttachment = message.attachments?.find(a => a.file_type === 'audio');
+    
+    // Verificar se tem imagens (NOVA FUNCIONALIDADE)
+    const hasImages = message.image_attachments && message.image_attachments.length > 0;
+    const imageAttachments = message.image_attachments || [];
     
     // Tentar todas as possíveis URLs de áudio
     const possibleUrls = [
@@ -660,10 +665,42 @@ function createMessageElement(message) {
         }
     }
     
+    // Renderizar imagens se houver (NOVA FUNCIONALIDADE)
+    if (hasImages) {
+        console.log('📷 Renderizando imagens:', imageAttachments);
+        imageHtml = '<div class="image-gallery mt-2 space-y-2">';
+        
+        imageAttachments.forEach((img, index) => {
+            const imageUrl = img.data_url;
+            if (imageUrl) {
+                imageHtml += `
+                    <div class="image-container">
+                        <img 
+                            src="${imageUrl}" 
+                            alt="${img.filename || 'Imagem'}"
+                            class="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                            loading="lazy"
+                            onclick="openImageModal('${imageUrl}', '${img.filename || 'Imagem'}')"
+                        />
+                        ${img.filename ? `<div class="text-xs text-gray-500 mt-1">${img.filename}</div>` : ''}
+                    </div>
+                `;
+            }
+        });
+        
+        imageHtml += '</div>';
+        
+        // Se não tem texto, mostrar ícone de imagem
+        if (!messageContent) {
+            messageContent = '📷 Imagem enviada';
+        }
+    }
+    
     div.innerHTML = `
         <div class="message-bubble ${isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-lg p-3 shadow-sm">
             <p class="text-sm">${messageContent}</p>
             ${audioHtml}
+            ${imageHtml}
             <div class="text-xs mt-1 ${isUser ? 'text-blue-100' : 'text-gray-500'}">
                 ${time}
                 ${isUser ? `<i class="fas fa-check ml-1"></i>` : ''}
@@ -761,6 +798,94 @@ function showError(message) {
     // TODO: Implementar notificação de erro
     console.error(message);
     alert(message);
+}
+
+// Função para abrir imagem em modal (NOVA FUNCIONALIDADE)
+function openImageModal(imageUrl, filename) {
+    // Criar modal se não existir
+    let modal = document.getElementById('imageModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'imageModal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden';
+        modal.innerHTML = `
+            <div class="relative max-w-4xl max-h-full p-4">
+                <button onclick="closeImageModal()" class="absolute top-2 right-2 text-white text-2xl hover:text-gray-300 z-10">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img id="modalImage" src="" alt="" class="max-w-full max-h-full rounded-lg">
+                <div id="modalFilename" class="text-white text-center mt-2"></div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Configurar imagem
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('modalImage').alt = filename;
+    document.getElementById('modalFilename').textContent = filename;
+    
+    // Mostrar modal
+    modal.classList.remove('hidden');
+    
+    // Fechar ao clicar fora
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeImageModal();
+        }
+    };
+}
+
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Função para upload de imagem (NOVA FUNCIONALIDADE)
+async function uploadImage() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    
+    input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file || !currentConversation) return;
+        
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('content', messageText.value.trim());
+            
+            console.log('📤 Enviando imagem:', file.name, file.size, 'bytes');
+            
+            const response = await fetch(`${CONFIG.API_BASE_URL}/api/conversations/${currentConversation.id}/image`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('✅ Imagem enviada:', result);
+                
+                // Limpar input de texto
+                messageText.value = '';
+                messageText.style.height = 'auto';
+                
+                // Recarregar mensagens para mostrar a nova imagem
+                await loadMessages(currentConversation.id);
+            } else {
+                console.error('❌ Erro ao enviar imagem:', response.status);
+                showError('Erro ao enviar imagem');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao enviar imagem:', error);
+            showError('Erro ao enviar imagem');
+        }
+    };
+    
+    input.click();
 }
 
 // Utilitários

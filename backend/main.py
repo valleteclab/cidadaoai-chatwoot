@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, File, Form
 from backend.websocket_manager import ws_manager, app as socketio_app
+from backend.attachment_service import AttachmentService
+from backend.models import ChatwootAttachment, ImageUploadRequest, ImageUploadResponse
 from fastapi.responses import FileResponse
 import httpx
 import json
@@ -48,6 +50,9 @@ logger.info(f"Arquivo .env: {'✅ Encontrado' if os.path.exists('.env') else '�
 
 # OpenAI será inicializado sob demanda quando necessário
 logger.info("OpenAI será inicializado quando necessário")
+
+# Inicializar serviços
+attachment_service = AttachmentService()
 
 app = FastAPI(
     title="Cidadão.AI - Backend API", 
@@ -235,6 +240,29 @@ async def handle_message_created(data: Dict[str, Any]):
                 for attachment in message_data["attachments"]:
                     if attachment.get("file_type") == "audio":
                         attachment["local_url"] = audio_info["public_url"]
+        
+        # Processar imagens se houver (NOVA FUNCIONALIDADE)
+        try:
+            image_attachments = await attachment_service.process_message_attachments(message_data)
+            if image_attachments:
+                logger.info(f"✅ {len(image_attachments)} imagem(ns) processada(s)")
+                # Adicionar metadados das imagens à mensagem
+                message_data["image_attachments"] = [
+                    {
+                        "id": img.id,
+                        "filename": img.filename,
+                        "content_type": img.content_type,
+                        "file_size": img.file_size,
+                        "data_url": img.data_url
+                    } for img in image_attachments
+                ]
+                
+                # Garantir que a mensagem tenha conteúdo mesmo que seja apenas imagem
+                if not message_data.get("content"):
+                    message_data["content"] = "📷 Imagem enviada"
+        except Exception as e:
+            logger.warning(f"Erro ao processar imagens: {e}")
+            # Não falhar o webhook se houver erro no processamento de imagens
         
         # Emitir evento de nova mensagem via WebSocket com dados processados
         await ws_manager.emit_new_message(conversation_id, message_data)
@@ -920,6 +948,64 @@ async def send_voice_message(
         raise HTTPException(status_code=502, detail="Chatwoot API error")
     except Exception as e:
         logger.error(f"Error sending voice message: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.post("/api/conversations/{conversation_id}/image", tags=["Messages"], response_model=ImageUploadResponse)
+async def send_image_message(
+    conversation_id: int,
+    file: UploadFile = File(...),
+    content: str = Form("")
+):
+    """Enviar imagem para uma conversa via Chatwoot"""
+    try:
+        # Validar se é uma imagem
+        if not file.content_type or not file.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem")
+        
+        # Ler arquivo
+        file_bytes = await file.read()
+        
+        # Validar tamanho (máximo 10MB)
+        if len(file_bytes) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Arquivo muito grande (máximo 10MB)")
+        
+        logger.info(f"Enviando imagem: {file.filename} ({len(file_bytes)} bytes)")
+        
+        # Enviar para Chatwoot
+        result = await attachment_service.upload_image_to_chatwoot(
+            conversation_id=conversation_id,
+            file_bytes=file_bytes,
+            filename=file.filename,
+            content_type=file.content_type,
+            content=content
+        )
+        
+        # Emitir evento via WebSocket
+        await ws_manager.emit_new_message(conversation_id, {
+            "id": result.get("id"),
+            "content": content or "📷 Imagem enviada",
+            "conversation_id": conversation_id,
+            "message_type": "outgoing",
+            "sender": {"name": "Sistema"},
+            "created_at": datetime.now().isoformat(),
+            "image_attachments": [{
+                "id": attachment.get("id"),
+                "filename": attachment.get("extension"),
+                "content_type": attachment.get("file_type"),
+                "file_size": attachment.get("file_size"),
+                "data_url": attachment.get("data_url")
+            } for attachment in result.get("attachments", [])]
+        })
+        
+        return ImageUploadResponse(
+            status="success",
+            message="Imagem enviada com sucesso",
+            attachment_id=result.get("attachments", [{}])[0].get("id") if result.get("attachments") else None,
+            message_id=result.get("id")
+        )
+        
+    except Exception as e:
+        logger.error(f"Error sending image: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 # Endpoint de debug para verificar dados da API
