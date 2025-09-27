@@ -811,80 +811,78 @@ async def send_voice_message(
         filename = file.filename or "voice_message.ogg"
         mime = file.content_type or "audio/ogg"
 
-        # Converter webm para ogg/opus se necessário (mais compatível com WhatsApp)
-        try:
-            if "webm" in (mime or "") or (filename or "").endswith(".webm"):
-                import tempfile
-                import subprocess
-                import os
-                
-                logger.info("Convertendo áudio de webm para ogg/opus")
-                
-                # Criar arquivos temporários
-                with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as temp_input:
-                    temp_input.write(file_bytes)
-                    temp_input.flush()
+            # Converter webm para MP3 diretamente (mais compatível com WhatsApp)
+            try:
+                if "webm" in (mime or "") or (filename or "").endswith(".webm"):
+                    import tempfile
+                    import subprocess
+                    import os
                     
-                with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as temp_output:
-                    temp_output_path = temp_output.name
-                    temp_output.close()
-                
-                # Converter usando ffmpeg com configurações específicas para WhatsApp
-                subprocess.run([
-                    "ffmpeg", "-y", "-i", temp_input.name,
-                    "-c:a", "libopus", 
-                    "-b:a", "32k",  # Bitrate menor para WhatsApp
-                    "-ar", "16000",  # Sample rate específico para WhatsApp
-                    "-ac", "1",      # Mono
-                    "-application", "voip",  # Otimização para voz
-                    "-frame_duration", "20", # Frame duration para WhatsApp
-                    "-maxrate", "32k",
-                    "-bufsize", "64k",
-                    temp_output_path
-                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                
-                # Ler arquivo convertido
-                with open(temp_output_path, "rb") as f:
-                    file_bytes = f.read()
-                
-                # Atualizar filename e mime
-                filename = (filename.rsplit('.', 1)[0] if '.' in filename else filename) + ".ogg"
-                mime = "audio/ogg"
-                
-                # Limpar arquivos temporários
-                os.unlink(temp_input.name)
-                os.unlink(temp_output_path)
-                
-                logger.info(f"Conversão concluída: {filename}, {mime}, {len(file_bytes)} bytes")
-                
-                # Verificar se o arquivo não é muito grande para WhatsApp (16MB limite)
-                if len(file_bytes) > 16 * 1024 * 1024:  # 16MB
-                    logger.warning(f"Arquivo muito grande ({len(file_bytes)} bytes), tentando MP3 com qualidade menor")
+                    logger.info("Convertendo áudio de webm para MP3 (compatibilidade WhatsApp)")
                     
-                    # Tentar MP3 com qualidade menor
-                    mp3_output = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
-                    mp3_path = mp3_output.name
-                    mp3_output.close()
+                    # Criar arquivos temporários
+                    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as temp_input:
+                        temp_input.write(file_bytes)
+                        temp_input.flush()
+                        
+                    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_output:
+                        temp_output_path = temp_output.name
+                        temp_output.close()
                     
+                    # Converter usando ffmpeg com configurações específicas para WhatsApp MP3
                     subprocess.run([
                         "ffmpeg", "-y", "-i", temp_input.name,
-                        "-c:a", "libmp3lame", "-b:a", "32k",
-                        "-ar", "16000", "-ac", "1",
-                        mp3_path
+                        "-c:a", "libmp3lame", 
+                        "-b:a", "32k",        # Bitrate baixo para WhatsApp
+                        "-ar", "16000",       # Sample rate específico para WhatsApp
+                        "-ac", "1",           # Mono
+                        "-q:a", "9",          # Qualidade máxima (menor bitrate)
+                        "-af", "highpass=f=80,lowpass=f=8000",  # Filtros para voz
+                        temp_output_path
                     ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     
-                    with open(mp3_path, "rb") as f:
+                    # Ler arquivo convertido
+                    with open(temp_output_path, "rb") as f:
                         file_bytes = f.read()
                     
+                    # Atualizar filename e mime
                     filename = (filename.rsplit('.', 1)[0] if '.' in filename else filename) + ".mp3"
                     mime = "audio/mpeg"
-                    os.unlink(mp3_path)
                     
-                    logger.info(f"Fallback MP3: {filename}, {mime}, {len(file_bytes)} bytes")
-                
-        except Exception as e:
-            logger.warning(f"Falha ao converter áudio para ogg: {e}")
-            # Continuar com arquivo original se conversão falhar
+                    # Limpar arquivos temporários
+                    os.unlink(temp_input.name)
+                    os.unlink(temp_output_path)
+                    
+                    logger.info(f"Conversão MP3 concluída: {filename}, {mime}, {len(file_bytes)} bytes")
+                    
+                    # Verificar se o arquivo não é muito grande para WhatsApp (16MB limite)
+                    if len(file_bytes) > 16 * 1024 * 1024:  # 16MB
+                        logger.warning(f"Arquivo MP3 muito grande ({len(file_bytes)} bytes), reduzindo qualidade")
+                        
+                        # Tentar MP3 com qualidade ainda menor
+                        mp3_low_output = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
+                        mp3_low_path = mp3_low_output.name
+                        mp3_low_output.close()
+                        
+                        subprocess.run([
+                            "ffmpeg", "-y", "-i", temp_input.name,
+                            "-c:a", "libmp3lame", "-b:a", "16k",
+                            "-ar", "8000", "-ac", "1",
+                            mp3_low_path
+                        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                        
+                        with open(mp3_low_path, "rb") as f:
+                            file_bytes = f.read()
+                        
+                        filename = (filename.rsplit('.', 1)[0] if '.' in filename else filename) + "_low.mp3"
+                        mime = "audio/mpeg"
+                        os.unlink(mp3_low_path)
+                        
+                        logger.info(f"MP3 baixa qualidade: {filename}, {mime}, {len(file_bytes)} bytes")
+                    
+            except Exception as e:
+                logger.warning(f"Falha ao converter áudio para MP3: {e}")
+                # Continuar com arquivo original se conversão falhar
 
         data = {
             "message_type": "outgoing",
