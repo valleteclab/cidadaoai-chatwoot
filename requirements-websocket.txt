@@ -1,0 +1,4 @@
+# WebSocket
+python-socketio==5.10.0
+aiohttp==3.9.1
+websockets==12.0

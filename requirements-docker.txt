@@ -1,0 +1,59 @@
+# Dependências para CidadaoAI Chatwoot com Docker
+# Instale com: pip install -r requirements-docker.txt
+
+# FastAPI e servidor web
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Cliente HTTP
+httpx==0.25.2
+requests==2.31.0
+
+# PostgreSQL (substitui Supabase)
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+
+# Redis
+redis==5.0.1
+hiredis==2.2.3
+
+# IA
+openai==1.6.1
+
+# Processamento de dados
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Utilitários
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Logging
+structlog==23.2.0
+
+# Desenvolvimento e testes
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Data e tempo
+python-dateutil==2.8.2
+
+# Validação
+email-validator==2.1.0
+
+# CORS
+python-cors==1.0.1
+
+# Tarefas em background
+celery==5.3.4
+
+# Monitoramento (opcional)
+prometheus-client==0.19.0
+
+# Segurança
+cryptography==41.0.8

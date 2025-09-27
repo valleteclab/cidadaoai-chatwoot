@@ -1,0 +1,23 @@
+# Environment variables for CidadaoAI Chatwoot with PostgreSQL
+# Copy this file to .env and fill in your actual values
+
+# FastAPI
+DEBUG=true
+SECRET_KEY=your-secret-key-here
+
+# Chatwoot
+CHATWOOT_URL=https://your-chatwoot-instance.com
+CHATWOOT_API_TOKEN=your-chatwoot-api-token
+CHATWOOT_WEBHOOK_SECRET=your-webhook-secret
+
+# OpenAI
+OPENAI_API_KEY=your-openai-api-key
+
+# PostgreSQL (local)
+DATABASE_URL=postgresql://cidadaoai_user:sua_senha@localhost:5432/cidadaoai
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Logging
+LOG_LEVEL=INFO

@@ -1,0 +1,53 @@
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# HTTP client (pinned to satisfy supabase 2.3.0 which requires <0.25)
+httpx==0.24.1
+requests==2.31.0
+
+# Database
+supabase==2.3.0
+psycopg2-binary==2.9.9
+
+# Redis
+redis==5.0.1
+hiredis==2.2.3
+
+# AI/ML
+openai==1.6.1
+
+# Data processing
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Utilities
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Logging and monitoring
+structlog==23.2.0
+
+# Development and testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Date and time
+python-dateutil==2.8.2
+
+# Validation
+email-validator==2.1.0
+
+# Background tasks
+celery==5.3.4
+
+# Monitoring (optional)
+prometheus-client==0.19.0
+
+# Security
+cryptography==42.0.8

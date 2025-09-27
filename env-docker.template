@@ -1,0 +1,23 @@
+# Environment variables for CidadaoAI Chatwoot with Docker
+# Copy this file to .env and fill in your actual values
+
+# FastAPI
+DEBUG=true
+SECRET_KEY=your-secret-key-here
+
+# Chatwoot
+CHATWOOT_URL=https://your-chatwoot-instance.com
+CHATWOOT_API_TOKEN=your-chatwoot-api-token
+# Nota: Chatwoot não oferece webhook secret/HMAC - não configurável
+
+# OpenAI
+OPENAI_API_KEY=your-openai-api-key
+
+# PostgreSQL (Docker - portas diferentes do Chatwoot)
+DATABASE_URL=postgresql://cidadaoai_user:cidadaoai_senha_2024@localhost:5433/cidadaoai
+
+# Redis (Docker - porta diferente do Chatwoot)
+REDIS_URL=redis://localhost:6380
+
+# Logging
+LOG_LEVEL=INFO
