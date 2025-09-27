@@ -11,13 +11,13 @@ class ChatwootAttachment(BaseModel):
     
     id: int                           # ID do attachment no Chatwoot
     message_id: int                   # ID da mensagem no Chatwoot
-    conversation_id: int              # ID da conversa
+    conversation_id: Optional[int] = None  # ID da conversa (opcional)
     filename: Optional[str] = None    # Nome original do arquivo
     content_type: Optional[str] = None # MIME type (image/jpeg, image/png, etc)
     file_size: Optional[int] = None   # Tamanho em bytes
     blob_key: Optional[str] = None    # Chave do blob no Chatwoot
     data_url: Optional[str] = None    # URL do arquivo no Chatwoot
-    created_at: datetime              # Timestamp de criação
+    created_at: Optional[datetime] = None  # Timestamp de criação (opcional)
     updated_at: Optional[datetime] = None  # Timestamp de atualização
     
     class Config:
