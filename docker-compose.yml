@@ -27,6 +27,12 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.cidadaoai.rule=Host(`tecnico.sisgov.app.br`)
+        - traefik.http.routers.cidadaoai.entrypoints=websecure
+        - traefik.http.routers.cidadaoai.tls.certresolver=letsencryptresolver
+        - traefik.http.services.cidadaoai.loadbalancer.server.port=8000
 
 networks:
   LomeServer:

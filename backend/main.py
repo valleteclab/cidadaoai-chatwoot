@@ -111,12 +111,7 @@ class MessageData(BaseModel):
     inbox: Dict[str, Any]
 
 # Endpoints básicos
-@app.get("/", tags=["Status"])
-async def root():
-    """Endpoint raiz da API"""
-    return {"message": "CidadaoAI Chatwoot API", "status": "running"}
-
-@app.get("/tecnico", tags=["Frontend"])
+@app.get("/", tags=["Frontend"])
 async def tecnico_panel():
     """Painel técnico - Frontend"""
     return FileResponse("frontend/tecnico/index.html")
