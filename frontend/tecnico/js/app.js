@@ -330,10 +330,38 @@ function setupWebSocket() {
     
     socket.on('new_message', (data) => {
         console.log('📨 Nova mensagem recebida:', data);
-        // Se a mensagem é da conversa atual, atualizar
+        
+        // Se a mensagem é da conversa atual, adicionar diretamente
         if (currentConversation && data.conversation_id === currentConversation.id) {
-            loadMessages(currentConversation.id);
+            // Processar a mensagem recebida via WebSocket (com image_attachments)
+            const message = data.message;
+            if (message) {
+                // Converter timestamp se necessário
+                if (typeof message.timestamp === 'number') {
+                    message.timestamp = new Date(message.timestamp * 1000);
+                } else if (typeof message.timestamp === 'string') {
+                    message.timestamp = new Date(message.timestamp);
+                } else {
+                    message.timestamp = new Date();
+                }
+                
+                // Determinar se é mensagem do usuário ou contato
+                message.sender = message.sender_type === 'Contact' ? 'contact' : 'user';
+                
+                console.log('📨 Adicionando mensagem via WebSocket:', {
+                    id: message.id,
+                    content: message.content,
+                    hasImages: message.image_attachments?.length > 0,
+                    imageAttachments: message.image_attachments
+                });
+                
+                // Adicionar mensagem ao container
+                const messageElement = createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
         }
+        
         // Atualizar lista de conversas
         loadConversations();
     });
