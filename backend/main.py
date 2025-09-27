@@ -829,10 +829,17 @@ async def send_voice_message(
                     temp_output_path = temp_output.name
                     temp_output.close()
                 
-                # Converter usando ffmpeg
+                # Converter usando ffmpeg com configurações específicas para WhatsApp
                 subprocess.run([
                     "ffmpeg", "-y", "-i", temp_input.name,
-                    "-c:a", "libopus", "-b:a", "64k",
+                    "-c:a", "libopus", 
+                    "-b:a", "32k",  # Bitrate menor para WhatsApp
+                    "-ar", "16000",  # Sample rate específico para WhatsApp
+                    "-ac", "1",      # Mono
+                    "-application", "voip",  # Otimização para voz
+                    "-frame_duration", "20", # Frame duration para WhatsApp
+                    "-maxrate", "32k",
+                    "-bufsize", "64k",
                     temp_output_path
                 ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 
@@ -849,6 +856,31 @@ async def send_voice_message(
                 os.unlink(temp_output_path)
                 
                 logger.info(f"Conversão concluída: {filename}, {mime}, {len(file_bytes)} bytes")
+                
+                # Verificar se o arquivo não é muito grande para WhatsApp (16MB limite)
+                if len(file_bytes) > 16 * 1024 * 1024:  # 16MB
+                    logger.warning(f"Arquivo muito grande ({len(file_bytes)} bytes), tentando MP3 com qualidade menor")
+                    
+                    # Tentar MP3 com qualidade menor
+                    mp3_output = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
+                    mp3_path = mp3_output.name
+                    mp3_output.close()
+                    
+                    subprocess.run([
+                        "ffmpeg", "-y", "-i", temp_input.name,
+                        "-c:a", "libmp3lame", "-b:a", "32k",
+                        "-ar", "16000", "-ac", "1",
+                        mp3_path
+                    ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    
+                    with open(mp3_path, "rb") as f:
+                        file_bytes = f.read()
+                    
+                    filename = (filename.rsplit('.', 1)[0] if '.' in filename else filename) + ".mp3"
+                    mime = "audio/mpeg"
+                    os.unlink(mp3_path)
+                    
+                    logger.info(f"Fallback MP3: {filename}, {mime}, {len(file_bytes)} bytes")
                 
         except Exception as e:
             logger.warning(f"Falha ao converter áudio para ogg: {e}")
