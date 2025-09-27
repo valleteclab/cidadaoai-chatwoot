@@ -1,7 +1,7 @@
 services:
   cidadaoai_app:
     image: cidadaoai:latest
-    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
     networks:
       - LomeServer
     environment:
@@ -29,15 +29,11 @@ services:
         window: 120s
       labels:
         - traefik.enable=true
-        - traefik.http.routers.cidadaoai.rule=Host(`chat.sisgov.app.br`) && (PathPrefix(`/tecnico`) || PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/media`) || PathPrefix(`/static`))
-        - traefik.http.routers.cidadaoai.entrypoints=websecure
-        - traefik.http.routers.cidadaoai.tls.certresolver=letsencryptresolver
-        - traefik.http.routers.cidadaoai.priority=2
-        - traefik.http.routers.cidadaoai.service=cidadaoai
+        - traefik.http.routers.cidadaoai-tecnico.rule=Host(`chat.sisgov.app.br`) && PathPrefix(`/tecnico`)
+        - traefik.http.routers.cidadaoai-tecnico.entrypoints=websecure
+        - traefik.http.routers.cidadaoai-tecnico.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.cidadaoai-tecnico.service=cidadaoai
         - traefik.http.services.cidadaoai.loadbalancer.server.port=8000
-        - traefik.http.services.cidadaoai.loadbalancer.passHostHeader=true
-        - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
-        - traefik.http.routers.cidadaoai.middlewares=sslheader
 
 networks:
   LomeServer:
