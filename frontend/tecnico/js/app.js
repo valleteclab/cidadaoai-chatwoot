@@ -361,8 +361,15 @@ async function loadConversations() {
         showLoading(true);
         
         // Chamada real para API
-        console.log('🔍 Buscando conversas em:', `${API_BASE_URL}/api/conversations`);
-        const response = await fetch(`${API_BASE_URL}/api/conversations`);
+        const url = `${API_BASE_URL}/api/conversations`;
+        console.log('🔍 Buscando conversas em:', url);
+        console.log('🔧 Configuração:', {
+            API_BASE_URL,
+            CHATWOOT_API_URL,
+            CHATWOOT_ACCOUNT_ID
+        });
+        
+        const response = await fetch(url);
         console.log('📡 Status da resposta:', response.status);
         const data = await response.json();
         console.log('📦 Dados recebidos:', data);
