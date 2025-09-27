@@ -624,8 +624,12 @@ function createMessageElement(message) {
     const audioAttachment = message.attachments?.find(a => a.file_type === 'audio');
     
     // Verificar se tem imagens (NOVA FUNCIONALIDADE)
-    const hasImages = message.image_attachments && message.image_attachments.length > 0;
-    const imageAttachments = message.image_attachments || [];
+    const hasImages = (message.image_attachments && message.image_attachments.length > 0) ||
+                     (message.attachments && message.attachments.some(a => a.file_type && a.file_type.startsWith('image/')));
+    
+    // Buscar imagens em ambos os lugares
+    const imageAttachments = message.image_attachments || 
+                            (message.attachments ? message.attachments.filter(a => a.file_type && a.file_type.startsWith('image/')) : []);
     
     // Tentar todas as possíveis URLs de áudio
     const possibleUrls = [
@@ -640,6 +644,8 @@ function createMessageElement(message) {
         conversation_id: message.conversation_id,
         content: messageContent,
         hasAudio,
+        hasImages,
+        imageAttachments,
         attachments: message.attachments,
         possibleUrls
     });

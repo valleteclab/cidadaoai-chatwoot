@@ -33,8 +33,11 @@ class AttachmentService:
         logger.info(f"Processando {len(message_attachments)} attachments da mensagem {message_data.get('id')}")
         
         for attachment_data in message_attachments:
+            logger.info(f"Processando attachment: {attachment_data}")
+            
             # Só processar se for imagem
             if not self._is_image_attachment(attachment_data):
+                logger.info(f"Pulando attachment (não é imagem): {attachment_data.get('file_type')}")
                 continue
                 
             attachment = ChatwootAttachment(
@@ -51,14 +54,30 @@ class AttachmentService:
             )
             
             attachments.append(attachment)
-            logger.info(f"Attachment processado: {attachment.filename} ({attachment.content_type})")
+            logger.info(f"✅ Attachment processado: {attachment.filename} ({attachment.content_type}) - URL: {attachment.data_url}")
         
         return attachments
     
     def _is_image_attachment(self, attachment_data: Dict[str, Any]) -> bool:
         """Verifica se o attachment é uma imagem"""
         file_type = attachment_data.get("file_type", "").lower()
-        return file_type.startswith("image/")
+        filename = attachment_data.get("extension", "")
+        
+        logger.info(f"Verificando attachment: file_type='{file_type}', filename='{filename}', data={attachment_data}")
+        
+        # Verificar por tipo MIME
+        if file_type.startswith("image/"):
+            logger.info(f"✅ Attachment detectado como imagem por MIME: {file_type}")
+            return True
+        
+        # Verificar por extensão de arquivo
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']
+        if any(filename.lower().endswith(ext) for ext in image_extensions):
+            logger.info(f"✅ Attachment detectado como imagem por extensão: {filename}")
+            return True
+        
+        logger.info(f"❌ Attachment não é imagem: {file_type} / {filename}")
+        return False
     
     async def upload_image_to_chatwoot(
         self, 
