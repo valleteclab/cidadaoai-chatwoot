@@ -25,9 +25,6 @@ from backend.audio_transcriber import transcriber
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Importar transcriber antes de usá-lo
-from backend.audio_transcriber import transcriber
-
 # Carregar variáveis de ambiente
 logger.info("🔧 Verificando configurações...")
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
@@ -49,11 +46,8 @@ else:
     logger.error("❌ Arquivo .env não encontrado!")
 logger.info(f"Arquivo .env: {'✅ Encontrado' if os.path.exists('.env') else '❌ Não encontrado'}")
 
-# Verificar e inicializar OpenAI
-try:
-    transcriber.initialize()
-except Exception as e:
-    logger.error(f"❌ Erro ao inicializar OpenAI: {str(e)}")
+# OpenAI será inicializado sob demanda quando necessário
+logger.info("OpenAI será inicializado quando necessário")
 
 app = FastAPI(
     title="Cidadão.AI - Backend API", 
