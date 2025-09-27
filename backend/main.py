@@ -267,28 +267,8 @@ async def handle_message_created(data: Dict[str, Any]):
         # Emitir evento de nova mensagem via WebSocket com dados processados
         await ws_manager.emit_new_message(conversation_id, message_data)
         
-        # O payload do Chatwoot vem diretamente com os dados da mensagem
-        message_data = data.copy()  # Fazer uma cópia para não modificar o original
+        # Processar lógica de IA e salvar no banco
         conversation_data = message_data.get("conversation", {})
-        
-        # Processar áudio se houver
-        audio_info = await media_handler.handle_audio(message_data)
-        if audio_info:
-            logger.info(f"✅ Áudio processado: {audio_info['filepath']}")
-            # Adicionar URL do áudio à mensagem
-            message_data["audio_url"] = audio_info["public_url"]
-            logger.info(f"🔊 URL do áudio: {audio_info['public_url']}")
-            
-            # Garantir que a mensagem tenha conteúdo mesmo que seja apenas áudio
-            if not message_data.get("content"):
-                message_data["content"] = "🎵 Mensagem de áudio"
-                
-            # Garantir que o áudio esteja disponível no frontend
-            if "attachments" in message_data:
-                for attachment in message_data["attachments"]:
-                    if attachment.get("file_type") == "audio":
-                        attachment["local_url"] = audio_info["public_url"]
-        
         logger.info(f"Processing message: {message_data.get('id')} from conversation: {conversation_data.get('id')}")
         
         # Verificar se é mensagem de usuário (não bot)
