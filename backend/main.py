@@ -811,6 +811,49 @@ async def send_voice_message(
         filename = file.filename or "voice_message.ogg"
         mime = file.content_type or "audio/ogg"
 
+        # Converter webm para ogg/opus se necessário (mais compatível com WhatsApp)
+        try:
+            if "webm" in (mime or "") or (filename or "").endswith(".webm"):
+                import tempfile
+                import subprocess
+                import os
+                
+                logger.info("Convertendo áudio de webm para ogg/opus")
+                
+                # Criar arquivos temporários
+                with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as temp_input:
+                    temp_input.write(file_bytes)
+                    temp_input.flush()
+                    
+                with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as temp_output:
+                    temp_output_path = temp_output.name
+                    temp_output.close()
+                
+                # Converter usando ffmpeg
+                subprocess.run([
+                    "ffmpeg", "-y", "-i", temp_input.name,
+                    "-c:a", "libopus", "-b:a", "64k",
+                    temp_output_path
+                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                # Ler arquivo convertido
+                with open(temp_output_path, "rb") as f:
+                    file_bytes = f.read()
+                
+                # Atualizar filename e mime
+                filename = (filename.rsplit('.', 1)[0] if '.' in filename else filename) + ".ogg"
+                mime = "audio/ogg"
+                
+                # Limpar arquivos temporários
+                os.unlink(temp_input.name)
+                os.unlink(temp_output_path)
+                
+                logger.info(f"Conversão concluída: {filename}, {mime}, {len(file_bytes)} bytes")
+                
+        except Exception as e:
+            logger.warning(f"Falha ao converter áudio para ogg: {e}")
+            # Continuar com arquivo original se conversão falhar
+
         data = {
             "message_type": "outgoing",
             "content": content or "",
@@ -823,9 +866,18 @@ async def send_voice_message(
         }
 
         async with httpx.AsyncClient() as client:
+            logger.info(f"Enviando áudio para Chatwoot: {url}")
+            logger.info(f"Headers: {headers}")
+            logger.info(f"Data: {data}")
+            logger.info(f"File: {filename}, MIME: {mime}, Size: {len(file_bytes)} bytes")
+            
             resp = await client.post(url, headers=headers, data=data, files=files)
+            logger.info(f"Response status: {resp.status_code}")
+            logger.info(f"Response headers: {dict(resp.headers)}")
+            
             resp.raise_for_status()
             result = resp.json()
+            logger.info(f"Chatwoot response: {result}")
 
         return {
             "status": "success",
