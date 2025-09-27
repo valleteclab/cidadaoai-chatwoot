@@ -1,7 +1,7 @@
 services:
   cidadaoai_app:
     image: cidadaoai:latest
-    command: python -m backend.main
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - LomeServer
     environment:
@@ -38,12 +38,6 @@ services:
         - traefik.http.services.cidadaoai.loadbalancer.passHostHeader=true
         - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
         - traefik.http.routers.cidadaoai.middlewares=sslheader
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 networks:
   LomeServer:
