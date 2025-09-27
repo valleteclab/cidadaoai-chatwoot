@@ -4,9 +4,10 @@ services:
     command: python -m backend.main
     networks:
       - LomeServer
+    env_file:
+      - .env
     environment:
       - CHATWOOT_URL=https://chat.sisgov.app.br
-      - CHATWOOT_API_TOKEN=${CHATWOOT_API_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - DATABASE_URL=postgresql://cidadaoai_user:Cid@d@0AI_2024_PG@pgvector:5432/cidadaoai
       - REDIS_URL=redis://chatwoot_chatwoot_redis:6379
@@ -29,10 +30,24 @@ services:
         window: 120s
       labels:
         - traefik.enable=true
+        # Roteador HTTP
+        - traefik.http.routers.cidadaoai-http.rule=Host(`tecnico.sisgov.app.br`)
+        - traefik.http.routers.cidadaoai-http.entrypoints=web
+        - traefik.http.routers.cidadaoai-http.middlewares=redirect-to-https
+        # Roteador HTTPS
         - traefik.http.routers.cidadaoai.rule=Host(`tecnico.sisgov.app.br`)
         - traefik.http.routers.cidadaoai.entrypoints=websecure
         - traefik.http.routers.cidadaoai.tls.certresolver=letsencryptresolver
+        # Serviço e middleware
         - traefik.http.services.cidadaoai.loadbalancer.server.port=8000
+        - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+        - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
+        # Headers para HTTPS
+        - traefik.http.middlewares.secure-headers.headers.sslRedirect=true
+        - traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000
+        - traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true
+        - traefik.http.middlewares.secure-headers.headers.stsPreload=true
+        - traefik.http.routers.cidadaoai.middlewares=secure-headers
 
 networks:
   LomeServer:
