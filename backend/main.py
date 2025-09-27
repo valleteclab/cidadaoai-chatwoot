@@ -243,7 +243,16 @@ async def handle_message_created(data: Dict[str, Any]):
         
         # Processar imagens se houver (NOVA FUNCIONALIDADE)
         try:
+            logger.info(f"🔍 Verificando attachments para processamento de imagens...")
+            attachments = message_data.get("attachments", [])
+            logger.info(f"📎 Total de attachments: {len(attachments)}")
+            
+            for i, attachment in enumerate(attachments):
+                logger.info(f"📎 Attachment {i}: file_type='{attachment.get('file_type')}', extension='{attachment.get('extension')}'")
+            
             image_attachments = await attachment_service.process_message_attachments(message_data)
+            logger.info(f"🖼️ Imagens processadas: {len(image_attachments)}")
+            
             if image_attachments:
                 logger.info(f"✅ {len(image_attachments)} imagem(ns) processada(s)")
                 # Adicionar metadados das imagens à mensagem
@@ -260,8 +269,14 @@ async def handle_message_created(data: Dict[str, Any]):
                 # Garantir que a mensagem tenha conteúdo mesmo que seja apenas imagem
                 if not message_data.get("content"):
                     message_data["content"] = "📷 Imagem enviada"
+                    
+                logger.info(f"🖼️ image_attachments adicionadas à mensagem: {len(message_data['image_attachments'])}")
+            else:
+                logger.info(f"❌ Nenhuma imagem processada")
         except Exception as e:
             logger.warning(f"Erro ao processar imagens: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             # Não falhar o webhook se houver erro no processamento de imagens
         
         # Emitir evento de nova mensagem via WebSocket com dados processados
