@@ -385,8 +385,9 @@ async def send_message_to_chatwoot(conversation_id: int, content: str, account_i
         url = f"{CHATWOOT_URL}/api/v1/accounts/{account_id}/conversations/{conversation_id}/messages"
         
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
         
         payload = {
@@ -554,8 +555,9 @@ async def get_conversations():
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
         
         async with httpx.AsyncClient() as client:
@@ -608,7 +610,14 @@ async def get_conversations():
             }
         
     except Exception as e:
-        logger.error(f"Error getting conversations: {str(e)}")
+        import traceback
+        error_details = traceback.format_exc()
+        logger.error(f"Error getting conversations: {str(e)}\n{error_details}")
+        
+        # Log request details
+        logger.error(f"Request URL: {url}")
+        logger.error(f"Request headers: {headers}")
+        
         # Retornar dados mockados em caso de erro
         return {
             "status": "success",
@@ -625,7 +634,7 @@ async def get_conversations():
                     "unreadCount": 2
                 }
             ],
-            "message": f"Using mock data due to error: {str(e)}"
+            "message": f"Using mock data due to error: {str(e)}\nURL: {url}"
         }
 
 @app.get("/api/conversations/{conversation_id}/messages", tags=["Frontend API"])
@@ -645,8 +654,9 @@ async def get_conversation_messages(
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
         
         async with httpx.AsyncClient() as client:
@@ -727,8 +737,9 @@ async def send_message_to_conversation(conversation_id: int, message_data: dict)
         # Chamada real para API do Chatwoot
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
         
         payload = {
@@ -813,8 +824,9 @@ async def debug_conversations():
         
         url = f"{CHATWOOT_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations"
         headers = {
-            "api_access_token": CHATWOOT_API_TOKEN,
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {CHATWOOT_API_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
         
         async with httpx.AsyncClient() as client:
