@@ -191,8 +191,10 @@ async def get_agent_debug():
         return {
             "status": "success",
             "agent_available": ai_agent.is_available(),
+            "current_provider": ai_agent.get_provider_name(),
             "groq_configured": bool(os.getenv("GROQ_API_KEY")),
             "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
             "conversation_memory": {
                 "total_conversations": len(ai_agent.conversation_memory),
                 "conversation_ids": list(ai_agent.conversation_memory.keys())
@@ -201,7 +203,9 @@ async def get_agent_debug():
                 "groq_key_set": bool(os.getenv("GROQ_API_KEY")),
                 "groq_key_length": len(os.getenv("GROQ_API_KEY", "")) if os.getenv("GROQ_API_KEY") else 0,
                 "openai_key_set": bool(os.getenv("OPENAI_API_KEY")),
-                "openai_key_length": len(os.getenv("OPENAI_API_KEY", "")) if os.getenv("OPENAI_API_KEY") else 0
+                "openai_key_length": len(os.getenv("OPENAI_API_KEY", "")) if os.getenv("OPENAI_API_KEY") else 0,
+                "anthropic_key_set": bool(os.getenv("ANTHROPIC_API_KEY")),
+                "anthropic_key_length": len(os.getenv("ANTHROPIC_API_KEY", "")) if os.getenv("ANTHROPIC_API_KEY") else 0
             },
             "timestamp": datetime.now().isoformat()
         }
@@ -212,6 +216,37 @@ async def get_agent_debug():
             "message": str(e),
             "timestamp": datetime.now().isoformat()
         }
+
+# Variável global para armazenar logs de IA
+ai_logs = []
+
+@app.get("/api/agent/logs", tags=["AI Agent"])
+async def get_ai_logs():
+    """Obter logs de IA em tempo real"""
+    return {
+        "status": "success",
+        "logs": ai_logs[-50:],  # Últimos 50 logs
+        "total_logs": len(ai_logs),
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.post("/api/agent/log", tags=["AI Agent"])
+async def add_ai_log(log_data: dict):
+    """Adicionar log de IA (para uso interno)"""
+    global ai_logs
+    log_entry = {
+        "timestamp": datetime.now().isoformat(),
+        "type": log_data.get("type", "info"),
+        "message": log_data.get("message", ""),
+        "data": log_data.get("data", {})
+    }
+    ai_logs.append(log_entry)
+    
+    # Manter apenas os últimos 1000 logs
+    if len(ai_logs) > 1000:
+        ai_logs = ai_logs[-1000:]
+    
+    return {"status": "success"}
 
 # Webhook endpoint para Chatwoot
 @app.post("/webhook/chatwoot", tags=["Webhooks"])

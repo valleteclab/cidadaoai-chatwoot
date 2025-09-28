@@ -79,8 +79,16 @@ class CidadaoAIAgent:
         Returns:
             Resposta gerada pelo agente ou None se erro
         """
+        logger.info(f"🤖 INÍCIO PROCESSAMENTO IA - Conversa {conversation_id}")
+        logger.info(f"📝 Mensagem recebida: {message[:100]}...")
+        logger.info(f"🔧 Provedor atual: {self.get_provider_name()}")
+        
         if not self.provider:
-            logger.warning("Provedor de IA não disponível")
+            logger.error("🚨 ERRO: Provedor de IA não disponível")
+            return None
+        
+        if not self.provider.is_available():
+            logger.error(f"🚨 ERRO: Provedor {self.get_provider_name()} não está disponível")
             return None
         
         try:
@@ -107,7 +115,8 @@ class CidadaoAIAgent:
                     "content": msg["content"]
                 })
             
-            logger.info(f"Enviando mensagem para {self.provider.get_provider_name()}: {message[:100]}...")
+            logger.info(f"🚀 ENVIANDO PARA {self.provider.get_provider_name()}: {message[:100]}...")
+            logger.info(f"📊 Mensagens preparadas: {len(messages)}")
             
             # Chamar provedor de IA
             ai_response = await self.provider.generate_response(
@@ -117,8 +126,10 @@ class CidadaoAIAgent:
                 top_p=0.9
             )
             
+            logger.info(f"📥 RESPOSTA RECEBIDA: {ai_response[:200] if ai_response else 'NENHUMA'}...")
+            
             if not ai_response:
-                logger.error("Provedor não retornou resposta")
+                logger.error("🚨 ERRO: Provedor não retornou resposta")
                 return self._get_fallback_response()
             
             # Adicionar resposta ao histórico
@@ -141,7 +152,8 @@ class CidadaoAIAgent:
     
     def _get_fallback_response(self) -> str:
         """Resposta de fallback quando IA falha"""
-        return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
+        logger.error("🚨 FALLBACK ATIVADO - IA REAL NÃO FUNCIONOU!")
+        return "🚨 ERRO: IA não conseguiu processar. Provedor ativo: " + self.get_provider_name()
     
     def is_available(self) -> bool:
         """Verificar se o agente está disponível"""

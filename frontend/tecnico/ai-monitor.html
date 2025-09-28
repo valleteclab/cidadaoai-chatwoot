@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor IA - Cidadão.AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">🤖 Monitor de IA - Cidadão.AI</h1>
+        
+        <!-- Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div id="statusCard" class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">📊 Status do Agente</h3>
+                <div id="agentStatus" class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                    <p class="mt-2">Carregando...</p>
+                </div>
+            </div>
+            
+            <div id="providerCard" class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">🔧 Provedor Ativo</h3>
+                <div id="currentProvider" class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
+                    <p class="mt-2">Carregando...</p>
+                </div>
+            </div>
+            
+            <div id="memoryCard" class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">💬 Memória</h3>
+                <div id="conversationMemory" class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+                    <p class="mt-2">Carregando...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controles -->
+        <div class="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">🎮 Controles</h3>
+            <div class="flex flex-wrap gap-4">
+                <button id="testBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-play mr-2"></i>Testar IA
+                </button>
+                <button id="refreshBtn" class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-sync-alt mr-2"></i>Atualizar Status
+                </button>
+                <button id="clearLogsBtn" class="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded">
+                    <i class="fas fa-trash mr-2"></i>Limpar Logs
+                </button>
+            </div>
+        </div>
+        
+        <!-- Logs em Tempo Real -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">📋 Logs da IA</h3>
+            <div id="logsContainer" class="bg-gray-900 text-green-400 p-4 rounded-lg h-96 overflow-y-auto font-mono text-sm">
+                <div class="text-gray-500">Aguardando logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://tecnico.sisgov.app.br';
+        let logCount = 0;
+        
+        // Atualizar status
+        async function updateStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/agent/status`);
+                const data = await response.json();
+                
+                // Status do agente
+                const statusElement = document.getElementById('agentStatus');
+                if (data.agent_available) {
+                    statusElement.innerHTML = `
+                        <div class="text-green-500 text-2xl mb-2">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <p class="text-green-600 font-semibold">DISPONÍVEL</p>
+                    `;
+                } else {
+                    statusElement.innerHTML = `
+                        <div class="text-red-500 text-2xl mb-2">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <p class="text-red-600 font-semibold">INDISPONÍVEL</p>
+                    `;
+                }
+                
+                // Provedor atual
+                const providerElement = document.getElementById('currentProvider');
+                const provider = data.current_provider || 'Nenhum';
+                providerElement.innerHTML = `
+                    <div class="text-blue-500 text-2xl mb-2">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <p class="text-blue-600 font-semibold">${provider}</p>
+                `;
+                
+                // Memória de conversas
+                const memoryElement = document.getElementById('conversationMemory');
+                const memory = data.conversation_memory_count || 0;
+                memoryElement.innerHTML = `
+                    <div class="text-purple-500 text-2xl mb-2">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <p class="text-purple-600 font-semibold">${memory} conversas</p>
+                `;
+                
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+            }
+        }
+        
+        // Adicionar log
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('logsContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            let color = 'text-green-400';
+            let icon = 'ℹ️';
+            
+            if (type === 'error') {
+                color = 'text-red-400';
+                icon = '❌';
+            } else if (type === 'success') {
+                color = 'text-green-400';
+                icon = '✅';
+            } else if (type === 'warning') {
+                color = 'text-yellow-400';
+                icon = '⚠️';
+            }
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `mb-1 ${color}`;
+            logEntry.innerHTML = `[${timestamp}] ${icon} ${message}`;
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            logCount++;
+        }
+        
+        // Testar IA
+        async function testAI() {
+            addLog('Iniciando teste da IA...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/agent/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'Olá, como posso pagar meu IPTU?',
+                        conversation_id: 999,
+                        contact_info: {
+                            id: 7,
+                            name: 'teste',
+                            phone_number: '+557798755764'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    addLog(`Resposta da IA: ${data.ai_response}`, 'success');
+                    
+                    if (data.ai_response.includes('🚨 ERRO')) {
+                        addLog('⚠️ IA está usando fallback!', 'warning');
+                    } else {
+                        addLog('✅ IA funcionando corretamente!', 'success');
+                    }
+                } else {
+                    addLog(`Erro no teste: ${data.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`Erro ao testar IA: ${error.message}`, 'error');
+            }
+        }
+        
+        // Limpar logs
+        function clearLogs() {
+            document.getElementById('logsContainer').innerHTML = '<div class="text-gray-500">Logs limpos...</div>';
+            logCount = 0;
+        }
+        
+        // Event listeners
+        document.getElementById('testBtn').addEventListener('click', testAI);
+        document.getElementById('refreshBtn').addEventListener('click', updateStatus);
+        document.getElementById('clearLogsBtn').addEventListener('click', clearLogs);
+        
+        // Atualizar status a cada 5 segundos
+        updateStatus();
+        setInterval(updateStatus, 5000);
+        
+        // Adicionar log inicial
+        addLog('Monitor de IA iniciado', 'success');
+    </script>
+</body>
+</html>
