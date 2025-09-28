@@ -55,7 +55,7 @@ class GroqProvider(AIProvider):
         
         try:
             response = self.client.chat.completions.create(
-                model=kwargs.get("model", "llama-3.1-70b-versatile"),
+                model=kwargs.get("model", "llama-3.1-8b-instant"),  # Modelo atual do Groq
                 messages=messages,
                 max_tokens=kwargs.get("max_tokens", 300),
                 temperature=kwargs.get("temperature", 0.7),
