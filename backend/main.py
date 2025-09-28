@@ -170,10 +170,37 @@ async def get_agent_status():
             "status": "success",
             "agent_available": ai_agent.is_available(),
             "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "conversation_memory_count": len(ai_agent.conversation_memory),
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
         logger.error(f"Error checking agent status: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@app.get("/api/agent/debug", tags=["AI Agent"])
+async def get_agent_debug():
+    """Debug info do agente IA"""
+    try:
+        return {
+            "status": "success",
+            "agent_available": ai_agent.is_available(),
+            "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "conversation_memory": {
+                "total_conversations": len(ai_agent.conversation_memory),
+                "conversation_ids": list(ai_agent.conversation_memory.keys())
+            },
+            "environment": {
+                "openai_key_set": bool(os.getenv("OPENAI_API_KEY")),
+                "openai_key_length": len(os.getenv("OPENAI_API_KEY", "")) if os.getenv("OPENAI_API_KEY") else 0
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting agent debug info: {str(e)}")
         return {
             "status": "error",
             "message": str(e),

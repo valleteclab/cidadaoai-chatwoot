@@ -666,6 +666,21 @@ docker service ls --filter name=cidadaoai
 docker service logs -f cidadaoai_cidadaoai_app
         </div>
 
+        <h4>Monitoramento da IA</h4>
+        <div class="code-block">
+# Verificar status da IA (recomendado)
+./check_ai_status.sh
+
+# Monitorar apenas logs da IA (filtrado)
+./monitor_ai_logs.sh
+
+# Verificar status via API
+curl https://tecnico.sisgov.app.br/api/agent/status
+
+# Debug completo da IA
+curl https://tecnico.sisgov.app.br/api/agent/debug
+        </div>
+
         <h3>9.4 Monitoramento</h3>
 
         <div class="code-block">
