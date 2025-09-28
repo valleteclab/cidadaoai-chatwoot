@@ -305,8 +305,20 @@ async def handle_message_created(data: Dict[str, Any]):
         conversation_data = message_data.get("conversation", {})
         logger.info(f"Processing message: {message_data.get('id')} from conversation: {conversation_data.get('id')}")
         
+        # DEBUG: Log detalhado dos dados da mensagem
+        logger.info(f"🔍 DEBUG - message_type: {message_data.get('message_type')}")
+        logger.info(f"🔍 DEBUG - sender: {message_data.get('sender', {})}")
+        logger.info(f"🔍 DEBUG - sender.type: {message_data.get('sender', {}).get('type')}")
+        logger.info(f"🔍 DEBUG - content: {message_data.get('content', '')[:100]}")
+        
         # Verificar se é mensagem de usuário (não bot) e processar automaticamente com agente IA
-        if message_data.get("message_type") == "incoming" and message_data.get("sender", {}).get("type") == "contact":
+        message_type = message_data.get("message_type")
+        sender_type = message_data.get("sender", {}).get("type")
+        
+        logger.info(f"🔍 DEBUG - Condições: message_type='{message_type}' == 'incoming': {message_type == 'incoming'}")
+        logger.info(f"🔍 DEBUG - Condições: sender_type='{sender_type}' == 'contact': {sender_type == 'contact'}")
+        
+        if message_type == "incoming" and sender_type == "contact":
             content = message_data.get("content", "")
             
             logger.info(f"📨 Nova mensagem recebida: {content[:100]}...")
@@ -329,6 +341,8 @@ async def handle_message_created(data: Dict[str, Any]):
                     logger.info("✅ Resposta do agente enviada automaticamente")
             else:
                 logger.warning("⚠️ Agente IA não disponível - mensagem não será respondida automaticamente")
+        else:
+            logger.info(f"🔍 DEBUG - Condição não atendida: message_type='{message_type}', sender_type='{sender_type}'")
         
         # Salvar no banco de dados
         await save_message_to_database(message_data, conversation_data)
