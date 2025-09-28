@@ -64,9 +64,6 @@ app = FastAPI(
 # Montar aplicativo Socket.IO (usar caminho padrão /socket.io)
 app.mount("/socket.io", socketio_app)
 
-# Servir arquivos estáticos do frontend
-app.mount("/", StaticFiles(directory="frontend/tecnico", html=True), name="static")
-
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -164,11 +161,6 @@ class MessageData(BaseModel):
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
-
-@app.get("/ai-monitor.html", tags=["Frontend"])
-async def ai_monitor():
-    """Página de monitoramento da IA"""
-    return FileResponse("frontend/tecnico/ai-monitor.html")
 
 @app.get("/api/agent/status", tags=["AI Agent"])
 async def get_agent_status():
