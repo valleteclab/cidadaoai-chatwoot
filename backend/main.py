@@ -313,7 +313,12 @@ async def handle_message_created(data: Dict[str, Any]):
         
         # Verificar se é mensagem de usuário (não bot) e processar automaticamente com agente IA
         message_type = message_data.get("message_type")
-        sender_type = message_data.get("sender_type")  # Campo correto está aqui, não em sender.type
+        
+        # O sender_type está dentro de messages[0], vamos extraí-lo
+        sender_type = None
+        messages = message_data.get("messages", [])
+        if messages and len(messages) > 0:
+            sender_type = messages[0].get("sender_type")
         
         logger.info(f"🔍 DEBUG - Condições: message_type='{message_type}' == 'incoming': {message_type == 'incoming'}")
         logger.info(f"🔍 DEBUG - Condições: sender_type='{sender_type}' == 'Contact': {sender_type == 'Contact'}")
