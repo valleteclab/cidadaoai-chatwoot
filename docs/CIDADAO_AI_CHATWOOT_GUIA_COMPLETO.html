@@ -602,6 +602,21 @@ traefik.http.services.cidadaoai.loadbalancer.server.port=8000
 
         <h3>9.3 Scripts Úteis</h3>
 
+        <h4>Comandos para Acesso ao Servidor</h4>
+        <div class="code-block">
+# Acessar o servidor
+ssh root@212.85.0.166
+
+# Navegar para o diretório do projeto
+cd /root/projetos/cidadaoai-chatwoot
+
+# Ativar ambiente virtual (se necessário)
+source venv/bin/activate
+
+# Executar atualização do servidor
+./update-server.sh
+        </div>
+
         <h4>update-server.sh</h4>
         <div class="code-block">
 #!/bin/bash
@@ -629,6 +644,26 @@ docker stack deploy -c docker-compose.yml $STACK_NAME
 docker service ls --filter name=$SERVICE_NAME
 
 echo "🎉 Atualização concluída!"
+        </div>
+
+        <h4>Processo Completo de Deploy</h4>
+        <div class="code-block">
+# 1. Local - Commit e Push das mudanças
+git add .
+git commit -m "Descrição das mudanças"
+git push origin main
+
+# 2. Servidor - SSH e Deploy
+ssh root@212.85.0.166
+cd /root/projetos/cidadaoai-chatwoot
+git pull origin main
+./update-server.sh
+
+# 3. Verificar status do serviço
+docker service ls --filter name=cidadaoai
+
+# 4. Ver logs em tempo real
+docker service logs -f cidadaoai_cidadaoai_app
         </div>
 
         <h3>9.4 Monitoramento</h3>

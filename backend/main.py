@@ -1101,6 +1101,38 @@ async def debug_conversations():
     except Exception as e:
         return {"error": str(e), "url": url}
 
+@app.post("/api/agent/test", tags=["AI Agent"])
+async def test_agent(message_data: dict):
+    """Endpoint temporário para testar o agente IA"""
+    try:
+        message = message_data.get("message", "")
+        conversation_id = message_data.get("conversation_id", 1)
+        contact_info = message_data.get("contact_info", {})
+        
+        logger.info(f"🧪 Testando agente com mensagem: {message}")
+        
+        # Verificar se agente está disponível
+        if not ai_agent.is_available():
+            return {"status": "error", "message": "Agente não disponível"}
+        
+        # Processar com IA
+        ai_response = await ai_agent.process_message(
+            message=message,
+            conversation_id=conversation_id,
+            contact_info=contact_info
+        )
+        
+        return {
+            "status": "success",
+            "message": message,
+            "ai_response": ai_response,
+            "conversation_id": conversation_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Erro no teste do agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
