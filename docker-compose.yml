@@ -8,7 +8,9 @@ services:
       - .env
     environment:
       - CHATWOOT_URL=https://chat.sisgov.app.br
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - DATABASE_URL=postgresql://cidadaoai_user:Cid@d@0AI_2024_PG@pgvector:5432/cidadaoai
       - REDIS_URL=redis://chatwoot_chatwoot_redis:6379
     volumes:

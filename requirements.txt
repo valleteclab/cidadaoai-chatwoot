@@ -17,6 +17,8 @@ hiredis==2.2.3
 
 # AI/ML
 openai==1.6.1
+groq==0.4.1
+anthropic==0.7.8
 
 # Data processing
 pydantic==2.5.0

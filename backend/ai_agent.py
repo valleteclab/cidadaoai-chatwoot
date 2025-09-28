@@ -1,11 +1,11 @@
 """
-Agente OpenAI para atendimento automático ao cidadão
+Agente de IA para atendimento automático ao cidadão - Suporte múltiplos provedores
 """
 import os
 import logging
 from typing import Optional, Dict, Any
-from openai import OpenAI
 from datetime import datetime
+from .ai_providers import AIProviderFactory
 
 logger = logging.getLogger(__name__)
 
@@ -13,21 +13,31 @@ class CidadaoAIAgent:
     """Agente de IA especializado em atendimento ao cidadão"""
     
     def __init__(self):
-        self.client = None
+        self.provider = None
         self.system_prompt = self._get_system_prompt()
         self.conversation_memory = {}  # Para manter contexto das conversas
         
-        # Inicializar cliente OpenAI
-        api_key = os.getenv("OPENAI_API_KEY")
-        if api_key:
-            try:
-                self.client = OpenAI(api_key=api_key)
-                logger.info("✅ Cliente OpenAI inicializado com sucesso")
-            except Exception as e:
-                logger.error(f"❌ Erro ao inicializar OpenAI: {e}")
-                self.client = None
-        else:
-            logger.warning("⚠️ OPENAI_API_KEY não configurada - Agente desabilitado")
+        # Configurar provedor de IA
+        self._setup_ai_provider()
+    
+    def _setup_ai_provider(self):
+        """Configurar provedor de IA baseado nas variáveis de ambiente"""
+        # Prioridade: Groq > OpenAI > Anthropic
+        provider_configs = [
+            ("groq", os.getenv("GROQ_API_KEY")),
+            ("openai", os.getenv("OPENAI_API_KEY")),
+            ("anthropic", os.getenv("ANTHROPIC_API_KEY"))
+        ]
+        
+        for provider_name, api_key in provider_configs:
+            if api_key:
+                self.provider = AIProviderFactory.create_provider(provider_name, api_key)
+                if self.provider and self.provider.is_available():
+                    logger.info(f"✅ Provedor {provider_name} configurado e disponível")
+                    return
+        
+        logger.warning("⚠️ Nenhum provedor de IA configurado - Agente desabilitado")
+        self.provider = None
     
     def _get_system_prompt(self) -> str:
         """Prompt do sistema para o agente"""
@@ -69,8 +79,8 @@ class CidadaoAIAgent:
         Returns:
             Resposta gerada pelo agente ou None se erro
         """
-        if not self.client:
-            logger.warning("Cliente OpenAI não disponível")
+        if not self.provider:
+            logger.warning("Provedor de IA não disponível")
             return None
         
         try:
@@ -87,7 +97,7 @@ class CidadaoAIAgent:
                 "timestamp": datetime.now().isoformat()
             })
             
-            # Preparar mensagens para OpenAI
+            # Preparar mensagens para o provedor
             messages = [{"role": "system", "content": self.system_prompt}]
             
             # Adicionar histórico (últimas 5 mensagens para manter contexto)
@@ -97,20 +107,19 @@ class CidadaoAIAgent:
                     "content": msg["content"]
                 })
             
-            logger.info(f"Enviando mensagem para OpenAI: {message[:100]}...")
+            logger.info(f"Enviando mensagem para {self.provider.get_provider_name()}: {message[:100]}...")
             
-            # Chamar OpenAI
-            response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+            # Chamar provedor de IA
+            ai_response = await self.provider.generate_response(
                 messages=messages,
                 max_tokens=300,
                 temperature=0.7,
-                top_p=0.9,
-                frequency_penalty=0.1,
-                presence_penalty=0.1
+                top_p=0.9
             )
             
-            ai_response = response.choices[0].message.content.strip()
+            if not ai_response:
+                logger.error("Provedor não retornou resposta")
+                return self._get_fallback_response()
             
             # Adicionar resposta ao histórico
             conversation_history.append({
@@ -127,16 +136,20 @@ class CidadaoAIAgent:
             return ai_response
             
         except Exception as e:
-            logger.error(f"❌ Erro ao processar mensagem com OpenAI: {e}")
+            logger.error(f"❌ Erro ao processar mensagem com {self.provider.get_provider_name() if self.provider else 'IA'}: {e}")
             return self._get_fallback_response()
     
     def _get_fallback_response(self) -> str:
-        """Resposta de fallback quando OpenAI falha"""
+        """Resposta de fallback quando IA falha"""
         return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
     
     def is_available(self) -> bool:
         """Verificar se o agente está disponível"""
-        return self.client is not None
+        return self.provider is not None and self.provider.is_available()
+    
+    def get_provider_name(self) -> str:
+        """Obter nome do provedor atual"""
+        return self.provider.get_provider_name() if self.provider else "Nenhum"
     
     def get_conversation_context(self, conversation_id: int) -> list:
         """Obter contexto de uma conversa específica"""

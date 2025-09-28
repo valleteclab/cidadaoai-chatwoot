@@ -169,7 +169,10 @@ async def get_agent_status():
         return {
             "status": "success",
             "agent_available": ai_agent.is_available(),
+            "current_provider": ai_agent.get_provider_name(),
+            "groq_configured": bool(os.getenv("GROQ_API_KEY")),
             "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
             "conversation_memory_count": len(ai_agent.conversation_memory),
             "timestamp": datetime.now().isoformat()
         }
@@ -188,12 +191,15 @@ async def get_agent_debug():
         return {
             "status": "success",
             "agent_available": ai_agent.is_available(),
+            "groq_configured": bool(os.getenv("GROQ_API_KEY")),
             "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
             "conversation_memory": {
                 "total_conversations": len(ai_agent.conversation_memory),
                 "conversation_ids": list(ai_agent.conversation_memory.keys())
             },
             "environment": {
+                "groq_key_set": bool(os.getenv("GROQ_API_KEY")),
+                "groq_key_length": len(os.getenv("GROQ_API_KEY", "")) if os.getenv("GROQ_API_KEY") else 0,
                 "openai_key_set": bool(os.getenv("OPENAI_API_KEY")),
                 "openai_key_length": len(os.getenv("OPENAI_API_KEY", "")) if os.getenv("OPENAI_API_KEY") else 0
             },
