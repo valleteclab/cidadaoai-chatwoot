@@ -23,6 +23,8 @@ import logging
 from backend.media_handler import media_handler
 from backend.audio_transcriber import transcriber
 from backend.ai_agent import ai_agent
+from backend.chamados_service import chamados_service
+from backend.chamados_ai_service import chamados_ai_service
 
 # Configurar logging primeiro
 logging.basicConfig(level=logging.INFO)
@@ -112,6 +114,27 @@ else:
     logger.warning("OPENAI_API_KEY not configured - AI features disabled")
 
 redis_client = redis.from_url(REDIS_URL)
+
+# Inicializar serviço de chamados
+@app.on_event("startup")
+async def startup_event():
+    """Inicializar serviços na startup"""
+    try:
+        logger.info("🚀 Inicializando serviços...")
+        await chamados_service.init_db()
+        logger.info("✅ Serviço de chamados inicializado")
+    except Exception as e:
+        logger.error(f"❌ Erro ao inicializar serviços: {e}")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Fechar serviços no shutdown"""
+    try:
+        logger.info("🔄 Fechando serviços...")
+        await chamados_service.close()
+        logger.info("✅ Serviços fechados")
+    except Exception as e:
+        logger.error(f"❌ Erro ao fechar serviços: {e}")
 
 # Utilidades para Chatwoot
 def extract_chatwoot_payload(api_response: Any) -> List[Dict[str, Any]]:
@@ -247,6 +270,117 @@ async def add_ai_log(log_data: dict):
         ai_logs = ai_logs[-1000:]
     
     return {"status": "success"}
+
+# ========================================
+# ENDPOINTS DO SISTEMA DE CHAMADOS
+# ========================================
+
+@app.get("/api/chamados/status", tags=["Chamados"])
+async def get_chamados_status():
+    """Verificar status do sistema de chamados"""
+    try:
+        return {
+            "status": "success",
+            "chamados_ai_available": chamados_ai_service.is_available(),
+            "database_connected": chamados_service.pool is not None,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error checking chamados status: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@app.get("/api/chamados/metrics", tags=["Chamados"])
+async def get_chamados_metrics():
+    """Obter métricas do sistema de chamados"""
+    try:
+        metrics = await chamados_service.obter_metricas_dashboard(1)
+        return {
+            "status": "success",
+            "metrics": metrics,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting chamados metrics: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@app.post("/api/chamados/criar", tags=["Chamados"])
+async def criar_chamado(request: dict):
+    """Criar novo chamado"""
+    try:
+        from .models import CriarChamadoRequest
+        
+        chamado_request = CriarChamadoRequest(**request)
+        response = await chamados_service.criar_chamado(chamado_request)
+        
+        return {
+            "status": response.status,
+            "protocolo": response.protocolo,
+            "message": response.message,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error creating chamado: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@app.post("/api/chamados/consultar", tags=["Chamados"])
+async def consultar_chamado(request: dict):
+    """Consultar chamado por protocolo ou telefone"""
+    try:
+        from .models import ConsultarChamadoRequest
+        
+        consulta_request = ConsultarChamadoRequest(**request)
+        response = await chamados_service.consultar_chamado(consulta_request)
+        
+        return {
+            "status": response.status,
+            "chamado": response.chamado.dict() if response.chamado else None,
+            "categoria": response.categoria.dict() if response.categoria else None,
+            "time": response.time.dict() if response.time else None,
+            "message": response.message,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error consulting chamado: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@app.post("/api/chamados/cadastrar-cidadao", tags=["Chamados"])
+async def cadastrar_cidadao(request: dict):
+    """Cadastrar novo cidadão"""
+    try:
+        from .models import CadastrarCidadaoRequest
+        
+        cidadao_request = CadastrarCidadaoRequest(**request)
+        response = await chamados_service.cadastrar_cidadao(cidadao_request)
+        
+        return {
+            "status": response.status,
+            "cidadao": response.cidadao.dict() if response.cidadao else None,
+            "message": response.message,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error registering cidadao: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
 
 # Webhook endpoint para Chatwoot
 @app.post("/webhook/chatwoot", tags=["Webhooks"])
@@ -528,29 +662,46 @@ async def handle_conversation_typing_off(data: Dict[str, Any]):
         logger.error(f"Error handling conversation typing off: {str(e)}")
 
 async def process_with_ai(content: str, conversation_data: Dict[str, Any]) -> str:
-    """Processar mensagem com IA usando o agente especializado"""
+    """Processar mensagem com IA usando o sistema de chamados"""
     try:
         conversation_id = conversation_data.get("id")
         contact_info = conversation_data.get("meta", {}).get("sender", {})
         
-        logger.info(f"🤖 Agente processando mensagem da conversa {conversation_id}")
+        logger.info(f"🤖 Sistema de Chamados processando mensagem da conversa {conversation_id}")
         
-        # Usar o agente especializado
-        ai_response = await ai_agent.process_message(
-            message=content,
-            conversation_id=conversation_id,
-            contact_info=contact_info
-        )
-        
-        if ai_response:
-            logger.info(f"✅ Agente respondeu: {ai_response[:100]}...")
-            return ai_response
+        # Verificar se o serviço de chamados está disponível
+        if chamados_ai_service.is_available():
+            # Usar o serviço especializado de chamados
+            ai_response = await chamados_ai_service.process_citizen_message(
+                message=content,
+                conversation_id=conversation_id,
+                contact_info=contact_info
+            )
+            
+            if ai_response:
+                logger.info(f"✅ Sistema de Chamados respondeu: {ai_response[:100]}...")
+                return ai_response
+            else:
+                logger.warning("Sistema de Chamados não conseguiu gerar resposta")
+                return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
         else:
-            logger.warning("Agente não conseguiu gerar resposta")
-            return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
+            # Fallback para o agente antigo
+            logger.info("🔄 Usando agente IA antigo como fallback")
+            ai_response = await ai_agent.process_message(
+                message=content,
+                conversation_id=conversation_id,
+                contact_info=contact_info
+            )
+            
+            if ai_response:
+                logger.info(f"✅ Agente IA antigo respondeu: {ai_response[:100]}...")
+                return ai_response
+            else:
+                logger.warning("Nenhum agente conseguiu gerar resposta")
+                return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
         
     except Exception as e:
-        logger.error(f"❌ Erro ao processar com agente IA: {str(e)}")
+        logger.error(f"❌ Erro ao processar com IA: {str(e)}")
         return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
 
 async def send_message_to_chatwoot(conversation_id: int, content: str, account_id: int, is_ai_agent: bool = False):
