@@ -22,6 +22,7 @@ from openai import OpenAI
 import logging
 from backend.media_handler import media_handler
 from backend.audio_transcriber import transcriber
+from backend.ai_agent import ai_agent
 
 # Configurar logging primeiro
 logging.basicConfig(level=logging.INFO)
@@ -161,6 +162,24 @@ async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
+@app.get("/api/agent/status", tags=["AI Agent"])
+async def get_agent_status():
+    """Verificar status do agente IA"""
+    try:
+        return {
+            "status": "success",
+            "agent_available": ai_agent.is_available(),
+            "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error checking agent status: {str(e)}")
+        return {
+            "status": "error",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
 # Webhook endpoint para Chatwoot
 @app.post("/webhook/chatwoot", tags=["Webhooks"])
 async def chatwoot_webhook(request: Request):
@@ -286,22 +305,30 @@ async def handle_message_created(data: Dict[str, Any]):
         conversation_data = message_data.get("conversation", {})
         logger.info(f"Processing message: {message_data.get('id')} from conversation: {conversation_data.get('id')}")
         
-        # Verificar se é mensagem de usuário (não bot)
+        # Verificar se é mensagem de usuário (não bot) e processar automaticamente com agente IA
         if message_data.get("message_type") == "incoming" and message_data.get("sender", {}).get("type") == "contact":
             content = message_data.get("content", "")
             
-            logger.info(f"Processing incoming message: {content}")
+            logger.info(f"📨 Nova mensagem recebida: {content[:100]}...")
             
-            # Processar com IA
-            ai_response = await process_with_ai(content, conversation_data)
-            
-            # Enviar resposta para Chatwoot
-            if ai_response:
-                await send_message_to_chatwoot(
-                    conversation_data.get("id"),
-                    ai_response,
-                    message_data.get("account", {}).get("id")
-                )
+            # Verificar se agente está disponível
+            if ai_agent.is_available():
+                logger.info("🤖 Agente IA disponível - processando mensagem automaticamente")
+                
+                # Processar com IA
+                ai_response = await process_with_ai(content, conversation_data)
+                
+                # Enviar resposta do agente para Chatwoot
+                if ai_response:
+                    await send_message_to_chatwoot(
+                        conversation_data.get("id"),
+                        ai_response,
+                        message_data.get("account", {}).get("id"),
+                        is_ai_agent=True
+                    )
+                    logger.info("✅ Resposta do agente enviada automaticamente")
+            else:
+                logger.warning("⚠️ Agente IA não disponível - mensagem não será respondida automaticamente")
         
         # Salvar no banco de dados
         await save_message_to_database(message_data, conversation_data)
@@ -401,37 +428,32 @@ async def handle_conversation_typing_off(data: Dict[str, Any]):
         logger.error(f"Error handling conversation typing off: {str(e)}")
 
 async def process_with_ai(content: str, conversation_data: Dict[str, Any]) -> str:
-    """Processar mensagem com IA"""
+    """Processar mensagem com IA usando o agente especializado"""
     try:
-        if not openai_client:
-            logger.warning("OpenAI client not available")
-            return "Olá! Recebi sua mensagem. Como posso ajudá-lo?"
+        conversation_id = conversation_data.get("id")
+        contact_info = conversation_data.get("meta", {}).get("sender", {})
         
-        # Construir prompt para IA
-        system_prompt = """
-        Você é um assistente virtual especializado em atendimento ao cidadão. 
-        Seja prestativo, educado e forneça informações precisas sobre serviços públicos.
-        Se não souber a resposta, oriente o cidadão a entrar em contato com o órgão responsável.
-        """
+        logger.info(f"🤖 Agente processando mensagem da conversa {conversation_id}")
         
-        # Fazer chamada para OpenAI
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": content}
-            ],
-            max_tokens=500,
-            temperature=0.7
+        # Usar o agente especializado
+        ai_response = await ai_agent.process_message(
+            message=content,
+            conversation_id=conversation_id,
+            contact_info=contact_info
         )
         
-        return response.choices[0].message.content
+        if ai_response:
+            logger.info(f"✅ Agente respondeu: {ai_response[:100]}...")
+            return ai_response
+        else:
+            logger.warning("Agente não conseguiu gerar resposta")
+            return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
         
     except Exception as e:
-        logger.error(f"Error processing with AI: {str(e)}")
-        return "Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente."
+        logger.error(f"❌ Erro ao processar com agente IA: {str(e)}")
+        return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
 
-async def send_message_to_chatwoot(conversation_id: int, content: str, account_id: int):
+async def send_message_to_chatwoot(conversation_id: int, content: str, account_id: int, is_ai_agent: bool = False):
     """Enviar mensagem para Chatwoot"""
     try:
         if not CHATWOOT_API_TOKEN or not CHATWOOT_URL:
@@ -446,6 +468,10 @@ async def send_message_to_chatwoot(conversation_id: int, content: str, account_i
             "Accept": "application/json"
         }
         
+        # Adicionar prefixo para identificar mensagens do agente
+        if is_ai_agent:
+            content = f"🤖 {content}"
+        
         payload = {
             "content": content,
             "message_type": "outgoing"
@@ -455,10 +481,11 @@ async def send_message_to_chatwoot(conversation_id: int, content: str, account_i
             response = await client.post(url, json=payload, headers=headers)
             response.raise_for_status()
             
-        logger.info(f"Message sent to Chatwoot conversation {conversation_id}")
+        agent_type = "Agente IA" if is_ai_agent else "Técnico"
+        logger.info(f"✅ Mensagem enviada para Chatwoot conversa {conversation_id} ({agent_type})")
         
     except Exception as e:
-        logger.error(f"Error sending message to Chatwoot: {str(e)}")
+        logger.error(f"❌ Erro ao enviar mensagem para Chatwoot: {str(e)}")
 
 async def save_message_to_database(message_data: Dict[str, Any], conversation_data: Dict[str, Any]):
     """Salvar mensagem no banco de dados"""

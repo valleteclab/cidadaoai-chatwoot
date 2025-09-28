@@ -39,6 +39,33 @@ async function testAPIConnection() {
     }
 }
 
+// Verificar status do agente IA
+async function checkAgentStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/agent/status`);
+        const data = await response.json();
+        
+        const agentStatusElement = document.getElementById('agentStatus');
+        if (data.status === 'success' && data.agent_available) {
+            if (agentStatusElement) {
+                agentStatusElement.classList.remove('hidden');
+            }
+            console.log('🤖 Agente IA está ativo');
+        } else {
+            if (agentStatusElement) {
+                agentStatusElement.classList.add('hidden');
+            }
+            console.log('⚠️ Agente IA não está disponível');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao verificar status do agente:', error);
+        const agentStatusElement = document.getElementById('agentStatus');
+        if (agentStatusElement) {
+            agentStatusElement.classList.add('hidden');
+        }
+    }
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
     initializeApp();
@@ -48,6 +75,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!isConnected) {
         console.warn('API não está conectada, usando dados mockados');
     }
+    
+    // Verificar status do agente IA
+    await checkAgentStatus();
     
     setupEventListeners();
     loadConversations();
@@ -634,6 +664,7 @@ function renderMessages(messages) {
 function createMessageElement(message) {
     const div = document.createElement('div');
     const isUser = message.sender === 'user';
+    const isAIAgent = message.content && message.content.startsWith('🤖');
     
     div.className = `mb-4 flex ${isUser ? 'justify-end' : 'justify-start'}`;
     
@@ -642,10 +673,16 @@ function createMessageElement(message) {
         minute: '2-digit' 
     });
     
+    // Remover emoji do agente do conteúdo para exibição
+    let displayContent = message.content || '';
+    if (isAIAgent) {
+        displayContent = displayContent.replace(/^🤖\s*/, '');
+    }
+    
     // Verificar se tem áudio
     let audioHtml = '';
     let imageHtml = '';
-    let messageContent = message.content || '';
+    let messageContent = displayContent;
     
     // Verificar áudio em attachments ou URL direta
     const hasAudio = message.audio_url || (message.attachments && message.attachments.some(a => a.file_type === 'audio'));
@@ -730,12 +767,29 @@ function createMessageElement(message) {
         }
     }
     
+    // Definir estilo baseado no tipo de mensagem
+    let bubbleClass, textClass, timeClass;
+    if (isUser) {
+        bubbleClass = 'bg-blue-600 text-white';
+        textClass = 'text-blue-100';
+        timeClass = 'text-blue-100';
+    } else if (isAIAgent) {
+        bubbleClass = 'bg-purple-100 text-purple-800 border border-purple-200';
+        textClass = 'text-purple-800';
+        timeClass = 'text-purple-600';
+    } else {
+        bubbleClass = 'bg-white border border-gray-200';
+        textClass = 'text-gray-500';
+        timeClass = 'text-gray-500';
+    }
+    
     div.innerHTML = `
-        <div class="message-bubble ${isUser ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200'} rounded-lg p-3 shadow-sm">
+        <div class="message-bubble ${bubbleClass} rounded-lg p-3 shadow-sm">
+            ${isAIAgent ? '<div class="flex items-center mb-1"><span class="text-xs font-semibold text-purple-600">🤖 Agente IA</span></div>' : ''}
             <p class="text-sm">${messageContent}</p>
             ${audioHtml}
             ${imageHtml}
-            <div class="text-xs mt-1 ${isUser ? 'text-blue-100' : 'text-gray-500'}">
+            <div class="text-xs mt-1 ${timeClass}">
                 ${time}
                 ${isUser ? `<i class="fas fa-check ml-1"></i>` : ''}
             </div>
