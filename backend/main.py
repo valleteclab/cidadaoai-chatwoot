@@ -307,18 +307,18 @@ async def handle_message_created(data: Dict[str, Any]):
         
         # DEBUG: Log detalhado dos dados da mensagem
         logger.info(f"🔍 DEBUG - message_type: {message_data.get('message_type')}")
+        logger.info(f"🔍 DEBUG - sender_type: {message_data.get('sender_type')}")
         logger.info(f"🔍 DEBUG - sender: {message_data.get('sender', {})}")
-        logger.info(f"🔍 DEBUG - sender.type: {message_data.get('sender', {}).get('type')}")
         logger.info(f"🔍 DEBUG - content: {message_data.get('content', '')[:100]}")
         
         # Verificar se é mensagem de usuário (não bot) e processar automaticamente com agente IA
         message_type = message_data.get("message_type")
-        sender_type = message_data.get("sender", {}).get("type")
+        sender_type = message_data.get("sender_type")  # Campo correto está aqui, não em sender.type
         
         logger.info(f"🔍 DEBUG - Condições: message_type='{message_type}' == 'incoming': {message_type == 'incoming'}")
-        logger.info(f"🔍 DEBUG - Condições: sender_type='{sender_type}' == 'contact': {sender_type == 'contact'}")
+        logger.info(f"🔍 DEBUG - Condições: sender_type='{sender_type}' == 'Contact': {sender_type == 'Contact'}")
         
-        if message_type == "incoming" and sender_type == "contact":
+        if message_type == "incoming" and sender_type == "Contact":
             content = message_data.get("content", "")
             
             logger.info(f"📨 Nova mensagem recebida: {content[:100]}...")
