@@ -2,9 +2,10 @@
 Modelos de dados para o Cidadão.AI Chatwoot
 """
 from datetime import datetime
-from typing import Optional, List, Dict, Any
-from pydantic import BaseModel
+from typing import Optional, List, Dict, Any, Union
+from pydantic import BaseModel, field_validator
 from decimal import Decimal
+import json
 
 
 class ChatwootAttachment(BaseModel):
@@ -59,6 +60,17 @@ class Prefeitura(BaseModel):
     active: bool = True
     created_at: Optional[datetime] = None
     
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
+    
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()
@@ -79,6 +91,17 @@ class Time(BaseModel):
     config: Dict[str, Any] = {}
     active: bool = True
     created_at: Optional[datetime] = None
+    
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 class Agente(BaseModel):
@@ -94,6 +117,17 @@ class Agente(BaseModel):
     config: Dict[str, Any] = {}
     active: bool = True
     created_at: Optional[datetime] = None
+    
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 class AgenteTime(BaseModel):
@@ -126,6 +160,17 @@ class Cidadao(BaseModel):
     active: bool = True
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 class CategoriaChamado(BaseModel):
@@ -183,6 +228,17 @@ class Chamado(BaseModel):
     
     # Configurações
     config: Dict[str, Any] = {}
+    
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 class InteracaoChamado(BaseModel):
@@ -221,6 +277,17 @@ class ConfigIA(BaseModel):
     config: Dict[str, Any] = {}
     active: bool = True
     created_at: Optional[datetime] = None
+    
+    @field_validator('config', mode='before')
+    @classmethod
+    def parse_config(cls, v):
+        """Converte string JSON para dict"""
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return {}
+        return v
 
 
 # ========================================
