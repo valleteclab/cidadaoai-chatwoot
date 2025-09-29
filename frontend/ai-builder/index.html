@@ -49,47 +49,47 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Agente</label>
                                 <input type="text" x-model="agentConfig.name" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                       placeholder="Ex: Agente de Infraestrutura">
-                            </div>
-                            
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: Agente de Infraestrutura">
+                        </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Provedor de IA</label>
-                                <select x-model="agentConfig.provider" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="groq">Groq (Llama 3.1)</option>
-                                    <option value="openai">OpenAI (GPT-4)</option>
-                                    <option value="anthropic">Anthropic (Claude)</option>
-                                </select>
-                            </div>
-                            
+                            <select x-model="agentConfig.provider" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="groq">Groq (Llama 3.1)</option>
+                                <option value="openai">OpenAI (GPT-4)</option>
+                                <option value="anthropic">Anthropic (Claude)</option>
+                            </select>
+                        </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                                <select x-model="agentConfig.category" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="infraestrutura">Infraestrutura</option>
-                                    <option value="saude">Saúde</option>
-                                    <option value="educacao">Educação</option>
+                            <select x-model="agentConfig.category" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="infraestrutura">Infraestrutura</option>
+                                <option value="saude">Saúde</option>
+                                <option value="educacao">Educação</option>
                                     <option value="assistencia_social">Assistência Social</option>
                                     <option value="vendas">Vendas</option>
-                                </select>
-                            </div>
-                            
+                            </select>
+                        </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">SLA (horas)</label>
                                 <input type="number" x-model="agentConfig.sla" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            
+                        </div>
+
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
-                                <select x-model="agentConfig.priority" 
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="baixa">Baixa</option>
-                                    <option value="media">Média</option>
-                                    <option value="alta">Alta</option>
-                                    <option value="critica">Crítica</option>
-                                </select>
+                            <select x-model="agentConfig.priority" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Crítica</option>
+                            </select>
                             </div>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                 <!-- Main Content Area -->
                 <div class="lg:col-span-2">
                     <div class="bg-white shadow rounded-lg">
-                        <!-- Tabs -->
+                    <!-- Tabs -->
                         <div class="border-b border-gray-200">
                             <nav class="-mb-px flex">
                                 <button @click="activeTab = 'prompt'" 
@@ -165,7 +165,7 @@
                                                     class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200">
                                                 Educação
                                             </button>
-                                        </div>
+                            </div>
                                     </div>
                                     <textarea 
                                         x-model="agentConfig.systemPrompt"
@@ -174,10 +174,10 @@
                                         placeholder="Você é um assistente especializado em...">
                                     </textarea>
                                 </div>
-
+                                
                                 <!-- Configurações Avançadas -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
+                                <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">
                                             Temperatura: <span x-text="agentConfig.temperature"></span>
                                         </label>
@@ -189,8 +189,8 @@
                                         <input type="number" x-model="agentConfig.maxTokens" 
                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
-                                </div>
-
+                                    </div>
+                                    
                                 <!-- Botões de Ação Principais -->
                                 <div class="flex justify-center space-x-4 mb-6">
                                     <button @click="saveAgent()" 
@@ -211,7 +211,7 @@
                                         <i class="fas fa-rocket"></i>
                                         <span x-text="deploying ? 'Deploying...' : 'Deploy/Ativar'"></span>
                                     </button>
-                                </div>
+                                        </div>
 
                                 <!-- Status do Agente -->
                                 <div x-show="currentAgentId" class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -229,65 +229,182 @@
                                 <i class="fas fa-sitemap text-6xl text-gray-300 mb-4"></i>
                                 <h3 class="text-lg font-medium text-gray-900 mb-2">Editor de Fluxo</h3>
                                 <p class="text-gray-500">Em desenvolvimento - Visualização do fluxo de conversa</p>
-                            </div>
+                                            </div>
 
                             <!-- Tab: Teste -->
                             <div x-show="activeTab === 'test'">
-                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <!-- Simulador de Conversa -->
-                                    <div>
-                                        <h4 class="text-lg font-medium text-gray-900 mb-4">
-                                            <i class="fas fa-comments mr-2"></i>Simulador de Conversa
+                                <!-- Controles de Teste -->
+                                <div class="mb-6">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h4 class="text-lg font-medium text-gray-900">
+                                            <i class="fas fa-vial mr-2"></i>Centro de Testes do Agente
                                         </h4>
-                                        
-                                        <!-- Métricas -->
-                                        <div class="grid grid-cols-3 gap-4 mb-4">
-                                            <div class="bg-blue-100 p-3 rounded-lg text-center">
-                                                <div class="text-sm text-blue-600">Tempo</div>
-                                                <div class="font-bold text-blue-900" x-text="testMetrics.responseTime || 'N/A'"></div>
-                                            </div>
-                                            <div class="bg-green-100 p-3 rounded-lg text-center">
-                                                <div class="text-sm text-green-600">Tokens</div>
-                                                <div class="font-bold text-green-900" x-text="testMetrics.tokensUsed || 'N/A'"></div>
-                                            </div>
-                                            <div class="bg-purple-100 p-3 rounded-lg text-center">
-                                                <div class="text-sm text-purple-600">Custo</div>
-                                                <div class="font-bold text-purple-900" x-text="testMetrics.estimatedCost || 'N/A'"></div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Input de teste -->
-                                        <div class="flex space-x-2 mb-4">
-                                            <input type="text" x-model="testMessage"
-                                                   placeholder="Digite sua mensagem..."
-                                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                            <button @click="sendTestMessage()" 
-                                                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                                                    :disabled="sendingMessage">
-                                                <i class="fas fa-paper-plane"></i>
+                                        <div class="flex space-x-2">
+                                            <button @click="clearTestConversation()" 
+                                                    class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
+                                                <i class="fas fa-trash mr-1"></i>Limpar
+                                            </button>
+                                            <button @click="exportTestResults()" 
+                                                    class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded hover:bg-green-200">
+                                                <i class="fas fa-download mr-1"></i>Exportar
                                             </button>
                                         </div>
-                                    </div>
-
-                                    <!-- Conversa de Teste -->
-                                    <div>
-                                        <h4 class="text-lg font-medium text-gray-900 mb-4">
-                                            <i class="fas fa-history mr-2"></i>Conversa de Teste
-                                        </h4>
+                                        </div>
                                         
-                                        <div class="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto">
+                                    <!-- Métricas Avançadas -->
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-lg text-white">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="text-sm opacity-90">Tempo Médio</div>
+                                                    <div class="text-2xl font-bold" x-text="testMetrics.responseTime || '0.00s'"></div>
+                                                </div>
+                                                <i class="fas fa-clock text-2xl opacity-75"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-lg text-white">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="text-sm opacity-90">Tokens</div>
+                                                    <div class="text-2xl font-bold" x-text="testMetrics.tokensUsed || '0'"></div>
+                                                </div>
+                                                <i class="fas fa-calculator text-2xl opacity-75"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4 rounded-lg text-white">
+                                            <div class="flex items-center justify-between">
+                                <div>
+                                                    <div class="text-sm opacity-90">Custo Total</div>
+                                                    <div class="text-2xl font-bold" x-text="testMetrics.estimatedCost || '$0.00'"></div>
+                                                </div>
+                                                <i class="fas fa-dollar-sign text-2xl opacity-75"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-lg text-white">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <div class="text-sm opacity-90">Interações</div>
+                                                    <div class="text-2xl font-bold" x-text="Math.floor(testConversation.length / 2)"></div>
+                                                </div>
+                                                <i class="fas fa-comments text-2xl opacity-75"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <!-- Painel de Controle -->
+                                    <div class="lg:col-span-1">
+                                        <div class="bg-white border rounded-lg p-4 mb-4">
+                                            <h5 class="font-medium text-gray-900 mb-3">
+                                                <i class="fas fa-cog mr-2"></i>Configurações de Teste
+                                            </h5>
+                                            
+                                            <!-- Templates de Teste -->
+                                            <div class="space-y-2 mb-4">
+                                                <label class="block text-sm font-medium text-gray-700">Templates Rápidos:</label>
+                                                <div class="grid grid-cols-1 gap-2">
+                                                    <button @click="loadTestTemplate('infraestrutura')" 
+                                                            class="text-left p-2 bg-blue-50 hover:bg-blue-100 rounded text-sm">
+                                                        🏗️ Infraestrutura
+                                                    </button>
+                                                    <button @click="loadTestTemplate('saude')" 
+                                                            class="text-left p-2 bg-green-50 hover:bg-green-100 rounded text-sm">
+                                                        🏥 Saúde
+                                                    </button>
+                                                    <button @click="loadTestTemplate('educacao')" 
+                                                            class="text-left p-2 bg-purple-50 hover:bg-purple-100 rounded text-sm">
+                                                        🎓 Educação
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                            <!-- Input de teste -->
                                             <div class="space-y-3">
-                                                <template x-for="(message, index) in testConversation" :key="index">
-                                                    <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
-                                                        <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" 
-                                                             class="p-3 rounded-lg max-w-xs">
-                                                            <span x-text="message.message"></span>
+                                                <label class="block text-sm font-medium text-gray-700">Mensagem de Teste:</label>
+                                                <textarea x-model="testMessage" rows="3"
+                                                          placeholder="Digite sua mensagem de teste aqui..."
+                                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                                                
+                                                <button @click="sendTestMessage()" 
+                                                        class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center space-x-2"
+                                                        :disabled="sendingMessage || !testMessage.trim()">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                    <span x-text="sendingMessage ? 'Enviando...' : 'Enviar Teste'"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Estatísticas Detalhadas -->
+                                        <div class="bg-white border rounded-lg p-4">
+                                            <h5 class="font-medium text-gray-900 mb-3">
+                                                <i class="fas fa-chart-bar mr-2"></i>Estatísticas
+                                            </h5>
+                                            <div class="space-y-2 text-sm">
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">Total de Mensagens:</span>
+                                                    <span class="font-medium" x-text="testConversation.length"></span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">Taxa de Sucesso:</span>
+                                                    <span class="font-medium text-green-600">100%</span>
+                                                </div>
+                                                <div class="flex justify-between">
+                                                    <span class="text-gray-600">Último Teste:</span>
+                                                    <span class="font-medium" x-text="lastTestTime || 'Nunca'"></span>
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                        
+                                    <!-- Conversa de Teste -->
+                                    <div class="lg:col-span-2">
+                                        <div class="bg-white border rounded-lg">
+                                            <div class="flex justify-between items-center p-4 border-b">
+                                                <h5 class="font-medium text-gray-900">
+                                                    <i class="fas fa-comments mr-2"></i>Conversa de Teste
+                                                </h5>
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                                    <span class="text-sm text-gray-600">Online</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="p-4 h-96 overflow-y-auto bg-gray-50" id="conversationContainer">
+                                                <div class="space-y-4">
+                                                    <template x-for="(message, index) in testConversation" :key="index">
+                                                        <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                                            <div class="flex items-start space-x-2 max-w-xs lg:max-w-md">
+                                                                <div x-show="message.role === 'assistant'" 
+                                                                     class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                                                    <i class="fas fa-robot text-white text-sm"></i>
+                                                                </div>
+                                                                <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border'" 
+                                                                     class="px-4 py-2 rounded-lg shadow-sm">
+                                                                    <div class="text-sm" x-text="message.message"></div>
+                                                                    <div class="text-xs opacity-75 mt-1" 
+                                                                         x-text="new Date().toLocaleTimeString('pt-BR')"></div>
+                                                                </div>
+                                                                <div x-show="message.role === 'user'" 
+                                                                     class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                                                    <i class="fas fa-user text-white text-sm"></i>
+                                                                </div>
+                                            </div>
+                                        </div>
+                                                    </template>
+                                                    
+                                                    <!-- Estado vazio -->
+                                                    <div x-show="testConversation.length === 0" class="text-center py-12">
+                                                        <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                            <i class="fas fa-comments text-gray-400 text-2xl"></i>
                                                         </div>
+                                                        <h6 class="text-lg font-medium text-gray-900 mb-2">Nenhuma conversa ainda</h6>
+                                                        <p class="text-gray-500 mb-4">Envie uma mensagem de teste para começar</p>
+                                                        <button @click="loadTestTemplate('infraestrutura')" 
+                                                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                                            <i class="fas fa-play mr-2"></i>Teste Rápido
+                                                        </button>
                                                     </div>
-                                                </template>
-                                                <div x-show="testConversation.length === 0" class="text-center text-gray-500 py-8">
-                                                    <i class="fas fa-comments text-2xl mb-2"></i>
-                                                    <p>Inicie uma conversa de teste</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -349,6 +466,29 @@ SEMPRE:
                 testMessage: 'Olá, preciso de ajuda com um buraco na rua',
                 testMetrics: {},
                 testConversation: [],
+                lastTestTime: null,
+                
+                // Templates de teste
+                testTemplates: {
+                    infraestrutura: [
+                        "Tem um buraco na rua da minha casa",
+                        "A iluminação pública está queimada",
+                        "Tem vazamento de água na rua",
+                        "A calçada está quebrada"
+                    ],
+                    saude: [
+                        "Preciso agendar uma consulta médica",
+                        "O posto de saúde está fechado",
+                        "Não tem médico no posto hoje",
+                        "Preciso de uma receita médica"
+                    ],
+                    educacao: [
+                        "Como faço para matricular meu filho na escola?",
+                        "A merenda escolar está atrasada",
+                        "O transporte escolar não passou",
+                        "A professora não veio hoje"
+                    ]
+                },
                 
                 // Inicialização
                 init() {
@@ -356,6 +496,15 @@ SEMPRE:
                     if (!Array.isArray(this.testConversation)) {
                         this.testConversation = [];
                     }
+                    // Auto-scroll para última mensagem
+                    this.$watch('testConversation', () => {
+                        this.$nextTick(() => {
+                            const container = document.getElementById('conversationContainer');
+                            if (container) {
+                                container.scrollTop = container.scrollHeight;
+                            }
+                        });
+                    });
                 },
                 
                 // Templates disponíveis
@@ -560,6 +709,9 @@ SEMPRE:
                                 estimatedCost: '$' + result.metrics.estimated_cost.toFixed(4)
                             };
                             
+                            // Atualizar tempo do último teste
+                            this.lastTestTime = new Date().toLocaleTimeString('pt-BR');
+                            
                             // Limpar input
                             this.testMessage = '';
                         } else {
@@ -571,6 +723,49 @@ SEMPRE:
                     } finally {
                         this.sendingMessage = false;
                     }
+                },
+                
+                loadTestTemplate(category) {
+                    const templates = this.testTemplates[category];
+                    if (templates && templates.length > 0) {
+                        const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+                        this.testMessage = randomTemplate;
+                    }
+                },
+                
+                clearTestConversation() {
+                    this.testConversation = [];
+                    this.testMetrics = {};
+                    this.lastTestTime = null;
+                },
+                
+                exportTestResults() {
+                    if (this.testConversation.length === 0) {
+                        alert('❌ Nenhuma conversa para exportar');
+                        return;
+                    }
+                    
+                    const exportData = {
+                        timestamp: new Date().toISOString(),
+                        agentConfig: this.agentConfig,
+                        conversation: this.testConversation,
+                        metrics: this.testMetrics,
+                        summary: {
+                            totalMessages: this.testConversation.length,
+                            userMessages: this.testConversation.filter(m => m.role === 'user').length,
+                            assistantMessages: this.testConversation.filter(m => m.role === 'assistant').length
+                        }
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `test-results-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
                 },
                 
                 async deployAgent() {
