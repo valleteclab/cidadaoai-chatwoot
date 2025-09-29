@@ -11,8 +11,9 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - DATABASE_URL=postgresql://cidadaoai_user:Cid@d@0AI_2024_PG@pgvector:5432/cidadaoai
+      - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=redis://chatwoot_chatwoot_redis:6379
+      - AI_PROVIDER=${AI_PROVIDER}
     volumes:
       - cidadaoai_media:/app/media
     deploy:
