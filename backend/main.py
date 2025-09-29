@@ -1391,6 +1391,78 @@ async def admin_panel():
     except FileNotFoundError:
         return {"error": "Arquivo admin não encontrado"}
 
+@app.get("/ai-builder", tags=["Frontend"])
+async def ai_builder_panel():
+    """Construtor de agentes IA"""
+    try:
+        with open("frontend/ai-builder/index.html", "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+    except FileNotFoundError:
+        return {"error": "Arquivo ai-builder não encontrado"}
+
+# ===== ENDPOINTS DO CONSTRUTOR DE IA =====
+
+@app.get("/api/ai-builder/templates", tags=["AI Builder"])
+async def get_ai_templates():
+    """Obter templates de agentes IA"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        templates = await ai_builder_service.get_templates()
+        return {
+            "status": "success",
+            "templates": templates
+        }
+    except Exception as e:
+        logger.error(f"Erro ao obter templates: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents", tags=["AI Builder"])
+async def create_ai_agent(agent_data: dict):
+    """Criar novo agente IA"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.create_agent_config(agent_data)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao criar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/ai-builder/agents", tags=["AI Builder"])
+async def list_ai_agents():
+    """Listar agentes IA criados"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.list_agent_configs()
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao listar agentes: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.put("/api/ai-builder/agents/{agent_id}", tags=["AI Builder"])
+async def update_ai_agent(agent_id: int, agent_data: dict):
+    """Atualizar agente IA"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.update_agent_config(agent_id, agent_data)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao atualizar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/test", tags=["AI Builder"])
+async def test_ai_agent(test_data: dict):
+    """Testar configuração de agente IA"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        config_data = test_data.get("config", {})
+        test_message = test_data.get("message", "Olá, como você pode me ajudar?")
+        result = await ai_builder_service.test_agent_config(config_data, test_message)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao testar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/agent/test", tags=["AI Agent"])
 async def test_agent(message_data: dict):
     """Endpoint temporário para testar o agente IA"""

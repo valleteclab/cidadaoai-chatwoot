@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cidadão.AI - Construtor de Agentes IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot text-2xl text-blue-600 mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-800">Cidadão.AI - Construtor de Agentes</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Salvar
+                        </button>
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                            <i class="fas fa-play mr-2"></i>Testar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Sidebar - Configurações -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white shadow rounded-lg p-6 mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">
+                            <i class="fas fa-cog mr-2"></i>Configurações do Agente
+                        </h3>
+                        
+                        <!-- Nome do Agente -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Agente</label>
+                            <input type="text" 
+                                   x-model="agentConfig.name"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: Agente de Infraestrutura">
+                        </div>
+
+                        <!-- Provedor de IA -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Provedor de IA</label>
+                            <select x-model="agentConfig.provider" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="groq">Groq (Llama 3.1)</option>
+                                <option value="openai">OpenAI (GPT-4)</option>
+                                <option value="anthropic">Anthropic (Claude)</option>
+                            </select>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                            <select x-model="agentConfig.category" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="infraestrutura">Infraestrutura</option>
+                                <option value="saude">Saúde</option>
+                                <option value="educacao">Educação</option>
+                                <option value="assistencia">Assistência Social</option>
+                                <option value="limpeza">Limpeza Urbana</option>
+                            </select>
+                        </div>
+
+                        <!-- SLA -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">SLA (horas)</label>
+                            <input type="number" 
+                                   x-model="agentConfig.sla"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="24">
+                        </div>
+
+                        <!-- Prioridade -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                            <select x-model="agentConfig.priority" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Crítica</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Templates -->
+                    <div class="bg-white shadow rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">
+                            <i class="fas fa-file-alt mr-2"></i>Templates de Resposta
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <button @click="addTemplate('boas_vindas')" 
+                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
+                                <i class="fas fa-hand-wave mr-2 text-green-600"></i>Boas-vindas
+                            </button>
+                            <button @click="addTemplate('coleta_dados')" 
+                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
+                                <i class="fas fa-user mr-2 text-blue-600"></i>Coleta de Dados
+                            </button>
+                            <button @click="addTemplate('confirmacao')" 
+                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
+                                <i class="fas fa-check mr-2 text-green-600"></i>Confirmação
+                            </button>
+                            <button @click="addTemplate('protocolo')" 
+                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
+                                <i class="fas fa-ticket-alt mr-2 text-purple-600"></i>Geração de Protocolo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Area - Editor -->
+                <div class="lg:col-span-2">
+                    <!-- Tabs -->
+                    <div class="bg-white shadow rounded-lg" x-data="{ activeTab: 'prompt' }">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8 px-6">
+                                <button @click="activeTab = 'prompt'" 
+                                        :class="activeTab === 'prompt' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    <i class="fas fa-edit mr-2"></i>Prompt Principal
+                                </button>
+                                <button @click="activeTab = 'flow'" 
+                                        :class="activeTab === 'flow' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    <i class="fas fa-project-diagram mr-2"></i>Fluxo
+                                </button>
+                                <button @click="activeTab = 'test'" 
+                                        :class="activeTab === 'flow' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    <i class="fas fa-flask mr-2"></i>Teste
+                                </button>
+                            </nav>
+                        </div>
+
+                        <!-- Prompt Editor -->
+                        <div x-show="activeTab === 'prompt'" class="p-6">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Prompt do Sistema</label>
+                                <textarea x-model="agentConfig.systemPrompt"
+                                          rows="15"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                                          placeholder="Você é um assistente especializado em..."></textarea>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Temperatura</label>
+                                    <input type="range" 
+                                           x-model="agentConfig.temperature"
+                                           min="0" max="1" step="0.1"
+                                           class="w-full">
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        <span x-text="agentConfig.temperature"></span> 
+                                        (<span x-text="agentConfig.temperature < 0.3 ? 'Criativo' : agentConfig.temperature > 0.7 ? 'Determinístico' : 'Balanceado'"></span>)
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+                                    <input type="number" 
+                                           x-model="agentConfig.maxTokens"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           placeholder="1000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Flow Editor -->
+                        <div x-show="activeTab === 'flow'" class="p-6">
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <h4 class="font-medium text-gray-900 mb-2">Fluxo de Conversação</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-play text-green-600 mr-2"></i>
+                                            <span class="font-medium">Início</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Detecta primeira mensagem</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-user text-blue-600 mr-2"></i>
+                                            <span class="font-medium">Cadastro</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Coleta dados do cidadão</p>
+                                    </div>
+                                    
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="flex items-center mb-2">
+                                            <i class="fas fa-ticket-alt text-purple-600 mr-2"></i>
+                                            <span class="font-medium">Protocolo</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Gera número único</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <h5 class="font-medium text-gray-900 mb-2">Etapas do Fluxo</h5>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-check-circle text-green-600 mr-3"></i>
+                                                <span>Detecção de nova conversa</span>
+                                            </div>
+                                            <button class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-user-plus text-blue-600 mr-3"></i>
+                                                <span>Coleta de dados do cidadão</span>
+                                            </div>
+                                            <button class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-tags text-purple-600 mr-3"></i>
+                                                <span>Categorização do problema</span>
+                                            </div>
+                                            <button class="text-blue-600 hover:text-blue-800">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Area -->
+                        <div x-show="activeTab === 'test'" class="p-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-medium text-gray-900 mb-3">Simulador de Conversa</h4>
+                                    <div class="bg-gray-50 rounded-lg p-4 mb-4" style="height: 300px; overflow-y: auto;">
+                                        <div class="space-y-3">
+                                            <div class="flex justify-end">
+                                                <div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
+                                                    Olá, preciso de ajuda com um buraco na rua
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-start">
+                                                <div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-xs">
+                                                    Olá! Sou o assistente da prefeitura. Vou te ajudar com isso. 
+                                                    Primeiro, preciso de alguns dados seus. Qual seu nome completo?
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex space-x-2">
+                                        <input type="text" 
+                                               placeholder="Digite sua mensagem..."
+                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-medium text-gray-900 mb-3">Métricas do Teste</h4>
+                                    <div class="space-y-4">
+                                        <div class="bg-white p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-600">Tempo de Resposta</span>
+                                                <span class="text-sm font-bold text-green-600">1.2s</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-600">Tokens Usados</span>
+                                                <span class="text-sm font-bold text-blue-600">156</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-600">Custo Estimado</span>
+                                                <span class="text-sm font-bold text-purple-600">$0.002</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-medium text-gray-600">Qualidade da Resposta</span>
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                    <i class="fas fa-star text-gray-300 mr-1"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração inicial do agente
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('aiBuilder', () => ({
+                agentConfig: {
+                    name: 'Agente de Infraestrutura',
+                    provider: 'groq',
+                    category: 'infraestrutura',
+                    sla: 24,
+                    priority: 'alta',
+                    systemPrompt: `Você é um assistente especializado em atendimento ao cidadão para problemas de infraestrutura urbana.
+
+SUAS RESPONSABILIDADES:
+- Coletar dados do cidadão de forma amigável
+- Categorizar problemas de infraestrutura
+- Gerar protocolos únicos
+- Fornecer informações sobre prazos
+
+CATEGORIAS DE INFRAESTRUTURA:
+- Buracos nas ruas
+- Problemas de iluminação pública
+- Vazamentos de água
+- Danos em calçadas
+- Problemas de drenagem
+
+SEMPRE:
+- Seja educado e prestativo
+- Confirme informações importantes
+- Explique os próximos passos
+- Forneça o protocolo gerado`,
+                    temperature: 0.7,
+                    maxTokens: 1000
+                },
+                
+                addTemplate(type) {
+                    const templates = {
+                        boas_vindas: `Olá! Sou o assistente da prefeitura para {categoria}. Como posso te ajudar hoje?`,
+                        coleta_dados: `Para criar seu chamado, preciso de algumas informações:\n\n1. Nome completo\n2. Telefone\n3. Endereço do problema\n4. Descrição detalhada\n\nPode me informar seu nome?`,
+                        confirmacao: `Perfeito! Confirme se os dados estão corretos:\n\nNome: {nome}\nTelefone: {telefone}\nEndereço: {endereco}\n\nProblema: {problema}\n\nEstá tudo certo?`,
+                        protocolo: `✅ Seu chamado foi criado com sucesso!\n\n📋 Protocolo: {protocolo}\n📅 Prazo: {prazo}\n🏢 Categoria: {categoria}\n\nVocê pode consultar o status a qualquer momento usando este protocolo.`
+                    };
+                    
+                    this.agentConfig.systemPrompt += `\n\n--- TEMPLATE ${type.toUpperCase()} ---\n${templates[type]}`;
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
