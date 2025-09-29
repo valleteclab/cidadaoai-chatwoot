@@ -672,7 +672,7 @@ SEMPRE:
         try:
             async with chamados_service.pool.acquire() as conn:
                 # Buscar métricas do agente
-                metrics = await conn.fetchrow("""
+                metrics = await conn.fetchrow(f"""
                     SELECT 
                         COUNT(*) as total_interactions,
                         AVG(response_time) as avg_response_time,
@@ -682,21 +682,21 @@ SEMPRE:
                         SUM(cost) as total_cost
                     FROM agent_interactions 
                     WHERE agent_id = $1 
-                    AND created_at >= NOW() - INTERVAL '%s days'
-                """, agent_id, days)
+                    AND created_at >= NOW() - INTERVAL '{days} days'
+                """, agent_id)
                 
                 # Buscar distribuição por categoria
-                categories = await conn.fetch("""
+                categories = await conn.fetch(f"""
                     SELECT category, COUNT(*) as count
                     FROM agent_interactions 
                     WHERE agent_id = $1 
-                    AND created_at >= NOW() - INTERVAL '%s days'
+                    AND created_at >= NOW() - INTERVAL '{days} days'
                     GROUP BY category
                     ORDER BY count DESC
-                """, agent_id, days)
+                """, agent_id)
                 
                 # Buscar performance por dia
-                daily_performance = await conn.fetch("""
+                daily_performance = await conn.fetch(f"""
                     SELECT 
                         DATE(created_at) as date,
                         COUNT(*) as interactions,
@@ -704,10 +704,10 @@ SEMPRE:
                         COUNT(CASE WHEN success = true THEN 1 END) as successful
                     FROM agent_interactions 
                     WHERE agent_id = $1 
-                    AND created_at >= NOW() - INTERVAL '%s days'
+                    AND created_at >= NOW() - INTERVAL '{days} days'
                     GROUP BY DATE(created_at)
                     ORDER BY date DESC
-                """, agent_id, days)
+                """, agent_id)
                 
                 return {
                     "status": "success",
