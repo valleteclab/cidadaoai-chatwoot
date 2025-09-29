@@ -166,7 +166,7 @@
                                     <!-- Agente Ativo Atual -->
                                     <div x-show="getActiveAgent()" class="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-lg text-white mb-6">
                                         <div class="flex items-center justify-between">
-                                            <div>
+                                <div>
                                                 <div class="text-sm opacity-90">🤖 Agente Ativo no WhatsApp</div>
                                                 <div class="text-xl font-bold" x-text="getActiveAgent()?.name || 'Nenhum'"></div>
                                                 <div class="text-sm opacity-90">
@@ -179,22 +179,22 @@
                                                 <div class="w-4 h-4 bg-white rounded-full animate-pulse mb-2"></div>
                                                 <div class="text-xs opacity-90">Respondendo agora</div>
                                             </div>
-                                        </div>
                                     </div>
-                                    
+                                </div>
+                                
                                     <!-- Alerta se nenhum agente ativo -->
                                     <div x-show="!getActiveAgent()" class="bg-gradient-to-r from-red-500 to-red-600 p-4 rounded-lg text-white mb-6">
                                         <div class="flex items-center justify-between">
-                                            <div>
+                                <div>
                                                 <div class="text-sm opacity-90">⚠️ Nenhum Agente Ativo</div>
                                                 <div class="text-xl font-bold">WhatsApp sem resposta automática</div>
                                                 <div class="text-sm opacity-90">Ative pelo menos um agente para responder automaticamente</div>
                                             </div>
                                             <div class="text-right">
                                                 <i class="fas fa-exclamation-triangle text-2xl"></i>
-                                            </div>
-                                        </div>
-                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                                     <!-- Status dos Agentes -->
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -203,7 +203,7 @@
                                                 <div>
                                                     <div class="text-sm text-green-600">Agentes Ativos</div>
                                                     <div class="text-2xl font-bold text-green-900" x-text="agentsStats.active"></div>
-                                                </div>
+                                        </div>
                                                 <i class="fas fa-check-circle text-green-600 text-2xl"></i>
                                             </div>
                                         </div>
@@ -244,7 +244,7 @@
                                                                   class="px-2 py-1 rounded-full text-xs font-medium">
                                                                 <span x-text="agent.priority.toUpperCase()"></span>
                                                             </span>
-                                </div>
+                                        </div>
                                 
                                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
                                                             <div>
@@ -263,32 +263,36 @@
                                                                 <span class="font-medium">Criado:</span>
                                                                 <span x-text="formatDate(agent.created_at)"></span>
                                                             </div>
-                                                        </div>
-                                                        
+                                    </div>
+                                    
                                                         <!-- Indicador de uso em tempo real -->
                                                         <div class="flex items-center space-x-4 text-sm">
                                                             <div x-show="agent.active" class="flex items-center space-x-2">
                                                                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                                                 <span class="text-green-600 font-medium">🟢 Ativo no WhatsApp</span>
-                                                            </div>
+                                        </div>
                                                             <div x-show="!agent.active" class="flex items-center space-x-2">
                                                                 <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
                                                                 <span class="text-gray-500">⚫ Inativo</span>
-                                                            </div>
+                                    </div>
                                                             <div class="text-gray-500">
                                                                 <i class="fas fa-clock mr-1"></i>
                                                                 Última atividade: <span x-text="formatLastActivity(agent.last_activity)"></span>
-                                                            </div>
-                                                        </div>
-                                                        
+                                </div>
+                            </div>
+
                                                         <!-- Preview do prompt -->
                                                         <div x-show="agent.system_prompt" class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
                                                             <strong>Prompt:</strong> <span x-text="agent.system_prompt"></span>
-                                                        </div>
+                                            </div>
                         </div>
 
                                                     <!-- Ações do Agente -->
                                                     <div class="flex flex-col space-y-2">
+                                                        <button @click="testAgentDirect(agent)" 
+                                                                class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded hover:bg-green-200">
+                                                            <i class="fas fa-play mr-1"></i>Testar Agora
+                                                        </button>
                                                         <button @click="editAgent(agent)" 
                                                                 class="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200">
                                                             <i class="fas fa-edit mr-1"></i>Editar
@@ -306,8 +310,8 @@
                                                         <button @click="deleteAgent(agent)" 
                                                                 class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded hover:bg-red-200">
                                                             <i class="fas fa-trash mr-1"></i>Excluir
-                                                        </button>
-                                                    </div>
+                                            </button>
+                                        </div>
                                                 </div>
                                             </div>
                                         </template>
@@ -326,10 +330,30 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- Tab: Criar Novo Agente -->
+                                        </div>
+                                        
+                            <!-- Tab: Criar/Editar Agente -->
                             <div x-show="activeTab === 'prompt'">
+                                <!-- Indicador de Modo -->
+                                <div x-show="currentAgentId" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                            <div class="flex items-center">
+                                        <i class="fas fa-edit text-blue-600 mr-2"></i>
+                                        <div>
+                                            <div class="font-medium text-blue-800">
+                                                Editando Agente: <span x-text="agentConfig.name"></span>
+                                            </div>
+                                            <div class="text-sm text-blue-600">
+                                                ID: <span x-text="currentAgentId"></span> • 
+                                                <span x-text="getCategoryName(agentConfig.category)"></span> • 
+                                                <span x-text="agentConfig.provider.toUpperCase()"></span>
+                                            </div>
+                                        </div>
+                                        <button @click="resetForm()" class="ml-auto px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded hover:bg-blue-200">
+                                            <i class="fas fa-plus mr-1"></i>Criar Novo
+                                            </button>
+                                        </div>
+                                    </div>
+                                
                                 <div class="mb-6">
                                     <div class="flex justify-between items-center mb-2">
                                         <label class="block text-sm font-medium text-gray-700">
@@ -348,16 +372,16 @@
                                                     class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200">
                                                 Educação
                                             </button>
+                                </div>
                             </div>
-                                    </div>
                                     <textarea 
                                         x-model="agentConfig.systemPrompt"
                                         rows="12" 
                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         placeholder="Você é um assistente especializado em...">
                                     </textarea>
-                                    </div>
-                                    
+                        </div>
+
                                 <!-- Configurações Avançadas -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 <div>
@@ -366,22 +390,22 @@
                                         </label>
                                         <input type="range" x-model="agentConfig.temperature" min="0" max="2" step="0.1"
                                                class="w-full">
-                                    </div>
+                                                </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
                                         <input type="number" x-model="agentConfig.maxTokens" 
                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                    </div>
+                                            </div>
+                                                </div>
                                     
                                 <!-- Botões de Ação Principais -->
                                 <div class="flex justify-center space-x-4 mb-6">
-                                    <button @click="saveAgent()" 
-                                            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-                                            :disabled="saving">
-                                        <i class="fas fa-save"></i>
-                                        <span x-text="saving ? 'Salvando...' : 'Salvar Agente'"></span>
-                                    </button>
+                                            <button @click="saveAgent()" 
+                                                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                                                    :disabled="saving">
+                                                <i class="fas fa-save"></i>
+                                                <span x-text="saving ? 'Salvando...' : (currentAgentId ? 'Atualizar Agente' : 'Salvar Agente')"></span>
+                                            </button>
                                     <button @click="testAgent()" 
                                             class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center space-x-2"
                                             :disabled="testing">
@@ -403,10 +427,10 @@
                                         <span class="text-green-800 font-medium">
                                             Agente ID: <span x-text="currentAgentId"></span> - Pronto para uso!
                                         </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-
+                                    
                             <!-- Tab: Fluxo -->
                             <div x-show="activeTab === 'flow'" class="text-center py-12">
                                 <i class="fas fa-sitemap text-6xl text-gray-300 mb-4"></i>
@@ -422,7 +446,7 @@
                                         <h4 class="text-lg font-medium text-gray-900">
                                             <i class="fas fa-vial mr-2"></i>Centro de Testes do Agente
                                         </h4>
-                                        <div class="flex space-x-2">
+                                    <div class="flex space-x-2">
                                             <button @click="clearTestConversation()" 
                                                     class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200">
                                                 <i class="fas fa-trash mr-1"></i>Limpar
@@ -430,15 +454,15 @@
                                             <button @click="exportTestResults()" 
                                                     class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded hover:bg-green-200">
                                                 <i class="fas fa-download mr-1"></i>Exportar
-                                            </button>
-                                        </div>
-                                        </div>
-                                        
+                                        </button>
+                                    </div>
+                                </div>
+                                
                                     <!-- Métricas Avançadas -->
                                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                         <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-lg text-white">
                                             <div class="flex items-center justify-between">
-                                                <div>
+                                <div>
                                                     <div class="text-sm opacity-90">Tempo Médio</div>
                                                     <div class="text-2xl font-bold" x-text="testMetrics.responseTime || '0.00s'"></div>
                                                 </div>
@@ -472,9 +496,9 @@
                                                 <i class="fas fa-comments text-2xl opacity-75"></i>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-
+                                            </div>
+                                        </div>
+                                        
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                     <!-- Painel de Controle -->
                                     <div class="lg:col-span-1">
@@ -499,9 +523,9 @@
                                                             class="text-left p-2 bg-purple-50 hover:bg-purple-100 rounded text-sm">
                                                         🎓 Educação
                                         </button>
-                                    </div>
-                                </div>
-                                
+                                            </div>
+                                        </div>
+                                        
                                             <!-- Input de teste -->
                                             <div class="space-y-3">
                                                 <label class="block text-sm font-medium text-gray-700">Mensagem de Teste:</label>
@@ -531,14 +555,14 @@
                                                 <div class="flex justify-between">
                                                     <span class="text-gray-600">Taxa de Sucesso:</span>
                                                     <span class="font-medium text-green-600">100%</span>
-                                                </div>
+                                            </div>
                                                 <div class="flex justify-between">
                                                     <span class="text-gray-600">Último Teste:</span>
                                                     <span class="font-medium" x-text="lastTestTime || 'Nunca'"></span>
-                                                </div>
-                                            </div>
-                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
                                         
                                     <!-- Conversa de Teste -->
                                     <div class="lg:col-span-2">
@@ -550,8 +574,8 @@
                                                 <div class="flex items-center space-x-2">
                                                     <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                                                     <span class="text-sm text-gray-600">Online</span>
-                                                </div>
-                                            </div>
+                        </div>
+                    </div>
                                             
                                             <div class="p-4 h-96 overflow-y-auto bg-gray-50" id="conversationContainer">
                                                 <div class="space-y-4">
@@ -561,13 +585,13 @@
                                                                 <div x-show="message.role === 'assistant'" 
                                                                      class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
                                                                     <i class="fas fa-robot text-white text-sm"></i>
-                                                                </div>
+                </div>
                                                                 <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border'" 
                                                                      class="px-4 py-2 rounded-lg shadow-sm">
                                                                     <div class="text-sm" x-text="message.message"></div>
                                                                     <div class="text-xs opacity-75 mt-1" 
                                                                          x-text="new Date().toLocaleTimeString('pt-BR')"></div>
-                                                                </div>
+            </div>
                                                                 <div x-show="message.role === 'user'" 
                                                                      class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
                                                                     <i class="fas fa-user text-white text-sm"></i>
@@ -787,7 +811,75 @@ SEMPRE:
                 },
                 
                 async editAgent(agent) {
-                    // Carregar dados do agente para edição
+                    try {
+                        // Buscar dados completos do agente
+                        const response = await fetch(`/api/ai-builder/agents/${agent.id}`);
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            const fullAgent = result.agent;
+                            
+                            // Carregar dados completos do agente para edição
+                            this.currentAgentId = agent.id;
+                            this.agentConfig = {
+                                name: fullAgent.name || agent.name,
+                                provider: fullAgent.provider || agent.provider,
+                                category: fullAgent.category || agent.category,
+                                sla: fullAgent.sla_hours || agent.sla_hours,
+                                priority: fullAgent.priority || agent.priority,
+                                systemPrompt: fullAgent.config?.system_prompt || agent.config?.system_prompt || '',
+                                temperature: fullAgent.config?.temperature || agent.config?.temperature || 0.7,
+                                maxTokens: fullAgent.config?.max_tokens || agent.config?.max_tokens || 1000
+                            };
+                            
+                            // Mudar para aba de edição
+                            this.activeTab = 'prompt';
+                            
+                            // Mostrar notificação
+                            alert(`✏️ Editando agente: ${this.agentConfig.name}`);
+                        } else {
+                            // Fallback para dados básicos se API falhar
+                            this.currentAgentId = agent.id;
+                            this.agentConfig = {
+                                name: agent.name,
+                                provider: agent.provider,
+                                category: agent.category,
+                                sla: agent.sla_hours,
+                                priority: agent.priority,
+                                systemPrompt: agent.config?.system_prompt || '',
+                                temperature: agent.config?.temperature || 0.7,
+                                maxTokens: agent.config?.max_tokens || 1000
+                            };
+                            this.activeTab = 'prompt';
+                        }
+                    } catch (error) {
+                        console.error('Erro ao carregar agente:', error);
+                        alert('❌ Erro ao carregar dados do agente');
+                    }
+                },
+                
+                resetForm() {
+                    // Resetar para modo de criação
+                    this.currentAgentId = null;
+                    this.agentConfig = {
+                        name: 'Novo Agente',
+                        provider: 'groq',
+                        category: 'infraestrutura',
+                        sla: 24,
+                        priority: 'alta',
+                        systemPrompt: '',
+                        temperature: 0.7,
+                        maxTokens: 1000
+                    };
+                    
+                    // Limpar dados de teste
+                    this.testConversation = [];
+                    this.testMetrics = {};
+                    this.testMessage = 'Olá, preciso de ajuda com um buraco na rua';
+                },
+                
+                async testAgentDirect(agent) {
+                    // Configurar agente para teste
                     this.currentAgentId = agent.id;
                     this.agentConfig = {
                         name: agent.name,
@@ -800,8 +892,24 @@ SEMPRE:
                         maxTokens: agent.config?.max_tokens || 1000
                     };
                     
-                    // Mudar para aba de edição
-                    this.activeTab = 'prompt';
+                    // Definir mensagem de teste baseada na categoria
+                    const testMessages = {
+                        'infraestrutura': 'Tem um buraco na rua da minha casa que está muito perigoso',
+                        'saude': 'Preciso agendar uma consulta médica no posto de saúde',
+                        'educacao': 'Como faço para matricular meu filho na escola municipal?',
+                        'assistencia_social': 'Gostaria de saber sobre o cadastro único',
+                        'vendas': 'Tenho interesse em conhecer seus produtos'
+                    };
+                    
+                    this.testMessage = testMessages[agent.category] || 'Olá, preciso de ajuda';
+                    
+                    // Mudar para aba de teste
+                    this.activeTab = 'test';
+                    
+                    // Executar teste automaticamente
+                    setTimeout(() => {
+                        this.sendTestMessage();
+                    }, 500);
                 },
                 
                 async toggleAgent(agent) {
@@ -962,8 +1070,12 @@ SEMPRE:
                 async saveAgent() {
                     this.saving = true;
                     try {
-                        const response = await fetch('/api/ai-builder/agents', {
-                            method: 'POST',
+                        const isEditing = this.currentAgentId !== null;
+                        const url = isEditing ? `/api/ai-builder/agents/${this.currentAgentId}` : '/api/ai-builder/agents';
+                        const method = isEditing ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
                             headers: {
                                 'Content-Type': 'application/json'
                             },
@@ -973,9 +1085,16 @@ SEMPRE:
                         const result = await response.json();
                         
                         if (result.status === 'success') {
-                            this.currentAgentId = result.agent.id;
-                            alert('✅ Agente salvo com sucesso!');
-                            console.log('Agente criado:', result.agent);
+                            if (!isEditing) {
+                                this.currentAgentId = result.agent.id;
+                            }
+                            
+                            // Recarregar lista de agentes
+                            await this.loadAgents();
+                            
+                            const action = isEditing ? 'atualizado' : 'criado';
+                            alert(`✅ Agente ${action} com sucesso!`);
+                            console.log(`Agente ${action}:`, result.agent);
                         } else {
                             alert('❌ Erro ao salvar: ' + result.message);
                         }
