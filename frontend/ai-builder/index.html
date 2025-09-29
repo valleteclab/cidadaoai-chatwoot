@@ -277,7 +277,7 @@
                                         
                                         <div class="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto">
                                             <div class="space-y-3">
-                                                <template x-for="message in testConversation" :key="message.message">
+                                                <template x-for="(message, index) in testConversation" :key="index">
                                                     <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
                                                         <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" 
                                                              class="p-3 rounded-lg max-w-xs">
@@ -349,6 +349,14 @@ SEMPRE:
                 testMessage: 'Olá, preciso de ajuda com um buraco na rua',
                 testMetrics: {},
                 testConversation: [],
+                
+                // Inicialização
+                init() {
+                    // Garantir que testConversation seja um array
+                    if (!Array.isArray(this.testConversation)) {
+                        this.testConversation = [];
+                    }
+                },
                 
                 // Templates disponíveis
                 templates: {
