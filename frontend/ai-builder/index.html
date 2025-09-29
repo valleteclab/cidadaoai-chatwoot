@@ -7,10 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
 </head>
 <body class="bg-gray-100">
-    <div class="min-h-screen">
+    <div class="min-h-screen" x-data="aiBuilder()">
         <!-- Header -->
         <nav class="bg-white shadow-lg">
             <div class="max-w-7xl mx-auto px-4">
@@ -21,28 +20,14 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <button @click="showAnalytics()" 
-                                class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
-                                :disabled="currentAgentId === null">
+                                class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
                             <i class="fas fa-chart-line mr-2"></i>
                             Analytics
                         </button>
-                        <button @click="saveAgent()" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                                :disabled="saving">
-                            <i class="fas fa-save mr-2"></i>
-                            <span x-text="saving ? 'Salvando...' : 'Salvar'"></span>
-                        </button>
-                        <button @click="testAgent()" 
-                                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-                                :disabled="testing">
-                            <i class="fas fa-play mr-2"></i>
-                            <span x-text="testing ? 'Testando...' : 'Testar'"></span>
-                        </button>
                         <button @click="runTestSuite()" 
-                                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700"
-                                :disabled="currentAgentId === null || runningTests">
+                                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700">
                             <i class="fas fa-vial mr-2"></i>
-                            <span x-text="runningTests ? 'Testando...' : 'Suite de Testes'"></span>
+                            Suite de Testes
                         </button>
                     </div>
                 </div>
@@ -60,284 +45,249 @@
                             <i class="fas fa-cog mr-2"></i>Configurações do Agente
                         </h3>
                         
-                        <!-- Nome do Agente -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Agente</label>
-                            <input type="text" 
-                                   x-model="agentConfig.name"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                   placeholder="Ex: Agente de Infraestrutura">
-                        </div>
-
-                        <!-- Provedor de IA -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Provedor de IA</label>
-                            <select x-model="agentConfig.provider" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="groq">Groq (Llama 3.1)</option>
-                                <option value="openai">OpenAI (GPT-4)</option>
-                                <option value="anthropic">Anthropic (Claude)</option>
-                            </select>
-                        </div>
-
-                        <!-- Categoria -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                            <select x-model="agentConfig.category" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="infraestrutura">Infraestrutura</option>
-                                <option value="saude">Saúde</option>
-                                <option value="educacao">Educação</option>
-                                <option value="assistencia">Assistência Social</option>
-                                <option value="limpeza">Limpeza Urbana</option>
-                            </select>
-                        </div>
-
-                        <!-- SLA -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">SLA (horas)</label>
-                            <input type="number" 
-                                   x-model="agentConfig.sla"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                   placeholder="24">
-                        </div>
-
-                        <!-- Prioridade -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
-                            <select x-model="agentConfig.priority" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="baixa">Baixa</option>
-                                <option value="media">Média</option>
-                                <option value="alta">Alta</option>
-                                <option value="critica">Crítica</option>
-                            </select>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Agente</label>
+                                <input type="text" x-model="agentConfig.name" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Ex: Agente de Infraestrutura">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Provedor de IA</label>
+                                <select x-model="agentConfig.provider" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="groq">Groq (Llama 3.1)</option>
+                                    <option value="openai">OpenAI (GPT-4)</option>
+                                    <option value="anthropic">Anthropic (Claude)</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                                <select x-model="agentConfig.category" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="infraestrutura">Infraestrutura</option>
+                                    <option value="saude">Saúde</option>
+                                    <option value="educacao">Educação</option>
+                                    <option value="assistencia_social">Assistência Social</option>
+                                    <option value="vendas">Vendas</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">SLA (horas)</label>
+                                <input type="number" x-model="agentConfig.sla" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
+                                <select x-model="agentConfig.priority" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="baixa">Baixa</option>
+                                    <option value="media">Média</option>
+                                    <option value="alta">Alta</option>
+                                    <option value="critica">Crítica</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Templates -->
                     <div class="bg-white shadow rounded-lg p-6">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">
                             <i class="fas fa-file-alt mr-2"></i>Templates de Resposta
                         </h3>
                         
-                        <div class="space-y-3">
+                        <div class="space-y-2">
                             <button @click="addTemplate('boas_vindas')" 
-                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
-                                <i class="fas fa-hand-wave mr-2 text-green-600"></i>Boas-vindas
+                                    class="w-full text-left p-2 bg-blue-50 hover:bg-blue-100 rounded flex items-center">
+                                <i class="fas fa-hand-wave mr-2"></i>Boas-vindas
                             </button>
                             <button @click="addTemplate('coleta_dados')" 
-                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
-                                <i class="fas fa-user mr-2 text-blue-600"></i>Coleta de Dados
+                                    class="w-full text-left p-2 bg-green-50 hover:bg-green-100 rounded flex items-center">
+                                <i class="fas fa-user mr-2"></i>Coleta de Dados
                             </button>
                             <button @click="addTemplate('confirmacao')" 
-                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
-                                <i class="fas fa-check mr-2 text-green-600"></i>Confirmação
+                                    class="w-full text-left p-2 bg-yellow-50 hover:bg-yellow-100 rounded flex items-center">
+                                <i class="fas fa-check mr-2"></i>Confirmação
                             </button>
                             <button @click="addTemplate('protocolo')" 
-                                    class="w-full text-left p-3 border border-gray-200 rounded-md hover:bg-gray-50">
-                                <i class="fas fa-ticket-alt mr-2 text-purple-600"></i>Geração de Protocolo
+                                    class="w-full text-left p-2 bg-purple-50 hover:bg-purple-100 rounded flex items-center">
+                                <i class="fas fa-badge-check mr-2"></i>Geração de Protocolo
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Main Area - Editor -->
+                <!-- Main Content Area -->
                 <div class="lg:col-span-2">
-                    <!-- Tabs -->
-                    <div class="bg-white shadow rounded-lg" x-data="{ activeTab: 'prompt' }">
+                    <div class="bg-white shadow rounded-lg">
+                        <!-- Tabs -->
                         <div class="border-b border-gray-200">
-                            <nav class="-mb-px flex space-x-8 px-6">
+                            <nav class="-mb-px flex">
                                 <button @click="activeTab = 'prompt'" 
-                                        :class="activeTab === 'prompt' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                        :class="activeTab === 'prompt' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                                        class="py-2 px-1 border-b-2 font-medium text-sm">
                                     <i class="fas fa-edit mr-2"></i>Prompt Principal
                                 </button>
                                 <button @click="activeTab = 'flow'" 
-                                        :class="activeTab === 'flow' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                                    <i class="fas fa-project-diagram mr-2"></i>Fluxo
+                                        :class="activeTab === 'flow' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                                        class="py-2 px-1 border-b-2 font-medium text-sm ml-8">
+                                    <i class="fas fa-sitemap mr-2"></i>Fluxo
                                 </button>
                                 <button @click="activeTab = 'test'" 
-                                        :class="activeTab === 'flow' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                        :class="activeTab === 'test' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
+                                        class="py-2 px-1 border-b-2 font-medium text-sm ml-8">
                                     <i class="fas fa-flask mr-2"></i>Teste
                                 </button>
                             </nav>
                         </div>
 
-                        <!-- Prompt Editor -->
-                        <div x-show="activeTab === 'prompt'" class="p-6">
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Prompt do Sistema</label>
-                                <textarea x-model="agentConfig.systemPrompt"
-                                          rows="15"
-                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                                          placeholder="Você é um assistente especializado em..."></textarea>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Temperatura</label>
-                                    <input type="range" 
-                                           x-model="agentConfig.temperature"
-                                           min="0" max="1" step="0.1"
-                                           class="w-full">
-                                    <div class="text-sm text-gray-500 mt-1">
-                                        <span x-text="agentConfig.temperature"></span> 
-                                        (<span x-text="agentConfig.temperature < 0.3 ? 'Criativo' : agentConfig.temperature > 0.7 ? 'Determinístico' : 'Balanceado'"></span>)
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
-                                    <input type="number" 
-                                           x-model="agentConfig.maxTokens"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                           placeholder="1000">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Flow Editor -->
-                        <div x-show="activeTab === 'flow'" class="p-6">
-                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                                <h4 class="font-medium text-gray-900 mb-2">Fluxo de Conversação</h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div class="bg-white p-3 rounded border">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-play text-green-600 mr-2"></i>
-                                            <span class="font-medium">Início</span>
-                                        </div>
-                                        <p class="text-sm text-gray-600">Detecta primeira mensagem</p>
-                                    </div>
-                                    
-                                    <div class="bg-white p-3 rounded border">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-user text-blue-600 mr-2"></i>
-                                            <span class="font-medium">Cadastro</span>
-                                        </div>
-                                        <p class="text-sm text-gray-600">Coleta dados do cidadão</p>
-                                    </div>
-                                    
-                                    <div class="bg-white p-3 rounded border">
-                                        <div class="flex items-center mb-2">
-                                            <i class="fas fa-ticket-alt text-purple-600 mr-2"></i>
-                                            <span class="font-medium">Protocolo</span>
-                                        </div>
-                                        <p class="text-sm text-gray-600">Gera número único</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <h5 class="font-medium text-gray-900 mb-2">Etapas do Fluxo</h5>
-                                    <div class="space-y-3">
-                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-check-circle text-green-600 mr-3"></i>
-                                                <span>Detecção de nova conversa</span>
-                                            </div>
-                                            <button class="text-blue-600 hover:text-blue-800">
-                                                <i class="fas fa-edit"></i>
+                        <div class="p-6">
+                            <!-- Tab: Prompt Principal -->
+                            <div x-show="activeTab === 'prompt'">
+                                <div class="mb-6">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-sm font-medium text-gray-700">
+                                            Prompt do Sistema
+                                        </label>
+                                        <div class="flex space-x-2">
+                                            <button @click="loadTemplate('infraestrutura')" 
+                                                    class="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded hover:bg-blue-200">
+                                                Infraestrutura
                                             </button>
+                                            <button @click="loadTemplate('saude')" 
+                                                    class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded hover:bg-green-200">
+                                                Saúde
+                                            </button>
+                                            <button @click="loadTemplate('educacao')" 
+                                                    class="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded hover:bg-purple-200">
+                                                Educação
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <textarea 
+                                        x-model="agentConfig.systemPrompt"
+                                        rows="12" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Você é um assistente especializado em...">
+                                    </textarea>
+                                </div>
+
+                                <!-- Configurações Avançadas -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Temperatura: <span x-text="agentConfig.temperature"></span>
+                                        </label>
+                                        <input type="range" x-model="agentConfig.temperature" min="0" max="2" step="0.1"
+                                               class="w-full">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
+                                        <input type="number" x-model="agentConfig.maxTokens" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                </div>
+
+                                <!-- Botões de Ação Principais -->
+                                <div class="flex justify-center space-x-4 mb-6">
+                                    <button @click="saveAgent()" 
+                                            class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                                            :disabled="saving">
+                                        <i class="fas fa-save"></i>
+                                        <span x-text="saving ? 'Salvando...' : 'Salvar Agente'"></span>
+                                    </button>
+                                    <button @click="testAgent()" 
+                                            class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+                                            :disabled="testing">
+                                        <i class="fas fa-play"></i>
+                                        <span x-text="testing ? 'Testando...' : 'Testar Agente'"></span>
+                                    </button>
+                                    <button @click="deployAgent()" 
+                                            class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                                            :disabled="deploying">
+                                        <i class="fas fa-rocket"></i>
+                                        <span x-text="deploying ? 'Deploying...' : 'Deploy/Ativar'"></span>
+                                    </button>
+                                </div>
+
+                                <!-- Status do Agente -->
+                                <div x-show="currentAgentId" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                        <span class="text-green-800 font-medium">
+                                            Agente ID: <span x-text="currentAgentId"></span> - Pronto para uso!
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab: Fluxo -->
+                            <div x-show="activeTab === 'flow'" class="text-center py-12">
+                                <i class="fas fa-sitemap text-6xl text-gray-300 mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">Editor de Fluxo</h3>
+                                <p class="text-gray-500">Em desenvolvimento - Visualização do fluxo de conversa</p>
+                            </div>
+
+                            <!-- Tab: Teste -->
+                            <div x-show="activeTab === 'test'">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <!-- Simulador de Conversa -->
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-900 mb-4">
+                                            <i class="fas fa-comments mr-2"></i>Simulador de Conversa
+                                        </h4>
+                                        
+                                        <!-- Métricas -->
+                                        <div class="grid grid-cols-3 gap-4 mb-4">
+                                            <div class="bg-blue-100 p-3 rounded-lg text-center">
+                                                <div class="text-sm text-blue-600">Tempo</div>
+                                                <div class="font-bold text-blue-900" x-text="testMetrics.responseTime || 'N/A'"></div>
+                                            </div>
+                                            <div class="bg-green-100 p-3 rounded-lg text-center">
+                                                <div class="text-sm text-green-600">Tokens</div>
+                                                <div class="font-bold text-green-900" x-text="testMetrics.tokensUsed || 'N/A'"></div>
+                                            </div>
+                                            <div class="bg-purple-100 p-3 rounded-lg text-center">
+                                                <div class="text-sm text-purple-600">Custo</div>
+                                                <div class="font-bold text-purple-900" x-text="testMetrics.estimatedCost || 'N/A'"></div>
+                                            </div>
                                         </div>
                                         
-                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-user-plus text-blue-600 mr-3"></i>
-                                                <span>Coleta de dados do cidadão</span>
-                                            </div>
-                                            <button class="text-blue-600 hover:text-blue-800">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-tags text-purple-600 mr-3"></i>
-                                                <span>Categorização do problema</span>
-                                            </div>
-                                            <button class="text-blue-600 hover:text-blue-800">
-                                                <i class="fas fa-edit"></i>
+                                        <!-- Input de teste -->
+                                        <div class="flex space-x-2 mb-4">
+                                            <input type="text" x-model="testMessage"
+                                                   placeholder="Digite sua mensagem..."
+                                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <button @click="sendTestMessage()" 
+                                                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                                    :disabled="sendingMessage">
+                                                <i class="fas fa-paper-plane"></i>
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Test Area -->
-                        <div x-show="activeTab === 'test'" class="p-6">
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div>
-                                    <h4 class="font-medium text-gray-900 mb-3">Simulador de Conversa</h4>
-                                    <div class="bg-gray-50 rounded-lg p-4 mb-4" style="height: 300px; overflow-y: auto;">
-                                        <div class="space-y-3">
-                                            <template x-for="message in testConversation" :key="message.message">
-                                                <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
-                                                    <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" 
-                                                         class="p-3 rounded-lg max-w-xs">
-                                                        <span x-text="message.message"></span>
+                                    <!-- Conversa de Teste -->
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-900 mb-4">
+                                            <i class="fas fa-history mr-2"></i>Conversa de Teste
+                                        </h4>
+                                        
+                                        <div class="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto">
+                                            <div class="space-y-3">
+                                                <template x-for="message in testConversation" :key="message.message">
+                                                    <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                                        <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" 
+                                                             class="p-3 rounded-lg max-w-xs">
+                                                            <span x-text="message.message"></span>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </template>
-                                            
-                                            <!-- Mensagem inicial se não há conversa -->
-                                            <div x-show="testConversation.length === 0" class="text-center text-gray-500 py-8">
-                                                <i class="fas fa-comments text-2xl mb-2"></i>
-                                                <p>Inicie uma conversa de teste</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex space-x-2">
-                                        <input type="text" 
-                                               x-model="testMessage"
-                                               placeholder="Digite sua mensagem..."
-                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <button @click="sendTestMessage()" 
-                                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                                                :disabled="sendingMessage">
-                                            <i class="fas fa-paper-plane"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h4 class="font-medium text-gray-900 mb-3">Métricas do Teste</h4>
-                                    <div class="space-y-4">
-                                        <div class="bg-white p-4 rounded-lg border">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-gray-600">Tempo de Resposta</span>
-                                                <span class="text-sm font-bold text-green-600" x-text="testMetrics.responseTime || 'N/A'"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="bg-white p-4 rounded-lg border">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-gray-600">Tokens Usados</span>
-                                                <span class="text-sm font-bold text-blue-600" x-text="testMetrics.tokensUsed || 'N/A'"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="bg-white p-4 rounded-lg border">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-gray-600">Custo Estimado</span>
-                                                <span class="text-sm font-bold text-purple-600" x-text="testMetrics.estimatedCost || 'N/A'"></span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="bg-white p-4 rounded-lg border">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-medium text-gray-600">Qualidade da Resposta</span>
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
-                                                    <i class="fas fa-star text-gray-300 mr-1"></i>
+                                                </template>
+                                                <div x-show="testConversation.length === 0" class="text-center text-gray-500 py-8">
+                                                    <i class="fas fa-comments text-2xl mb-2"></i>
+                                                    <p>Inicie uma conversa de teste</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -352,9 +302,13 @@
     </div>
 
     <script>
-        // Configuração inicial do agente
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('aiBuilder', () => ({
+        function aiBuilder() {
+            return {
+                // Estado da aplicação
+                activeTab: 'prompt',
+                currentAgentId: null,
+                
+                // Configuração do agente
                 agentConfig: {
                     name: 'Agente de Infraestrutura',
                     provider: 'groq',
@@ -388,6 +342,7 @@ SEMPRE:
                 // Estados de controle
                 saving: false,
                 testing: false,
+                deploying: false,
                 sendingMessage: false,
                 
                 // Dados de teste
@@ -395,7 +350,99 @@ SEMPRE:
                 testMetrics: {},
                 testConversation: [],
                 
+                // Templates disponíveis
+                templates: {
+                    infraestrutura: {
+                        name: "Agente de Infraestrutura",
+                        systemPrompt: `Você é um assistente especializado em atendimento ao cidadão para problemas de infraestrutura urbana.
+
+SUAS RESPONSABILIDADES:
+- Coletar dados do cidadão de forma amigável
+- Categorizar problemas de infraestrutura
+- Gerar protocolos únicos
+- Fornecer informações sobre prazos
+
+CATEGORIAS DE INFRAESTRUTURA:
+- Buracos nas ruas
+- Problemas de iluminação pública
+- Vazamentos de água
+- Danos em calçadas
+- Problemas de drenagem
+
+SEMPRE:
+- Seja educado e prestativo
+- Confirme informações importantes
+- Explique os próximos passos
+- Forneça o protocolo gerado`,
+                        sla: 24,
+                        priority: 'alta'
+                    },
+                    saude: {
+                        name: "Agente de Saúde",
+                        systemPrompt: `Você é um assistente especializado em atendimento ao cidadão para questões de saúde pública.
+
+SUAS RESPONSABILIDADES:
+- Coletar dados do cidadão
+- Categorizar problemas de saúde
+- Priorizar casos urgentes
+- Fornecer orientações básicas
+
+CATEGORIAS DE SAÚDE:
+- Agendamento de consultas
+- Problemas em unidades de saúde
+- Emergências médicas
+- Vacinação
+- Programas de saúde
+
+SEMPRE:
+- Seja empático e profissional
+- Priorize casos urgentes
+- Forneça informações claras
+- Oriente sobre procedimentos`,
+                        sla: 4,
+                        priority: 'critica'
+                    },
+                    educacao: {
+                        name: "Agente de Educação",
+                        systemPrompt: `Você é um assistente especializado em atendimento ao cidadão para questões de educação municipal.
+
+SUAS RESPONSABILIDADES:
+- Orientar sobre matrículas escolares
+- Informar sobre transporte escolar
+- Resolver questões de merenda
+- Fornecer informações sobre programas educacionais
+
+CATEGORIAS DE EDUCAÇÃO:
+- Matrículas escolares
+- Transporte escolar
+- Merenda escolar
+- Material didático
+- Programas educacionais
+
+SEMPRE:
+- Seja paciente e educativo
+- Forneça informações claras sobre prazos
+- Oriente sobre documentos necessários
+- Explique procedimentos passo a passo`,
+                        sla: 48,
+                        priority: 'media'
+                    }
+                },
+                
                 // Métodos
+                loadTemplate(templateKey) {
+                    const template = this.templates[templateKey];
+                    if (template) {
+                        this.agentConfig.name = template.name;
+                        this.agentConfig.systemPrompt = template.systemPrompt;
+                        this.agentConfig.sla = template.sla;
+                        this.agentConfig.priority = template.priority;
+                        this.agentConfig.category = templateKey;
+                        
+                        alert(`✅ Template "${template.name}" carregado com sucesso!`);
+                    }
+                },
+                
                 async saveAgent() {
                     this.saving = true;
                     try {
@@ -410,6 +457,7 @@ SEMPRE:
                         const result = await response.json();
                         
                         if (result.status === 'success') {
+                            this.currentAgentId = result.agent.id;
                             alert('✅ Agente salvo com sucesso!');
                             console.log('Agente criado:', result.agent);
                         } else {
@@ -517,6 +565,33 @@ SEMPRE:
                     }
                 },
                 
+                async deployAgent() {
+                    if (!this.currentAgentId) {
+                        alert('❌ Salve o agente primeiro!');
+                        return;
+                    }
+                    
+                    this.deploying = true;
+                    try {
+                        const response = await fetch(`/api/ai-builder/agents/${this.currentAgentId}/activate`, {
+                            method: 'POST'
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            alert('🚀 Agente ativado com sucesso! Agora está respondendo no WhatsApp!');
+                        } else {
+                            alert('❌ Erro ao ativar: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao ativar agente:', error);
+                        alert('❌ Erro de conexão ao ativar agente');
+                    } finally {
+                        this.deploying = false;
+                    }
+                },
+                
                 addTemplate(type) {
                     const templates = {
                         boas_vindas: `Olá! Sou o assistente da prefeitura para {categoria}. Como posso te ajudar hoje?`,
@@ -527,8 +602,7 @@ SEMPRE:
                     
                     this.agentConfig.systemPrompt += `\n\n--- TEMPLATE ${type.toUpperCase()} ---\n${templates[type]}`;
                 },
-
-                // Novas funcionalidades avançadas
+                
                 async showAnalytics() {
                     if (!this.currentAgentId) {
                         alert('❌ Nenhum agente selecionado');
@@ -549,7 +623,7 @@ SEMPRE:
                         alert('❌ Erro de conexão ao carregar analytics');
                     }
                 },
-
+                
                 displayAnalytics(analytics) {
                     const modal = document.createElement('div');
                     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -607,14 +681,12 @@ SEMPRE:
                     
                     document.body.appendChild(modal);
                 },
-
+                
                 async runTestSuite() {
                     if (!this.currentAgentId) {
                         alert('❌ Nenhum agente selecionado');
                         return;
                     }
-                    
-                    this.runningTests = true;
                     
                     const testCases = [
                         { message: "Olá, preciso de ajuda", expected: "greeting" },
@@ -642,11 +714,9 @@ SEMPRE:
                     } catch (error) {
                         console.error('Erro ao executar testes:', error);
                         alert('❌ Erro de conexão ao executar testes');
-                    } finally {
-                        this.runningTests = false;
                     }
                 },
-
+                
                 displayTestResults(results) {
                     const modal = document.createElement('div');
                     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
@@ -694,8 +764,8 @@ SEMPRE:
                     
                     document.body.appendChild(modal);
                 }
-            }));
-        });
+            }
+        }
     </script>
 </body>
 </html>
