@@ -1497,6 +1497,124 @@ async def delete_ai_agent(agent_id: int):
         logger.error(f"Erro ao deletar agente: {str(e)}")
         return {"status": "error", "message": str(e)}
 
+# ============================================================================
+# AI BUILDER - ENDPOINTS AVANÇADOS
+# ============================================================================
+
+@app.get("/api/ai-builder/analytics/{agent_id}", tags=["AI Builder"])
+async def get_agent_analytics(agent_id: int, days: int = 30):
+    """Obter analytics detalhados de um agente"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.get_agent_analytics(agent_id, days)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao obter analytics: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/versions", tags=["AI Builder"])
+async def create_agent_version(agent_id: int, config_data: dict):
+    """Criar nova versão de um agente"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.create_agent_version(agent_id, config_data)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao criar versão: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/test-suite", tags=["AI Builder"])
+async def run_test_suite(agent_id: int, test_data: dict):
+    """Executar suite de testes para um agente"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        test_cases = test_data.get("test_cases", [])
+        result = await ai_builder_service.run_agent_test_suite(agent_id, test_cases)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao executar testes: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/chatwoot-integration", tags=["AI Builder"])
+async def integrate_chatwoot(agent_id: int, integration_data: dict):
+    """Integrar agente com Chatwoot"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.integrate_with_chatwoot(agent_id, integration_data)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao integrar com Chatwoot: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/ai-builder/agents/{agent_id}/performance", tags=["AI Builder"])
+async def get_agent_performance(agent_id: int):
+    """Obter métricas de performance de um agente"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.get_agent_performance_metrics(agent_id)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao obter performance: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/ai-builder/templates", tags=["AI Builder"])
+async def get_ai_templates():
+    """Obter todos os templates disponíveis"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.get_templates()
+        return {"status": "success", "templates": result}
+    except Exception as e:
+        logger.error(f"Erro ao obter templates: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/activate", tags=["AI Builder"])
+async def activate_agent(agent_id: int):
+    """Ativar agente no sistema"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.deploy_agent(agent_id)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao ativar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/deactivate", tags=["AI Builder"])
+async def deactivate_agent(agent_id: int):
+    """Desativar agente no sistema"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        async with chamados_service.pool.acquire() as conn:
+            result = await conn.fetchrow("""
+                UPDATE config_ia 
+                SET active = false, updated_at = $2
+                WHERE id = $1
+                RETURNING id, nome, active
+            """, agent_id, datetime.now())
+            
+            if result:
+                return {
+                    "status": "success",
+                    "message": f"Agente '{result['nome']}' desativado com sucesso",
+                    "agent": {
+                        "id": result["id"],
+                        "nome": result["nome"],
+                        "active": result["active"]
+                    }
+                }
+            else:
+                return {
+                    "status": "error",
+                    "message": "Agente não encontrado"
+                }
+    except Exception as e:
+        logger.error(f"Erro ao desativar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+# ============================================================================
+# AI AGENT - ENDPOINT TEMPORÁRIO
+# ============================================================================
+
 @app.post("/api/agent/test", tags=["AI Agent"])
 async def test_agent(message_data: dict):
     """Endpoint temporário para testar o agente IA"""

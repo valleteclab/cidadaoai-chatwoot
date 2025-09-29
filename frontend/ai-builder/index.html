@@ -20,6 +20,12 @@
                         <h1 class="text-xl font-bold text-gray-800">Cidadão.AI - Construtor de Agentes</h1>
                     </div>
                     <div class="flex items-center space-x-4">
+                        <button @click="showAnalytics()" 
+                                class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+                                :disabled="currentAgentId === null">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            Analytics
+                        </button>
                         <button @click="saveAgent()" 
                                 class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                                 :disabled="saving">
@@ -31,6 +37,12 @@
                                 :disabled="testing">
                             <i class="fas fa-play mr-2"></i>
                             <span x-text="testing ? 'Testando...' : 'Testar'"></span>
+                        </button>
+                        <button @click="runTestSuite()" 
+                                class="bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700"
+                                :disabled="currentAgentId === null || runningTests">
+                            <i class="fas fa-vial mr-2"></i>
+                            <span x-text="runningTests ? 'Testando...' : 'Suite de Testes'"></span>
                         </button>
                     </div>
                 </div>
@@ -514,6 +526,173 @@ SEMPRE:
                     };
                     
                     this.agentConfig.systemPrompt += `\n\n--- TEMPLATE ${type.toUpperCase()} ---\n${templates[type]}`;
+                },
+
+                // Novas funcionalidades avançadas
+                async showAnalytics() {
+                    if (!this.currentAgentId) {
+                        alert('❌ Nenhum agente selecionado');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`/api/ai-builder/analytics/${this.currentAgentId}?days=30`);
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            this.displayAnalytics(result.analytics);
+                        } else {
+                            alert('❌ Erro ao carregar analytics: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao carregar analytics:', error);
+                        alert('❌ Erro de conexão ao carregar analytics');
+                    }
+                },
+
+                displayAnalytics(analytics) {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">📊 Analytics do Agente</h3>
+                                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-blue-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-blue-800">Total de Interações</h4>
+                                    <p class="text-2xl font-bold text-blue-900">${analytics.overview.total_interactions || 0}</p>
+                                </div>
+                                <div class="bg-green-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-green-800">Taxa de Sucesso</h4>
+                                    <p class="text-2xl font-bold text-green-900">${((analytics.overview.successful_interactions || 0) / (analytics.overview.total_interactions || 1) * 100).toFixed(1)}%</p>
+                                </div>
+                                <div class="bg-purple-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-purple-800">Tempo Médio</h4>
+                                    <p class="text-2xl font-bold text-purple-900">${(analytics.overview.avg_response_time || 0).toFixed(2)}s</p>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">📈 Performance por Dia</h4>
+                                    <div class="space-y-2 max-h-40 overflow-y-auto">
+                                        ${analytics.daily_performance.map(day => `
+                                            <div class="flex justify-between text-sm">
+                                                <span>${new Date(day.date).toLocaleDateString('pt-BR')}</span>
+                                                <span>${day.interactions} interações</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold mb-2">🏷️ Categorias</h4>
+                                    <div class="space-y-2 max-h-40 overflow-y-auto">
+                                        ${analytics.categories.map(cat => `
+                                            <div class="flex justify-between text-sm">
+                                                <span>${cat.category || 'Não categorizado'}</span>
+                                                <span>${cat.count} vezes</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                },
+
+                async runTestSuite() {
+                    if (!this.currentAgentId) {
+                        alert('❌ Nenhum agente selecionado');
+                        return;
+                    }
+                    
+                    this.runningTests = true;
+                    
+                    const testCases = [
+                        { message: "Olá, preciso de ajuda", expected: "greeting" },
+                        { message: "Tem um buraco na rua da minha casa", expected: "infrastructure" },
+                        { message: "Quero agendar uma consulta médica", expected: "health" },
+                        { message: "Como faço para matricular meu filho na escola?", expected: "education" }
+                    ];
+                    
+                    try {
+                        const response = await fetch(`/api/ai-builder/agents/${this.currentAgentId}/test-suite`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ test_cases: testCases })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            this.displayTestResults(result.test_results);
+                        } else {
+                            alert('❌ Erro ao executar testes: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao executar testes:', error);
+                        alert('❌ Erro de conexão ao executar testes');
+                    } finally {
+                        this.runningTests = false;
+                    }
+                },
+
+                displayTestResults(results) {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                    modal.innerHTML = `
+                        <div class="bg-white rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-bold">🧪 Resultados dos Testes</h3>
+                                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-blue-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-blue-800">Total de Testes</h4>
+                                    <p class="text-2xl font-bold text-blue-900">${results.total_tests}</p>
+                                </div>
+                                <div class="bg-green-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-green-800">Testes Aprovados</h4>
+                                    <p class="text-2xl font-bold text-green-900">${results.passed_tests}</p>
+                                </div>
+                                <div class="bg-red-100 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-red-800">Taxa de Sucesso</h4>
+                                    <p class="text-2xl font-bold text-red-900">${results.success_rate.toFixed(1)}%</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <h4 class="font-semibold">📋 Detalhes dos Testes</h4>
+                                ${results.results.map((test, index) => `
+                                    <div class="border rounded-lg p-4 ${test.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-medium">Teste ${index + 1}</span>
+                                            <span class="px-2 py-1 rounded text-xs ${test.passed ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+                                                ${test.passed ? '✅ Aprovado' : '❌ Falhou'}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2"><strong>Mensagem:</strong> ${test.test_case.message}</p>
+                                        <p class="text-sm text-gray-600"><strong>Resposta:</strong> ${test.result.response || 'Erro na resposta'}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
                 }
             }));
         });

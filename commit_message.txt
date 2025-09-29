@@ -1,4 +1,11 @@
-[Cursor] Fix: Remove empty line from websocket_manager.py
+[Cursor] Fix: Corrigir carregamento de variáveis de ambiente no Docker Swarm
 
-- Remove unnecessary empty line at the beginning of the file
-- Keep code clean and consistent
+- ✅ Corrigir DATABASE_URL no docker-compose.yml para usar variável do .env
+- ✅ Adicionar AI_PROVIDER como variável de ambiente
+- ✅ Garantir que todas as variáveis sejam carregadas do arquivo .env
+- ✅ Resolver problema de reinicialização constante do serviço
+
+Problema resolvido:
+- DATABASE_URL estava hardcoded, sobrescrevendo o valor do .env
+- Agora todas as variáveis são carregadas automaticamente do .env
+- Não será mais necessário exportar variáveis manualmente
