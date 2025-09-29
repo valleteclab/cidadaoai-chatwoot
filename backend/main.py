@@ -1450,17 +1450,51 @@ async def update_ai_agent(agent_id: int, agent_data: dict):
         logger.error(f"Erro ao atualizar agente: {str(e)}")
         return {"status": "error", "message": str(e)}
 
-@app.post("/api/ai-builder/test", tags=["AI Builder"])
-async def test_ai_agent(test_data: dict):
-    """Testar configuração de agente IA"""
+@app.get("/api/ai-builder/agents/{agent_id}", tags=["AI Builder"])
+async def get_ai_agent(agent_id: int):
+    """Obter agente IA específico"""
     try:
         from .ai_builder_service import ai_builder_service
-        config_data = test_data.get("config", {})
-        test_message = test_data.get("message", "Olá, como você pode me ajudar?")
-        result = await ai_builder_service.test_agent_config(config_data, test_message)
+        result = await ai_builder_service.get_agent_config(agent_id)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao obter agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/test", tags=["AI Builder"])
+async def test_ai_agent(test_data: dict):
+    """Testar configuração de agente"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.test_agent_config(
+            test_data.get("config", {}), 
+            test_data.get("message", "")
+        )
         return result
     except Exception as e:
         logger.error(f"Erro ao testar agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/ai-builder/agents/{agent_id}/deploy", tags=["AI Builder"])
+async def deploy_ai_agent(agent_id: int):
+    """Deploy agente IA (ativar no sistema)"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.deploy_agent(agent_id)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao fazer deploy do agente: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.delete("/api/ai-builder/agents/{agent_id}", tags=["AI Builder"])
+async def delete_ai_agent(agent_id: int):
+    """Deletar agente IA"""
+    try:
+        from .ai_builder_service import ai_builder_service
+        result = await ai_builder_service.delete_agent_config(agent_id)
+        return result
+    except Exception as e:
+        logger.error(f"Erro ao deletar agente: {str(e)}")
         return {"status": "error", "message": str(e)}
 
 @app.post("/api/agent/test", tags=["AI Agent"])

@@ -247,10 +247,17 @@ SEMPRE:
         try:
             from .ai_providers import AIProviderFactory
             
-            # Criar provedor temporário
-            provider = AIProviderFactory.create_provider(
-                config_data.get("provider", "groq")
-            )
+            # Criar provedor temporário com API key
+            provider_name = config_data.get("provider", "groq")
+            api_key = os.getenv(f"{provider_name.upper()}_API_KEY")
+            
+            if not api_key:
+                return {
+                    "status": "error",
+                    "message": f"API key não configurada para {provider_name}"
+                }
+            
+            provider = AIProviderFactory.create_provider(provider_name, api_key)
             
             if not provider:
                 return {
@@ -290,6 +297,105 @@ SEMPRE:
             return {
                 "status": "error",
                 "message": f"Erro ao testar agente: {str(e)}"
+            }
+    
+    async def get_agent_config(self, agent_id: int) -> Dict[str, Any]:
+        """Obter configuração de agente específico"""
+        try:
+            async with chamados_service.pool.acquire() as conn:
+                result = await conn.fetchrow("""
+                    SELECT id, nome, provider, config, active, created_at, updated_at
+                    FROM config_ia
+                    WHERE id = $1
+                """, agent_id)
+                
+                if result:
+                    config_data = result["config"] if isinstance(result["config"], dict) else json.loads(result["config"])
+                    return {
+                        "status": "success",
+                        "agent": {
+                            "id": result["id"],
+                            "nome": result["nome"],
+                            "provider": result["provider"],
+                            "config": config_data,
+                            "active": result["active"],
+                            "created_at": result["created_at"].isoformat(),
+                            "updated_at": result["updated_at"].isoformat() if result["updated_at"] else None
+                        }
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "message": "Agente não encontrado"
+                    }
+                    
+        except Exception as e:
+            logger.error(f"❌ Erro ao obter agente: {e}")
+            return {
+                "status": "error",
+                "message": f"Erro ao obter agente: {str(e)}"
+            }
+    
+    async def delete_agent_config(self, agent_id: int) -> Dict[str, Any]:
+        """Deletar configuração de agente"""
+        try:
+            async with chamados_service.pool.acquire() as conn:
+                result = await conn.fetchrow("""
+                    DELETE FROM config_ia
+                    WHERE id = $1
+                    RETURNING id, nome
+                """, agent_id)
+                
+                if result:
+                    return {
+                        "status": "success",
+                        "message": f"Agente '{result['nome']}' deletado com sucesso"
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "message": "Agente não encontrado"
+                    }
+                    
+        except Exception as e:
+            logger.error(f"❌ Erro ao deletar agente: {e}")
+            return {
+                "status": "error",
+                "message": f"Erro ao deletar agente: {str(e)}"
+            }
+    
+    async def deploy_agent(self, agent_id: int) -> Dict[str, Any]:
+        """Deploy agente (ativar no sistema)"""
+        try:
+            async with chamados_service.pool.acquire() as conn:
+                result = await conn.fetchrow("""
+                    UPDATE config_ia 
+                    SET active = true, updated_at = $2
+                    WHERE id = $1
+                    RETURNING id, nome, active
+                """, agent_id, datetime.now())
+                
+                if result:
+                    return {
+                        "status": "success",
+                        "message": f"Agente '{result['nome']}' ativado com sucesso",
+                        "agent": {
+                            "id": result["id"],
+                            "nome": result["nome"],
+                            "active": result["active"]
+                        }
+                    }
+                else:
+                    return {
+                        "status": "error",
+                        "message": "Agente não encontrado"
+                    }
+                    
+        except Exception as e:
+            logger.error(f"❌ Erro ao fazer deploy do agente: {e}")
+            return {
+                "status": "error",
+                "message": f"Erro ao fazer deploy: {str(e)}"
             }
     
     def _calculate_cost(self, provider: str, tokens: int) -> float:

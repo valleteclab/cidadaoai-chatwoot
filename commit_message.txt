@@ -1,0 +1,4 @@
+[Cursor] Fix: Remove empty line from websocket_manager.py
+
+- Remove unnecessary empty line at the beginning of the file
+- Keep code clean and consistent

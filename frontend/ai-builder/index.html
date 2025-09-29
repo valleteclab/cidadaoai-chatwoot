@@ -20,11 +20,17 @@
                         <h1 class="text-xl font-bold text-gray-800">Cidadão.AI - Construtor de Agentes</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fas fa-save mr-2"></i>Salvar
+                        <button @click="saveAgent()" 
+                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                :disabled="saving">
+                            <i class="fas fa-save mr-2"></i>
+                            <span x-text="saving ? 'Salvando...' : 'Salvar'"></span>
                         </button>
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                            <i class="fas fa-play mr-2"></i>Testar
+                        <button @click="testAgent()" 
+                                class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+                                :disabled="testing">
+                            <i class="fas fa-play mr-2"></i>
+                            <span x-text="testing ? 'Testando...' : 'Testar'"></span>
                         </button>
                     </div>
                 </div>
@@ -257,25 +263,31 @@
                                     <h4 class="font-medium text-gray-900 mb-3">Simulador de Conversa</h4>
                                     <div class="bg-gray-50 rounded-lg p-4 mb-4" style="height: 300px; overflow-y: auto;">
                                         <div class="space-y-3">
-                                            <div class="flex justify-end">
-                                                <div class="bg-blue-600 text-white p-3 rounded-lg max-w-xs">
-                                                    Olá, preciso de ajuda com um buraco na rua
+                                            <template x-for="message in testConversation" :key="message.message">
+                                                <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                                    <div :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'" 
+                                                         class="p-3 rounded-lg max-w-xs">
+                                                        <span x-text="message.message"></span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="flex justify-start">
-                                                <div class="bg-gray-200 text-gray-800 p-3 rounded-lg max-w-xs">
-                                                    Olá! Sou o assistente da prefeitura. Vou te ajudar com isso. 
-                                                    Primeiro, preciso de alguns dados seus. Qual seu nome completo?
-                                                </div>
+                                            </template>
+                                            
+                                            <!-- Mensagem inicial se não há conversa -->
+                                            <div x-show="testConversation.length === 0" class="text-center text-gray-500 py-8">
+                                                <i class="fas fa-comments text-2xl mb-2"></i>
+                                                <p>Inicie uma conversa de teste</p>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="flex space-x-2">
                                         <input type="text" 
+                                               x-model="testMessage"
                                                placeholder="Digite sua mensagem..."
                                                class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        <button class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                                        <button @click="sendTestMessage()" 
+                                                class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                                                :disabled="sendingMessage">
                                             <i class="fas fa-paper-plane"></i>
                                         </button>
                                     </div>
@@ -287,21 +299,21 @@
                                         <div class="bg-white p-4 rounded-lg border">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-sm font-medium text-gray-600">Tempo de Resposta</span>
-                                                <span class="text-sm font-bold text-green-600">1.2s</span>
+                                                <span class="text-sm font-bold text-green-600" x-text="testMetrics.responseTime || 'N/A'"></span>
                                             </div>
                                         </div>
                                         
                                         <div class="bg-white p-4 rounded-lg border">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-sm font-medium text-gray-600">Tokens Usados</span>
-                                                <span class="text-sm font-bold text-blue-600">156</span>
+                                                <span class="text-sm font-bold text-blue-600" x-text="testMetrics.tokensUsed || 'N/A'"></span>
                                             </div>
                                         </div>
                                         
                                         <div class="bg-white p-4 rounded-lg border">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-sm font-medium text-gray-600">Custo Estimado</span>
-                                                <span class="text-sm font-bold text-purple-600">$0.002</span>
+                                                <span class="text-sm font-bold text-purple-600" x-text="testMetrics.estimatedCost || 'N/A'"></span>
                                             </div>
                                         </div>
                                         
@@ -359,6 +371,138 @@ SEMPRE:
 - Forneça o protocolo gerado`,
                     temperature: 0.7,
                     maxTokens: 1000
+                },
+                
+                // Estados de controle
+                saving: false,
+                testing: false,
+                sendingMessage: false,
+                
+                // Dados de teste
+                testMessage: 'Olá, preciso de ajuda com um buraco na rua',
+                testMetrics: {},
+                testConversation: [],
+                
+                // Métodos
+                async saveAgent() {
+                    this.saving = true;
+                    try {
+                        const response = await fetch('/api/ai-builder/agents', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(this.agentConfig)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            alert('✅ Agente salvo com sucesso!');
+                            console.log('Agente criado:', result.agent);
+                        } else {
+                            alert('❌ Erro ao salvar: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao salvar agente:', error);
+                        alert('❌ Erro de conexão ao salvar agente');
+                    } finally {
+                        this.saving = false;
+                    }
+                },
+                
+                async testAgent() {
+                    this.testing = true;
+                    try {
+                        const response = await fetch('/api/ai-builder/test', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                config: this.agentConfig,
+                                message: this.testMessage
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            this.testMetrics = {
+                                responseTime: result.metrics.response_time.toFixed(2) + 's',
+                                tokensUsed: result.metrics.tokens_used,
+                                estimatedCost: '$' + result.metrics.estimated_cost.toFixed(4)
+                            };
+                            
+                            // Adicionar à conversa de teste
+                            this.testConversation.push({
+                                role: 'user',
+                                message: this.testMessage
+                            });
+                            this.testConversation.push({
+                                role: 'assistant',
+                                message: result.response
+                            });
+                            
+                            alert('✅ Teste realizado com sucesso!');
+                        } else {
+                            alert('❌ Erro no teste: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao testar agente:', error);
+                        alert('❌ Erro de conexão ao testar agente');
+                    } finally {
+                        this.testing = false;
+                    }
+                },
+                
+                async sendTestMessage() {
+                    if (!this.testMessage.trim()) return;
+                    
+                    this.sendingMessage = true;
+                    try {
+                        const response = await fetch('/api/ai-builder/test', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                config: this.agentConfig,
+                                message: this.testMessage
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            // Adicionar à conversa
+                            this.testConversation.push({
+                                role: 'user',
+                                message: this.testMessage
+                            });
+                            this.testConversation.push({
+                                role: 'assistant',
+                                message: result.response
+                            });
+                            
+                            // Atualizar métricas
+                            this.testMetrics = {
+                                responseTime: result.metrics.response_time.toFixed(2) + 's',
+                                tokensUsed: result.metrics.tokens_used,
+                                estimatedCost: '$' + result.metrics.estimated_cost.toFixed(4)
+                            };
+                            
+                            // Limpar input
+                            this.testMessage = '';
+                        } else {
+                            alert('❌ Erro: ' + result.message);
+                        }
+                    } catch (error) {
+                        console.error('Erro ao enviar mensagem:', error);
+                        alert('❌ Erro de conexão');
+                    } finally {
+                        this.sendingMessage = false;
+                    }
                 },
                 
                 addTemplate(type) {

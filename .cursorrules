@@ -1,0 +1,95 @@
+# Cidadão.AI - Sistema de Chamados para Prefeituras
+## IA da Pref de Barreiras-BA
+
+# Scratchpad - Status Atual (Janeiro 2025)
+
+## 🎯 Tarefa Atual
+[X] Verificar onde paramos ontem e continuar desenvolvimento
+[X] Completar AI Builder - Interface visual para criar e gerenciar agentes IA
+
+## 📋 Status do Projeto
+
+### ✅ FASE 1 - IMPLEMENTADA E FUNCIONANDO
+- 🤖 IA especializada para atendimento
+- 📋 Cadastro automático de cidadãos  
+- 🏷️ Categorização inteligente de chamados
+- 📊 Geração automática de protocolos
+- 🖥️ Dashboard administrativo
+- 📱 Interface web completa
+
+### 🔄 Últimas Atividades
+- [X] Sistema completo de chamados implementado
+- [X] AI Builder adicionado (interface visual para criar agentes IA)
+- [X] Documentação completa criada
+- [X] Correções de validação Pydantic
+- [X] Frontend administrativo implementado
+- [X] Sistema de monitoramento em tempo real
+- [X] Backend completo do AI Builder implementado
+- [X] APIs de teste e deploy de agentes criadas
+- [X] Integração frontend-backend do AI Builder
+
+### 📝 Mudanças Pendentes
+- [X] Arquivo `backend/websocket_manager.py` modificado (commitado)
+- [X] Backend do AI Builder completado
+- [X] Frontend integrado com APIs
+
+## 🚀 Próximos Passos
+1. [X] Verificar mudanças pendentes no websocket_manager.py
+2. [X] Commit das alterações se necessário
+3. [X] Completar backend do AI Builder
+4. [ ] Testar integração completa do AI Builder
+5. [ ] Implementar sistema multi-agente especializado
+6. [ ] Avaliar Agno Framework para possível migração
+
+## 🔧 Comandos Úteis
+```bash
+# Status do git
+git status
+
+# Ver logs do sistema
+docker service logs -f cidadaoai_app
+
+# Deploy
+./update-server.sh
+
+# Acesso ao servidor
+ssh root@212.85.0.166
+```
+
+## 📊 URLs do Sistema
+- Dashboard Técnico: https://tecnico.sisgov.app.br/
+- Painel Admin: https://tecnico.sisgov.app.br/admin
+- AI Builder: https://tecnico.sisgov.app.br/ai-builder
+- API Docs: https://tecnico.sisgov.app.br/docs
+- Status: https://tecnico.sisgov.app.br/api/chamados/status
+
+## 🤖 AI Builder - Funcionalidades Implementadas
+### Frontend:
+- Interface visual para criar agentes
+- Editor de prompts com syntax highlighting
+- Configuração de provedores (Groq, OpenAI, Anthropic)
+- Simulador de conversa em tempo real
+- Métricas de performance (tempo, tokens, custo)
+- Templates pré-definidos por categoria
+
+### Backend:
+- APIs completas para CRUD de agentes
+- Sistema de teste de configurações
+- Integração com provedores de IA
+- Cálculo de métricas e custos
+- Deploy e ativação de agentes
+- Armazenamento no banco de dados
+
+# Lessons
+
+## User Specified Lessons
+- Você tem um python venv em ./venv. Use-o.
+- Inclua informações úteis para debug na saída do programa.
+- Leia o arquivo antes de tentar editá-lo.
+- Devido ao limite do Cursor, quando usar `git` e `gh` e precisar submeter uma mensagem de commit multilinha, primeiro escreva a mensagem em um arquivo, e então use `git commit -F <filename>` ou comando similar para fazer commit. E então remova o arquivo. Inclua "[Cursor] " na mensagem de commit e título do PR.
+
+## Cursor learned
+- Para resultados de busca, garantir tratamento adequado de diferentes codificações de caracteres (UTF-8) para consultas internacionais
+- Adicionar informações de debug para stderr mantendo a saída principal limpa em stdout para melhor integração de pipeline
+- Ao usar estilos seaborn no matplotlib, usar 'seaborn-v0_8' em vez de 'seaborn' como nome do estilo devido a mudanças recentes na versão do seaborn
+- Usar 'gpt-4o' como nome do modelo para capacidades de visão do GPT-4 da OpenAI
