@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cidadão.AI - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fas fa-users-cog text-2xl text-blue-600 mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-800">Cidadão.AI - Admin</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600">Sistema de Chamados</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <!-- Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-users text-2xl text-blue-600"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Cidadãos</dt>
+                                    <dd class="text-lg font-medium text-gray-900" id="total-cidadaos">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-ticket-alt text-2xl text-green-600"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Chamados</dt>
+                                    <dd class="text-lg font-medium text-gray-900" id="total-chamados">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-clock text-2xl text-yellow-600"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Em Andamento</dt>
+                                    <dd class="text-lg font-medium text-gray-900" id="chamados-andamento">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Resolvidos</dt>
+                                    <dd class="text-lg font-medium text-gray-900" id="chamados-resolvidos">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white shadow rounded-lg" x-data="{ activeTab: 'cidadaos' }">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8 px-6">
+                        <button @click="activeTab = 'cidadaos'" 
+                                :class="activeTab === 'cidadaos' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <i class="fas fa-users mr-2"></i>Cidadãos
+                        </button>
+                        <button @click="activeTab = 'chamados'" 
+                                :class="activeTab === 'chamados' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <i class="fas fa-ticket-alt mr-2"></i>Chamados
+                        </button>
+                        <button @click="activeTab = 'system'" 
+                                :class="activeTab === 'system' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <i class="fas fa-cog mr-2"></i>Sistema
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Cidadãos Tab -->
+                <div x-show="activeTab === 'cidadaos'" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Cidadãos Cadastrados</h3>
+                        <button onclick="loadCidadaos()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cadastrado em</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cidadaos-table" class="bg-white divide-y divide-gray-200">
+                                <!-- Dados carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Chamados Tab -->
+                <div x-show="activeTab === 'chamados'" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Chamados</h3>
+                        <button onclick="loadChamados()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protocolo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
+                                </tr>
+                            </thead>
+                            <tbody id="chamados-table" class="bg-white divide-y divide-gray-200">
+                                <!-- Dados carregados via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sistema Tab -->
+                <div x-show="activeTab === 'system'" class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Status do Sistema</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-900 mb-2">Banco de Dados</h4>
+                            <div id="db-status" class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Verificando...</span>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-900 mb-2">IA Service</h4>
+                            <div id="ai-status" class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Verificando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Carregar dados ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMetrics();
+            loadCidadaos();
+            loadChamados();
+            checkSystemStatus();
+            
+            // Atualizar a cada 30 segundos
+            setInterval(() => {
+                loadMetrics();
+                checkSystemStatus();
+            }, 30000);
+        });
+
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/api/chamados/metrics');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('total-cidadaos').textContent = data.metrics.total_cidadaos || 0;
+                    document.getElementById('total-chamados').textContent = data.metrics.total_chamados || 0;
+                    document.getElementById('chamados-andamento').textContent = data.metrics.chamados_em_andamento || 0;
+                    document.getElementById('chamados-resolvidos').textContent = data.metrics.chamados_resolvidos || 0;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar métricas:', error);
+            }
+        }
+
+        async function loadCidadaos() {
+            try {
+                const response = await fetch('/api/chamados/cidadaos');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('cidadaos-table');
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    tableBody.innerHTML = data.data.map(cidadao => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.nome}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.telefone}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.email || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(cidadao.created_at).toLocaleString('pt-BR')}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                Nenhum cidadão encontrado
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar cidadãos:', error);
+                const tableBody = document.getElementById('cidadaos-table');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-red-500 text-center">
+                            Erro ao carregar dados
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadChamados() {
+            try {
+                const response = await fetch('/api/chamados/chamados');
+                const data = await response.json();
+                
+                const tableBody = document.getElementById('chamados-table');
+                
+                if (data.status === 'success' && data.data.length > 0) {
+                    tableBody.innerHTML = data.data.map(chamado => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${chamado.protocolo}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${chamado.titulo}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    chamado.status === 'resolvido' ? 'bg-green-100 text-green-800' :
+                                    chamado.status === 'em_andamento' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }">
+                                    ${chamado.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(chamado.created_at).toLocaleString('pt-BR')}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                Nenhum chamado encontrado
+                            </td>
+                        </tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar chamados:', error);
+                const tableBody = document.getElementById('chamados-table');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-red-500 text-center">
+                            Erro ao carregar dados
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/chamados/status');
+                const data = await response.json();
+                
+                const dbStatus = document.getElementById('db-status');
+                const aiStatus = document.getElementById('ai-status');
+                
+                if (data.database_connected) {
+                    dbStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div><span class="text-sm text-green-600">Conectado</span>';
+                } else {
+                    dbStatus.innerHTML = '<div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div><span class="text-sm text-red-600">Desconectado</span>';
+                }
+                
+                if (data.chamados_ai_available) {
+                    aiStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div><span class="text-sm text-green-600">Disponível</span>';
+                } else {
+                    aiStatus.innerHTML = '<div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div><span class="text-sm text-red-600">Indisponível</span>';
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+            }
+        }
+    </script>
+</body>
+</html>

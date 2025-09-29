@@ -3,6 +3,7 @@
 Cidadão.AI - Backend com Chatwoot
 """
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Header
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, File, Form
@@ -1351,6 +1352,44 @@ async def debug_conversations():
         
     except Exception as e:
         return {"error": str(e), "url": url}
+
+@app.get("/api/chamados/cidadaos", tags=["Chamados"])
+async def listar_cidadaos():
+    """Listar todos os cidadãos cadastrados"""
+    try:
+        cidadaos = await chamados_service.listar_cidadaos()
+        return {
+            "status": "success",
+            "data": cidadaos,
+            "total": len(cidadaos)
+        }
+    except Exception as e:
+        logger.error(f"Erro ao listar cidadãos: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/chamados/chamados", tags=["Chamados"])
+async def listar_chamados():
+    """Listar todos os chamados"""
+    try:
+        chamados = await chamados_service.listar_chamados()
+        return {
+            "status": "success",
+            "data": chamados,
+            "total": len(chamados)
+        }
+    except Exception as e:
+        logger.error(f"Erro ao listar chamados: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/admin", tags=["Frontend"])
+async def admin_panel():
+    """Painel administrativo"""
+    try:
+        with open("frontend/admin/index.html", "r", encoding="utf-8") as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+    except FileNotFoundError:
+        return {"error": "Arquivo admin não encontrado"}
 
 @app.post("/api/agent/test", tags=["AI Agent"])
 async def test_agent(message_data: dict):

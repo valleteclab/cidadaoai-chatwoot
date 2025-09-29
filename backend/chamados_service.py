@@ -413,6 +413,80 @@ class ChamadosService:
         except Exception as e:
             logger.error(f"❌ Erro ao obter métricas: {e}")
             return {}
+    
+    async def listar_cidadaos(self, prefeitura_id: int = 1):
+        """Listar todos os cidadãos cadastrados"""
+        try:
+            async with self.pool.acquire() as conn:
+                cidadaos_data = await conn.fetch("""
+                    SELECT id, nome, telefone, email, endereco, bairro, cidade, 
+                           chatwoot_contact_id, created_at, updated_at
+                    FROM cidadaos 
+                    WHERE prefeitura_id = $1 AND active = true
+                    ORDER BY created_at DESC
+                """, prefeitura_id)
+                
+                cidadaos = []
+                for row in cidadaos_data:
+                    cidadaos.append({
+                        "id": row["id"],
+                        "nome": row["nome"],
+                        "telefone": row["telefone"],
+                        "email": row["email"],
+                        "endereco": row["endereco"],
+                        "bairro": row["bairro"],
+                        "cidade": row["cidade"],
+                        "chatwoot_contact_id": row["chatwoot_contact_id"],
+                        "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                        "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None
+                    })
+                
+                return cidadaos
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao listar cidadãos: {e}")
+            return []
+    
+    async def listar_chamados(self, prefeitura_id: int = 1):
+        """Listar todos os chamados"""
+        try:
+            async with self.pool.acquire() as conn:
+                chamados_data = await conn.fetch("""
+                    SELECT c.id, c.protocolo, c.titulo, c.descricao, c.status, c.prioridade,
+                           c.created_at, c.updated_at, c.resolved_at,
+                           ci.nome as cidadao_nome, ci.telefone as cidadao_telefone,
+                           cat.nome as categoria_nome, t.nome as time_nome
+                    FROM chamados c
+                    JOIN cidadaos ci ON c.cidadao_id = ci.id
+                    LEFT JOIN categorias_chamados cat ON c.categoria_id = cat.id
+                    LEFT JOIN times t ON c.time_id = t.id
+                    WHERE c.prefeitura_id = $1
+                    ORDER BY c.created_at DESC
+                """, prefeitura_id)
+                
+                chamados = []
+                for row in chamados_data:
+                    chamados.append({
+                        "id": row["id"],
+                        "protocolo": row["protocolo"],
+                        "titulo": row["titulo"],
+                        "descricao": row["descricao"],
+                        "status": row["status"],
+                        "prioridade": row["prioridade"],
+                        "cidadao_nome": row["cidadao_nome"],
+                        "cidadao_telefone": row["cidadao_telefone"],
+                        "categoria_nome": row["categoria_nome"],
+                        "time_nome": row["time_nome"],
+                        "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+                        "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
+                        "resolved_at": row["resolved_at"].isoformat() if row["resolved_at"] else None
+                    })
+                
+                return chamados
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao listar chamados: {e}")
+            return []
 
 
 # Instância global do serviço
