@@ -487,16 +487,39 @@ SEMPRE:
                 
                 agents = []
                 for row in results:
-                    config_data = row["config"] if isinstance(row["config"], dict) else json.loads(row["config"])
-                    agents.append({
-                        "id": row["id"],
-                        "nome": row["nome"],
-                        "provider": row["provider"],
-                        "config": config_data,
-                        "active": row["active"],
-                        "created_at": row["created_at"].isoformat(),
-                        "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None
-                    })
+                    try:
+                        config_data = row["config"] if isinstance(row["config"], dict) else json.loads(row["config"] or '{}')
+                        
+                        # Extrair dados do config
+                        category = config_data.get('category', 'geral')
+                        sla_hours = config_data.get('sla_hours', config_data.get('sla', 24))
+                        priority = config_data.get('priority', 'media')
+                        system_prompt = config_data.get('system_prompt', '')
+                        
+                        # Buscar última atividade do agente
+                        last_activity = await conn.fetchval("""
+                            SELECT MAX(created_at) 
+                            FROM agent_interactions 
+                            WHERE agent_id = $1
+                        """, row["id"])
+                        
+                        agents.append({
+                            "id": row["id"],
+                            "name": row["nome"],  # Mudança: usar 'name' em vez de 'nome'
+                            "provider": row["provider"],
+                            "category": category,
+                            "sla_hours": sla_hours,
+                            "priority": priority,
+                            "config": config_data,
+                            "active": row["active"],
+                            "created_at": row["created_at"].isoformat(),
+                            "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
+                            "last_activity": last_activity.isoformat() if last_activity else None,
+                            "system_prompt": system_prompt[:100] + "..." if len(system_prompt) > 100 else system_prompt
+                        })
+                    except Exception as e:
+                        logger.error(f"Erro ao processar agente {row['id']}: {e}")
+                        continue
                 
                 return {
                     "status": "success",

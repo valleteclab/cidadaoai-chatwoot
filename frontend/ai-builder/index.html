@@ -163,6 +163,39 @@
                                         </button>
                             </div>
                             
+                                    <!-- Agente Ativo Atual -->
+                                    <div x-show="getActiveAgent()" class="bg-gradient-to-r from-green-500 to-green-600 p-4 rounded-lg text-white mb-6">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <div class="text-sm opacity-90">🤖 Agente Ativo no WhatsApp</div>
+                                                <div class="text-xl font-bold" x-text="getActiveAgent()?.name || 'Nenhum'"></div>
+                                                <div class="text-sm opacity-90">
+                                                    <span x-text="getCategoryName(getActiveAgent()?.category)"></span> • 
+                                                    SLA: <span x-text="getActiveAgent()?.sla_hours + 'h'"></span> • 
+                                                    <span x-text="getActiveAgent()?.provider.toUpperCase()"></span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="w-4 h-4 bg-white rounded-full animate-pulse mb-2"></div>
+                                                <div class="text-xs opacity-90">Respondendo agora</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Alerta se nenhum agente ativo -->
+                                    <div x-show="!getActiveAgent()" class="bg-gradient-to-r from-red-500 to-red-600 p-4 rounded-lg text-white mb-6">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <div class="text-sm opacity-90">⚠️ Nenhum Agente Ativo</div>
+                                                <div class="text-xl font-bold">WhatsApp sem resposta automática</div>
+                                                <div class="text-sm opacity-90">Ative pelo menos um agente para responder automaticamente</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <i class="fas fa-exclamation-triangle text-2xl"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <!-- Status dos Agentes -->
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                         <div class="bg-green-100 p-4 rounded-lg">
@@ -234,15 +267,24 @@
                                                         
                                                         <!-- Indicador de uso em tempo real -->
                                                         <div class="flex items-center space-x-4 text-sm">
-                                                            <div class="flex items-center space-x-2">
+                                                            <div x-show="agent.active" class="flex items-center space-x-2">
                                                                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                                <span class="text-gray-600">Respondendo no WhatsApp</span>
+                                                                <span class="text-green-600 font-medium">🟢 Ativo no WhatsApp</span>
+                                                            </div>
+                                                            <div x-show="!agent.active" class="flex items-center space-x-2">
+                                                                <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                                                <span class="text-gray-500">⚫ Inativo</span>
                                                             </div>
                                                             <div class="text-gray-500">
                                                                 <i class="fas fa-clock mr-1"></i>
-                                                                Última atividade: <span x-text="agent.last_activity || 'Nunca'"></span>
-                                </div>
-                            </div>
+                                                                Última atividade: <span x-text="formatLastActivity(agent.last_activity)"></span>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Preview do prompt -->
+                                                        <div x-show="agent.system_prompt" class="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                                                            <strong>Prompt:</strong> <span x-text="agent.system_prompt"></span>
+                                                        </div>
                         </div>
 
                                                     <!-- Ações do Agente -->
@@ -684,6 +726,22 @@ SEMPRE:
                     };
                 },
                 
+                getActiveAgent() {
+                    // Retorna o primeiro agente ativo (por prioridade)
+                    const activeAgents = this.agentsList.filter(agent => agent.active);
+                    if (activeAgents.length === 0) return null;
+                    
+                    // Ordenar por prioridade (crítica > alta > média > baixa)
+                    const priorityOrder = { 'critica': 1, 'alta': 2, 'media': 3, 'baixa': 4 };
+                    activeAgents.sort((a, b) => {
+                        const priorityA = priorityOrder[a.priority] || 5;
+                        const priorityB = priorityOrder[b.priority] || 5;
+                        return priorityA - priorityB;
+                    });
+                    
+                    return activeAgents[0];
+                },
+                
                 getPriorityColor(priority) {
                     const colors = {
                         'critica': 'bg-red-100 text-red-800',
@@ -708,6 +766,24 @@ SEMPRE:
                 formatDate(dateString) {
                     if (!dateString) return 'N/A';
                     return new Date(dateString).toLocaleDateString('pt-BR');
+                },
+                
+                formatLastActivity(dateString) {
+                    if (!dateString) return 'Nunca';
+                    
+                    const now = new Date();
+                    const activityDate = new Date(dateString);
+                    const diffMs = now - activityDate;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+                    
+                    if (diffMins < 1) return 'Agora mesmo';
+                    if (diffMins < 60) return `${diffMins}min atrás`;
+                    if (diffHours < 24) return `${diffHours}h atrás`;
+                    if (diffDays < 7) return `${diffDays}d atrás`;
+                    
+                    return activityDate.toLocaleDateString('pt-BR');
                 },
                 
                 async editAgent(agent) {
