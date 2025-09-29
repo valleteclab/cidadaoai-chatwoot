@@ -127,9 +127,18 @@ class ChamadosService:
                         SELECT * FROM cidadaos WHERE id = $1
                     """, existing['id'])
                     
+                    # Converter config se necessário
+                    cidadao_dict = dict(cidadao_data)
+                    if isinstance(cidadao_dict.get('config'), str):
+                        try:
+                            import json
+                            cidadao_dict['config'] = json.loads(cidadao_dict['config'])
+                        except:
+                            cidadao_dict['config'] = {}
+                    
                     return CadastrarCidadaoResponse(
                         status="success",
-                        cidadao=Cidadao(**cidadao_data),
+                        cidadao=Cidadao(**cidadao_dict),
                         message="Dados do cidadão atualizados com sucesso"
                     )
                 else:
@@ -144,9 +153,18 @@ class ChamadosService:
                          request.email, request.endereco, request.bairro, request.cidade,
                          request.cep, request.data_nascimento, request.genero)
                     
+                    # Converter config se necessário
+                    cidadao_dict = dict(cidadao_data)
+                    if isinstance(cidadao_dict.get('config'), str):
+                        try:
+                            import json
+                            cidadao_dict['config'] = json.loads(cidadao_dict['config'])
+                        except:
+                            cidadao_dict['config'] = {}
+                    
                     return CadastrarCidadaoResponse(
                         status="success",
-                        cidadao=Cidadao(**cidadao_data),
+                        cidadao=Cidadao(**cidadao_dict),
                         message="Cidadão cadastrado com sucesso"
                     )
                     
@@ -167,7 +185,16 @@ class ChamadosService:
                 """, telefone, prefeitura_id)
                 
                 if cidadao_data:
-                    return Cidadao(**cidadao_data)
+                    # Converter config se necessário
+                    cidadao_dict = dict(cidadao_data)
+                    if isinstance(cidadao_dict.get('config'), str):
+                        try:
+                            import json
+                            cidadao_dict['config'] = json.loads(cidadao_dict['config'])
+                        except:
+                            cidadao_dict['config'] = {}
+                    
+                    return Cidadao(**cidadao_dict)
                 return None
                 
         except Exception as e:
