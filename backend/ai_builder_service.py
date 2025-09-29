@@ -18,6 +18,42 @@ class AIBuilderService:
     def __init__(self):
         self.templates = self._load_templates()
     
+    def _normalize_config_input(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        """Normaliza chaves vindas do frontend (camelCase) para snake_case.
+        Aceita tanto no topo quanto dentro de 'config'. Sempre retorna um
+        dicionário plano pronto para persistência/uso em providers.
+        """
+        if raw is None:
+            raw = {}
+        # Se veio aninhado em 'config', traz para o topo mantendo prioridade do topo
+        base = dict(raw.get("config", {})) if isinstance(raw.get("config"), dict) else {}
+        merged: Dict[str, Any] = {**base, **raw}
+
+        # Mapear nomes
+        mapping = {
+            "systemPrompt": "system_prompt",
+            "maxTokens": "max_tokens",
+            "sla": "sla_hours",
+        }
+        normalized: Dict[str, Any] = {}
+        for k, v in merged.items():
+            kk = mapping.get(k, k)
+            normalized[kk] = v
+
+        # Defaults e tipos
+        normalized["provider"] = normalized.get("provider", "groq")
+        normalized["temperature"] = float(normalized.get("temperature", 0.7))
+        normalized["max_tokens"] = int(normalized.get("max_tokens", 1000))
+        normalized["system_prompt"] = normalized.get("system_prompt", "") or ""
+        normalized["category"] = normalized.get("category", "geral")
+        normalized["sla_hours"] = int(normalized.get("sla_hours", 24))
+        normalized["priority"] = normalized.get("priority", "media")
+        normalized["active"] = bool(normalized.get("active", True))
+
+        # Remover possíveis campos redundantes para persistência limpa
+        normalized.pop("config", None)
+        return normalized
+
     def _load_templates(self) -> Dict[str, Any]:
         """Carregar templates pré-definidos"""
         return {
@@ -319,9 +355,10 @@ SEMPRE:
                 logger.warning(f"Provedor {provider_name} não disponível")
                 return None
             
-            # Preparar prompt do sistema
-            system_prompt = agent_config.get('config', {}).get('system_prompt', 
-                                                             self.templates.get(agent_config.get('category', 'infraestrutura'), {}).get('system_prompt', ''))
+            # Preparar prompt do sistema (suporta tanto salvo quanto em memória)
+            normalized = self._normalize_config_input(agent_config)
+            system_prompt = normalized.get('system_prompt') or \
+                self.templates.get(normalized.get('category', 'infraestrutura'), {}).get('system_prompt', '')
             
             if not system_prompt:
                 logger.warning("Nenhum prompt do sistema encontrado")
@@ -336,8 +373,8 @@ SEMPRE:
             # Gerar resposta
             ai_response = await provider.generate_response(
                 messages=messages,
-                max_tokens=agent_config.get('config', {}).get('max_tokens', 1000),
-                temperature=agent_config.get('config', {}).get('temperature', 0.7)
+                max_tokens=normalized.get('max_tokens', 1000),
+                temperature=normalized.get('temperature', 0.7)
             )
             
             if ai_response:
@@ -376,19 +413,20 @@ SEMPRE:
         """Criar nova configuração de agente"""
         try:
             async with chamados_service.pool.acquire() as conn:
-                # Preparar dados da configuração
+                # Normalizar dados vindos do frontend
+                norm = self._normalize_config_input(config_data)
                 agent_config = {
                     "name": config_data.get("name", "Novo Agente"),
-                    "provider": config_data.get("provider", "groq"),
-                    "temperature": config_data.get("temperature", 0.7),
-                    "max_tokens": config_data.get("max_tokens", 1000),
-                    "system_prompt": config_data.get("system_prompt", ""),
+                    "provider": norm["provider"],
+                    "temperature": norm["temperature"],
+                    "max_tokens": norm["max_tokens"],
+                    "system_prompt": norm["system_prompt"],
                     "flow": config_data.get("flow", []),
                     "templates": config_data.get("templates", {}),
-                    "category": config_data.get("category", "geral"),
-                    "sla_hours": config_data.get("sla", 24),
-                    "priority": config_data.get("priority", "media"),
-                    "active": config_data.get("active", True)
+                    "category": norm["category"],
+                    "sla_hours": norm["sla_hours"],
+                    "priority": norm["priority"],
+                    "active": norm["active"]
                 }
                 
                 # Inserir no banco
@@ -424,19 +462,20 @@ SEMPRE:
         """Atualizar configuração de agente"""
         try:
             async with chamados_service.pool.acquire() as conn:
-                # Preparar dados atualizados
+                # Normalizar dados atualizados
+                norm = self._normalize_config_input(config_data)
                 agent_config = {
                     "name": config_data.get("name"),
-                    "provider": config_data.get("provider"),
-                    "temperature": config_data.get("temperature"),
-                    "max_tokens": config_data.get("max_tokens"),
-                    "system_prompt": config_data.get("system_prompt"),
+                    "provider": norm["provider"],
+                    "temperature": norm["temperature"],
+                    "max_tokens": norm["max_tokens"],
+                    "system_prompt": norm["system_prompt"],
                     "flow": config_data.get("flow"),
                     "templates": config_data.get("templates"),
-                    "category": config_data.get("category"),
-                    "sla_hours": config_data.get("sla"),
-                    "priority": config_data.get("priority"),
-                    "active": config_data.get("active")
+                    "category": norm["category"],
+                    "sla_hours": norm["sla_hours"],
+                    "priority": norm["priority"],
+                    "active": norm["active"]
                 }
                 
                 # Atualizar no banco
@@ -539,8 +578,11 @@ SEMPRE:
         try:
             from .ai_providers import AIProviderFactory
             
+            # Normalizar configuração recebida (garante uso exato do prompt enviado)
+            norm = self._normalize_config_input(config_data)
+
             # Criar provedor temporário com API key
-            provider_name = config_data.get("provider", "groq")
+            provider_name = norm.get("provider", "groq")
             api_key = os.getenv(f"{provider_name.upper()}_API_KEY")
             
             if not api_key:
@@ -557,9 +599,9 @@ SEMPRE:
                     "message": "Provedor não disponível"
                 }
             
-            # Preparar mensagens
+            # Preparar mensagens usando EXATAMENTE o prompt informado
             messages = [
-                {"role": "system", "content": config_data.get("system_prompt", "")},
+                {"role": "system", "content": norm.get("system_prompt", "")},
                 {"role": "user", "content": test_message}
             ]
             
@@ -567,8 +609,8 @@ SEMPRE:
             start_time = datetime.now()
             response = await provider.generate_response(
                 messages,
-                temperature=config_data.get("temperature", 0.7),
-                max_tokens=config_data.get("max_tokens", 1000)
+                temperature=norm.get("temperature", 0.7),
+                max_tokens=norm.get("max_tokens", 1000)
             )
             end_time = datetime.now()
             
@@ -580,7 +622,7 @@ SEMPRE:
                 "metrics": {
                     "response_time": response_time,
                     "tokens_used": len(response.split()) if response else 0,
-                    "estimated_cost": self._calculate_cost(config_data.get("provider"), len(response.split()) if response else 0)
+                    "estimated_cost": self._calculate_cost(provider_name, len(response.split()) if response else 0)
                 }
             }
             
