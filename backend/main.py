@@ -663,16 +663,37 @@ async def handle_conversation_typing_off(data: Dict[str, Any]):
         logger.error(f"Error handling conversation typing off: {str(e)}")
 
 async def process_with_ai(content: str, conversation_data: Dict[str, Any]) -> str:
-    """Processar mensagem com IA usando o sistema de chamados"""
+    """Processar mensagem com IA - AI Builder + Sistema de Chamados + Fallback"""
     try:
         conversation_id = conversation_data.get("id")
         contact_info = conversation_data.get("meta", {}).get("sender", {})
         
-        logger.info(f"🤖 Sistema de Chamados processando mensagem da conversa {conversation_id}")
+        logger.info(f"🤖 Processando mensagem da conversa {conversation_id}")
         
-        # Verificar se o serviço de chamados está disponível
+        # 1. Tentar usar agente do AI Builder primeiro
+        try:
+            from .ai_builder_service import ai_builder_service
+            active_agent = await ai_builder_service.get_active_agent_for_message(content)
+            
+            if active_agent:
+                logger.info(f"🎯 Usando agente do AI Builder: {active_agent.get('name', 'Desconhecido')}")
+                
+                ai_response = await ai_builder_service.process_message_with_agent(
+                    agent_config=active_agent,
+                    message=content,
+                    conversation_id=conversation_id,
+                    contact_info=contact_info
+                )
+                
+                if ai_response:
+                    logger.info(f"✅ AI Builder respondeu: {ai_response[:100]}...")
+                    return ai_response
+        except Exception as e:
+            logger.warning(f"⚠️ Erro no AI Builder: {e}")
+        
+        # 2. Fallback para sistema de chamados especializado
         if chamados_ai_service.is_available():
-            # Usar o serviço especializado de chamados
+            logger.info("🔄 Usando sistema de chamados especializado")
             ai_response = await chamados_ai_service.process_citizen_message(
                 message=content,
                 conversation_id=conversation_id,
@@ -682,24 +703,22 @@ async def process_with_ai(content: str, conversation_data: Dict[str, Any]) -> st
             if ai_response:
                 logger.info(f"✅ Sistema de Chamados respondeu: {ai_response[:100]}...")
                 return ai_response
-            else:
-                logger.warning("Sistema de Chamados não conseguiu gerar resposta")
-                return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
-        else:
-            # Fallback para o agente antigo
-            logger.info("🔄 Usando agente IA antigo como fallback")
-            ai_response = await ai_agent.process_message(
-                message=content,
-                conversation_id=conversation_id,
-                contact_info=contact_info
-            )
-            
-            if ai_response:
-                logger.info(f"✅ Agente IA antigo respondeu: {ai_response[:100]}...")
-                return ai_response
-            else:
-                logger.warning("Nenhum agente conseguiu gerar resposta")
-                return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
+        
+        # 3. Fallback final para agente genérico
+        logger.info("🔄 Usando agente IA genérico como último recurso")
+        ai_response = await ai_agent.process_message(
+            message=content,
+            conversation_id=conversation_id,
+            contact_info=contact_info
+        )
+        
+        if ai_response:
+            logger.info(f"✅ Agente genérico respondeu: {ai_response[:100]}...")
+            return ai_response
+        
+        # 4. Resposta padrão se tudo falhar
+        logger.warning("❌ Nenhum agente conseguiu gerar resposta")
+        return "Olá! Recebi sua mensagem. Nossa equipe técnica irá respondê-lo em breve. Obrigado pelo contato! 😊"
         
     except Exception as e:
         logger.error(f"❌ Erro ao processar com IA: {str(e)}")

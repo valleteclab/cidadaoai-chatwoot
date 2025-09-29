@@ -233,6 +233,145 @@ SEMPRE:
         """Obter todos os templates disponíveis"""
         return self.templates
     
+    async def get_active_agent_for_message(self, message: str) -> Optional[Dict[str, Any]]:
+        """Obter agente ativo apropriado para a mensagem"""
+        try:
+            async with chamados_service.pool.acquire() as conn:
+                # Buscar agentes ativos ordenados por prioridade
+                agents = await conn.fetch("""
+                    SELECT id, nome, provider, config, category, sla_hours, priority, active
+                    FROM config_ia 
+                    WHERE active = true 
+                    ORDER BY 
+                        CASE priority 
+                            WHEN 'critica' THEN 1 
+                            WHEN 'alta' THEN 2 
+                            WHEN 'media' THEN 3 
+                            WHEN 'baixa' THEN 4 
+                        END,
+                        sla_hours ASC
+                """)
+                
+                if not agents:
+                    return None
+                
+                # Para cada agente, verificar se a mensagem se encaixa na categoria
+                for agent in agents:
+                    config = agent['config'] if isinstance(agent['config'], dict) else {}
+                    category = agent['category']
+                    
+                    # Verificar keywords da categoria
+                    if self._message_matches_category(message, category):
+                        return {
+                            'id': agent['id'],
+                            'name': agent['nome'],
+                            'provider': agent['provider'],
+                            'category': category,
+                            'sla_hours': agent['sla_hours'],
+                            'priority': agent['priority'],
+                            'config': config
+                        }
+                
+                # Se nenhum agente específico foi encontrado, retornar o primeiro ativo
+                first_agent = agents[0]
+                config = first_agent['config'] if isinstance(first_agent['config'], dict) else {}
+                
+                return {
+                    'id': first_agent['id'],
+                    'name': first_agent['nome'],
+                    'provider': first_agent['provider'],
+                    'category': first_agent['category'],
+                    'sla_hours': first_agent['sla_hours'],
+                    'priority': first_agent['priority'],
+                    'config': config
+                }
+                
+        except Exception as e:
+            logger.error(f"Erro ao buscar agente ativo: {e}")
+            return None
+    
+    def _message_matches_category(self, message: str, category: str) -> bool:
+        """Verificar se mensagem se encaixa na categoria do agente"""
+        message_lower = message.lower()
+        
+        category_keywords = {
+            'infraestrutura': ['buraco', 'rua', 'asfalto', 'calçada', 'iluminação', 'esgoto', 'poste', 'pavimentação', 'vazamento'],
+            'saude': ['posto', 'saúde', 'médico', 'remédio', 'hospital', 'clínica', 'atendimento', 'consulta', 'vacina'],
+            'educacao': ['escola', 'educação', 'professor', 'merenda', 'transporte', 'ensino', 'matrícula', 'aluno'],
+            'assistencia_social': ['bolsa', 'assistência', 'social', 'cadastro', 'benefício', 'auxílio', 'família'],
+            'vendas': ['venda', 'comprar', 'produto', 'serviço', 'comercial', 'preço', 'orçamento']
+        }
+        
+        keywords = category_keywords.get(category, [])
+        return any(keyword in message_lower for keyword in keywords)
+    
+    async def process_message_with_agent(self, agent_config: Dict[str, Any], message: str, 
+                                       conversation_id: int, contact_info: Dict[str, Any] = None) -> Optional[str]:
+        """Processar mensagem usando agente específico do AI Builder"""
+        try:
+            from .ai_providers import get_provider
+            
+            # Obter provedor de IA
+            provider_name = agent_config.get('provider', 'groq')
+            provider = get_provider(provider_name)
+            
+            if not provider or not provider.is_available():
+                logger.warning(f"Provedor {provider_name} não disponível")
+                return None
+            
+            # Preparar prompt do sistema
+            system_prompt = agent_config.get('config', {}).get('system_prompt', 
+                                                             self.templates.get(agent_config.get('category', 'infraestrutura'), {}).get('system_prompt', ''))
+            
+            if not system_prompt:
+                logger.warning("Nenhum prompt do sistema encontrado")
+                return None
+            
+            # Preparar mensagens
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ]
+            
+            # Gerar resposta
+            ai_response = await provider.generate_response(
+                messages=messages,
+                max_tokens=agent_config.get('config', {}).get('max_tokens', 1000),
+                temperature=agent_config.get('config', {}).get('temperature', 0.7)
+            )
+            
+            if ai_response:
+                # Log da interação
+                await self._log_agent_interaction(
+                    agent_id=agent_config['id'],
+                    user_message=message,
+                    ai_response=ai_response,
+                    conversation_id=conversation_id
+                )
+                
+                return ai_response
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Erro ao processar mensagem com agente: {e}")
+            return None
+    
+    async def _log_agent_interaction(self, agent_id: int, user_message: str, ai_response: str, 
+                                   conversation_id: int, response_time: float = 0.0, 
+                                   tokens_used: int = 0, cost: float = 0.0):
+        """Registrar interação do agente para analytics"""
+        try:
+            async with chamados_service.pool.acquire() as conn:
+                await conn.execute("""
+                    INSERT INTO agent_interactions 
+                    (agent_id, user_message, ai_response, response_time, tokens_used, cost, success, metadata)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                """, agent_id, user_message, ai_response, response_time, tokens_used, cost, True, 
+                    json.dumps({"conversation_id": conversation_id}))
+        except Exception as e:
+            logger.error(f"Erro ao registrar interação do agente: {e}")
+    
     async def create_agent_config(self, config_data: Dict[str, Any], prefeitura_id: int = 1) -> Dict[str, Any]:
         """Criar nova configuração de agente"""
         try:
