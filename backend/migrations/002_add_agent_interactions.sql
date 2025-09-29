@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS agent_interactions (
     ai_response TEXT,
     response_time DECIMAL(10,3), -- tempo em segundos
     tokens_used INTEGER DEFAULT 0,
+    
     cost DECIMAL(10,6) DEFAULT 0.0,
     success BOOLEAN DEFAULT true,
     category VARCHAR(100),
@@ -54,7 +55,7 @@ CREATE OR REPLACE VIEW vw_agent_analytics AS
 SELECT 
     ai.id as agent_id,
     ai.nome as agent_name,
-    ai.provider,
+    (ai.config->>'provider')::text as provider,
     COUNT(inter.id) as total_interactions,
     AVG(inter.response_time) as avg_response_time,
     MIN(inter.response_time) as min_response_time,
@@ -71,7 +72,7 @@ SELECT
     MAX(inter.created_at) as last_interaction
 FROM config_ia ai
 LEFT JOIN agent_interactions inter ON ai.id = inter.agent_id
-GROUP BY ai.id, ai.nome, ai.provider;
+GROUP BY ai.id, ai.nome, (ai.config->>'provider')::text;
 
 -- View para performance por hora
 CREATE OR REPLACE VIEW vw_agent_hourly_performance AS
