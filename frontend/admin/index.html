@@ -7,240 +7,350 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .shadow-glow {
+            box-shadow: 0 18px 45px rgba(56, 189, 248, 0.18);
+        }
+        .shadow-surface {
+            box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.06);
+        }
+        .glass-card {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(56, 189, 248, 0.08));
+        }
+        .text-gradient {
+            background: linear-gradient(120deg, #38bdf8 0%, #22d3ee 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        [x-cloak] {
+            display: none !important;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.32);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <nav class="bg-white shadow-lg">
-            <div class="max-w-7xl mx-auto px-4">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <i class="fas fa-users-cog text-2xl text-blue-600 mr-3"></i>
-                        <h1 class="text-xl font-bold text-gray-800">Cidadão.AI - Admin</h1>
+<body class="bg-slate-950 text-slate-100 antialiased" x-data="adminShell()" x-init="init()">
+    <div class="min-h-screen flex flex-col">
+        <header class="border-b border-slate-900/80 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950">
+            <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/20 text-sky-300">
+                        <i class="fas fa-robot text-xl"></i>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <span class="text-sm text-gray-600">Sistema de Chamados</span>
+                    <div>
+                        <h1 class="text-xl font-semibold tracking-tight text-slate-50 sm:text-2xl">Cidadão.AI — Painel Assistido</h1>
+                        <p class="text-sm text-slate-400">Gerencie chamados com apoio contextual da IA.</p>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center md:gap-4">
+                    <button class="inline-flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200"
+                        @click="openPalette = true">
+                        <i class="fas fa-magnifying-glass text-slate-400"></i>
+                        <span>Command Palette</span>
+                        <span class="hidden rounded-md bg-slate-800/80 px-2 py-0.5 text-xs text-slate-500 sm:inline-flex">Ctrl + K</span>
+                    </button>
+                    <button class="inline-flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 xl:hidden"
+                        @click="showChatOnMobile = !showChatOnMobile">
+                        <i class="fas fa-comments text-sky-300"></i>
+                        <span x-text="showChatOnMobile ? 'Fechar Assistente' : 'Abrir Assistente'"></span>
+                    </button>
+            </div>
+            </div>
+        </header>
+
+        <main class="flex-1">
+            <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+                <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div class="glass-card rounded-3xl border border-slate-800/80 p-5 shadow-glow">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400">Cidadãos</p>
+                                <p id="total-cidadaos" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
+                            </div>
+                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300">
+                                <i class="fas fa-users text-lg"></i>
+                            </span>
+                            </div>
+                        </div>
+                    <div class="glass-card rounded-3xl border border-slate-800/80 p-5 shadow-glow">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400">Chamados</p>
+                                <p id="total-chamados" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
+                    </div>
+                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-300">
+                                <i class="fas fa-ticket-alt text-lg"></i>
+                            </span>
+                </div>
+                            </div>
+                    <div class="glass-card rounded-3xl border border-slate-800/80 p-5 shadow-glow">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400">Em Andamento</p>
+                                <p id="chamados-andamento" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
+                            </div>
+                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
+                                <i class="fas fa-clock text-lg"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-3xl border border-slate-800/80 p-5 shadow-glow">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-xs uppercase tracking-wider text-slate-400">Resolvidos</p>
+                                <p id="chamados-resolvidos" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
+                </div>
+                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-300">
+                                <i class="fas fa-check-circle text-lg"></i>
+                            </span>
+                            </div>
+                            </div>
+                </section>
+
+                <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26rem] 2xl:grid-cols-[minmax(0,1fr)_30rem]">
+                    <div class="space-y-6">
+                        <div class="rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-surface">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <h2 class="text-base font-semibold text-slate-100">Assistente Sugere</h2>
+                                    <p class="text-sm text-slate-400">Atalhos prontos para conversar com a IA contextual.</p>
+                        </div>
+                                <span class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-3 py-1 text-xs font-medium text-slate-400">
+                                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    IA ativa
+                                </span>
+                            </div>
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button class="group inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200"
+                                    @click="$dispatch('assistente-sugestao', { prompt: 'Gere um resumo das últimas 24 horas com alertas críticos.' }); showChatOnMobile = true;">
+                                    <i class="fas fa-bolt text-amber-300 transition group-hover:text-amber-200"></i>
+                                    Resumo das últimas 24h
+                                </button>
+                                <button class="group inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200"
+                                    @click="$dispatch('assistente-sugestao', { prompt: 'Liste os chamados pendentes por equipe destacando prioridades altas.' }); showChatOnMobile = true;">
+                                    <i class="fas fa-layer-group text-sky-300 transition group-hover:text-sky-200"></i>
+                                    Pendências por equipe
+                                </button>
+                                <button class="group inline-flex items-center gap-2 rounded-full border border-slate-800/70 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200"
+                                    @click="$dispatch('assistente-sugestao', { prompt: 'Sugira respostas automáticas para os chamados sem movimentação nas últimas 2 horas.' }); showChatOnMobile = true;">
+                                    <i class="fas fa-wand-magic-sparkles text-purple-300 transition group-hover:text-purple-200"></i>
+                                    Respostas automáticas
+                                </button>
+                    </div>
+                </div>
+
+                        <div class="rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-surface">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h2 class="text-base font-semibold text-slate-100">Infraestrutura Monitorada</h2>
+                                    <p class="text-sm text-slate-400">Status atualizado automaticamente a cada 30 segundos.</p>
+                            </div>
+                                <span class="text-xs uppercase tracking-wider text-slate-500">Monitoramento</span>
+                            </div>
+                            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                                <div class="flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-950/70 px-4 py-3">
+                                    <span class="text-sm font-medium text-slate-300">Banco de Dados</span>
+                                    <div id="db-status" class="flex items-center gap-2 text-sm text-slate-500">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
+                                        <span>Verificando...</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-950/70 px-4 py-3">
+                                    <span class="text-sm font-medium text-slate-300">IA Service</span>
+                                    <div id="ai-status" class="flex items-center gap-2 text-sm text-slate-500">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
+                                        <span>Verificando...</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </nav>
 
-        <!-- Main Content -->
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <!-- Status Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-users text-2xl text-blue-600"></i>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Cidadãos</dt>
-                                    <dd class="text-lg font-medium text-gray-900" id="total-cidadaos">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
+                        <div class="rounded-3xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-surface">
+                            <div class="flex flex-col gap-4 border-b border-slate-800/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h2 class="text-base font-semibold text-slate-100">Central de Dados Operacionais</h2>
+                                    <p class="text-sm text-slate-400">Visualize cidadãos, chamados, times e agentes em um só lugar.</p>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button @click="selectTab('cidadaos')"
+                                        :class="activeTab === 'cidadaos' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'"
+                                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
+                                        <i class="fas fa-users"></i>
+                                        Cidadãos
+                        </button>
+                                    <button @click="selectTab('chamados')"
+                                        :class="activeTab === 'chamados' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'"
+                                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
+                                        <i class="fas fa-ticket-alt"></i>
+                                        Chamados
+                        </button>
+                                    <button @click="selectTab('times')"
+                                        :class="activeTab === 'times' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'"
+                                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
+                                        <i class="fas fa-users-gear"></i>
+                                        Times
+                        </button>
+                                    <button @click="selectTab('agentes')"
+                                        :class="activeTab === 'agentes' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'"
+                                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
+                                        <i class="fas fa-user-robot"></i>
+                                        Agentes
+                        </button>
+                                    <button @click="selectTab('system')"
+                                        :class="activeTab === 'system' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'"
+                                        class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
+                                        <i class="fas fa-cog"></i>
+                                        Sistema
+                        </button>
+                                </div>
                 </div>
 
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-ticket-alt text-2xl text-green-600"></i>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Chamados</dt>
-                                    <dd class="text-lg font-medium text-gray-900" id="total-chamados">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-clock text-2xl text-yellow-600"></i>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Em Andamento</dt>
-                                    <dd class="text-lg font-medium text-gray-900" id="chamados-andamento">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow rounded-lg">
-                    <div class="p-5">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-2xl text-green-600"></i>
-                            </div>
-                            <div class="ml-5 w-0 flex-1">
-                                <dl>
-                                    <dt class="text-sm font-medium text-gray-500 truncate">Resolvidos</dt>
-                                    <dd class="text-lg font-medium text-gray-900" id="chamados-resolvidos">-</dd>
-                                </dl>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="bg-white shadow rounded-lg" x-data="{ activeTab: 'cidadaos' }">
-                <div class="border-b border-gray-200">
-                    <nav class="-mb-px flex space-x-8 px-6">
-                        <button @click="activeTab = 'cidadaos'" 
-                                :class="activeTab === 'cidadaos' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            <i class="fas fa-users mr-2"></i>Cidadãos
-                        </button>
-                        <button @click="activeTab = 'chamados'" 
-                                :class="activeTab === 'chamados' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            <i class="fas fa-ticket-alt mr-2"></i>Chamados
-                        </button>
-                        <button @click="activeTab = 'system'" 
-                                :class="activeTab === 'system' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            <i class="fas fa-cog mr-2"></i>Sistema
-                        </button>
-                        <button @click="activeTab = 'times'" 
-                                :class="activeTab === 'times' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            <i class="fas fa-users mr-2"></i>Times
-                        </button>
-                        <button @click="activeTab = 'agentes'" 
-                                :class="activeTab === 'agentes' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            <i class="fas fa-user-gear mr-2"></i>Agentes
-                        </button>
-                    </nav>
-                </div>
-
-                <!-- Cidadãos Tab -->
-                <div x-show="activeTab === 'cidadaos'" class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Cidadãos Cadastrados</h3>
-                        <button onclick="loadCidadaos()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                            <div class="mt-6 space-y-6">
+                                <div x-show="activeTab === 'cidadaos'" x-cloak class="space-y-4">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-slate-100">Cidadãos Cadastrados</h3>
+                                            <p class="text-sm text-slate-400">Dados sincronizados com o atendimento.</p>
+                                        </div>
+                                        <button onclick="loadCidadaos()" class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200">
+                                            <i class="fas fa-rotate-right"></i>
+                                            Atualizar
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cadastrado em</th>
+                                    <div class="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-950/50 shadow-surface">
+                                        <table class="min-w-full divide-y divide-slate-800/70">
+                                            <thead class="bg-slate-900/70">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">ID</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Telefone</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Email</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Cadastrado em</th>
                                 </tr>
                             </thead>
-                            <tbody id="cidadaos-table" class="bg-white divide-y divide-gray-200">
-                                <!-- Dados carregados via JavaScript -->
-                            </tbody>
+                                            <tbody id="cidadaos-table" class="divide-y divide-slate-800/60"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Times Tab -->
-                <div x-show="activeTab === 'times'" class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Times</h3>
-                        <button onclick="openTimeModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fas fa-plus mr-2"></i>Novo Time
+                                <div x-show="activeTab === 'chamados'" x-cloak class="space-y-4">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-slate-100">Chamados</h3>
+                                            <p class="text-sm text-slate-400">Lista priorizada com status e data de criação.</p>
+                                        </div>
+                                        <button onclick="loadChamados()" class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200">
+                                            <i class="fas fa-rotate-right"></i>
+                                            Atualizar
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cor</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                    <div class="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-950/50 shadow-surface">
+                                        <table class="min-w-full divide-y divide-slate-800/70">
+                                            <thead class="bg-slate-900/70">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Protocolo</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Título</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Criado em</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-times-table" class="bg-white divide-y divide-gray-200"></tbody>
+                                            <tbody id="chamados-table" class="divide-y divide-slate-800/60"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Agentes Tab -->
-                <div x-show="activeTab === 'agentes'" class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Agentes</h3>
-                        <button onclick="openAgenteModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fas fa-plus mr-2"></i>Novo Agente
+                                <div x-show="activeTab === 'times'" x-cloak class="space-y-4">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-slate-100">Times</h3>
+                                            <p class="text-sm text-slate-400">Organize squads responsáveis pelos chamados.</p>
+                                        </div>
+                                        <button onclick="openTimeModal()" class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200">
+                                            <i class="fas fa-plus"></i>
+                                            Novo Time
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-mail</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                    <div class="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-950/50 shadow-surface">
+                                        <table class="min-w-full divide-y divide-slate-800/70">
+                                            <thead class="bg-slate-900/70">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Cor</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Responsável</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
+                                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-agentes-table" class="bg-white divide-y divide-gray-200"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- Chamados Tab -->
-                <div x-show="activeTab === 'chamados'" class="p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Chamados</h3>
-                        <button onclick="loadChamados()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                            <i class="fas fa-sync-alt mr-2"></i>Atualizar
-                        </button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protocolo</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
-                                </tr>
-                            </thead>
-                            <tbody id="chamados-table" class="bg-white divide-y divide-gray-200">
-                                <!-- Dados carregados via JavaScript -->
-                            </tbody>
+                                            <tbody id="admin-times-table" class="divide-y divide-slate-800/60"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Sistema Tab -->
-                <div x-show="activeTab === 'system'" class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Status do Sistema</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-medium text-gray-900 mb-2">Banco de Dados</h4>
-                            <div id="db-status" class="flex items-center">
-                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-600">Verificando...</span>
+                                <div x-show="activeTab === 'agentes'" x-cloak class="space-y-4">
+                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-slate-100">Agentes</h3>
+                                            <p class="text-sm text-slate-400">Controle humanos e IAs conectados ao Chatwoot.</p>
+                                        </div>
+                                        <button onclick="openAgenteModal()" class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-sky-500/80 hover:text-sky-200">
+                                            <i class="fas fa-plus"></i>
+                                            Novo Agente
+                        </button>
+                    </div>
+                                    <div class="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-950/50 shadow-surface">
+                                        <table class="min-w-full divide-y divide-slate-800/70">
+                                            <thead class="bg-slate-900/70">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Tipo</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Time</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">E-mail</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Telefone</th>
+                                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Ações</th>
+                                </tr>
+                            </thead>
+                                            <tbody id="admin-agentes-table" class="divide-y divide-slate-800/60"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                                <div x-show="activeTab === 'system'" x-cloak>
+                                    <h3 class="text-lg font-semibold text-slate-100">Status do Sistema</h3>
+                                    <p class="mb-4 text-sm text-slate-400">Resumo visual dos serviços críticos do ecossistema.</p>
+                                    <div class="grid gap-4 sm:grid-cols-2">
+                                        <div class="rounded-3xl border border-slate-800/70 bg-slate-950/60 p-5">
+                                            <h4 class="text-sm font-semibold text-slate-200">Banco de Dados</h4>
+                                            <p class="mt-2 text-xs text-slate-500">Sincronização e armazenamento de chamados.</p>
+                                            <div class="mt-4 flex items-center gap-3 text-sm text-slate-300">
+                                                <i class="fas fa-database text-slate-500"></i>
+                                                <span id="db-status-system" class="text-slate-400">Verificando...</span>
                             </div>
                         </div>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h4 class="font-medium text-gray-900 mb-2">IA Service</h4>
-                            <div id="ai-status" class="flex items-center">
-                                <div class="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                                <span class="text-sm text-gray-600">Verificando...</span>
+                                        <div class="rounded-3xl border border-slate-800/70 bg-slate-950/60 p-5">
+                                            <h4 class="text-sm font-semibold text-slate-200">Serviço de IA</h4>
+                                            <p class="mt-2 text-xs text-slate-500">Agentes inteligentes conectados ao atendimento.</p>
+                                            <div class="mt-4 flex items-center gap-3 text-sm text-slate-300">
+                                                <i class="fas fa-brain text-slate-500"></i>
+                                                <span id="ai-status-system" class="text-slate-400">Verificando...</span>
                             </div>
                         </div>
                     </div>
@@ -248,41 +358,130 @@
             </div>
         </div>
     </div>
+
+                    <div class="flex flex-col rounded-3xl border border-slate-800/70 bg-slate-900/60 p-5 shadow-glow transition-all duration-300 xl:sticky xl:top-24 xl:max-h-[calc(100vh-9rem)]"
+                        :class="showChatOnMobile ? '' : 'hidden xl:flex'" x-data="chatPanel()" x-on:assistente-sugestao.window="useSuggestion($event.detail.prompt, true)">
+                        <div class="flex items-center justify-between gap-3 border-b border-slate-800/70 pb-4">
+                            <div>
+                                <h2 class="text-base font-semibold text-slate-100">Assistente Operacional</h2>
+                                <p class="text-xs text-slate-400">Contexto vivo para acelerar decisões.</p>
+                            </div>
+                            <span class="inline-flex items-center gap-2 rounded-full border border-slate-800/80 bg-slate-950/60 px-3 py-1 text-xs font-medium text-slate-400">
+                                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
+                                Online
+                            </span>
+                        </div>
+
+                        <div class="mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-950/40 shadow-surface">
+                            <div x-ref="scroll" class="flex h-full flex-col gap-4 overflow-y-auto px-4 py-5">
+                                <template x-for="message in messages" :key="message.id">
+                                    <div :class="message.role === 'assistant' ? 'ml-0 mr-auto max-w-[82%]' : 'ml-auto mr-0 max-w-[82%]'">
+                                        <div :class="message.role === 'assistant'
+                                                ? 'rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100 shadow-glow'
+                                                : 'rounded-3xl border border-slate-800/80 bg-slate-950/70 px-4 py-3 text-sm text-slate-200 shadow-surface'">
+                                            <div class="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
+                                                <i :class="message.role === 'assistant' ? 'fas fa-robot text-sky-300' : 'fas fa-user text-slate-500'"></i>
+                                                <span x-text="message.role === 'assistant' ? 'Assistente' : 'Você'"></span>
+                                                <span class="text-slate-500">·</span>
+                                                <span x-text="message.timestamp"></span>
+                                            </div>
+                                            <p class="mt-2 leading-relaxed text-slate-100" x-text="message.content"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <form class="mt-4 space-y-3" @submit.prevent="sendMessage">
+                            <div class="rounded-2xl border border-slate-800/80 bg-slate-950/70 px-4 py-3 focus-within:border-sky-500/60">
+                                <textarea x-model="draft" x-ref="input" rows="3" placeholder="Pergunte algo ao assistente ou use / para atalhos..."
+                                    class="w-full resize-none bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"></textarea>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="suggestion in suggestions" :key="suggestion">
+                                        <button type="button" class="rounded-full border border-slate-800/70 bg-slate-950/60 px-3 py-1 text-xs text-slate-400 transition hover:border-sky-500/70 hover:text-sky-200"
+                                            @click="useSuggestion(suggestion, false)">
+                                            <span x-text="suggestion"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                                <button type="submit" :disabled="sending"
+                                    class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:bg-sky-500/30 disabled:cursor-not-allowed disabled:opacity-50">
+                                    <span x-show="!sending"><i class="fas fa-paper-plane"></i>Enviar</span>
+                                    <span x-show="sending"><i class="fas fa-circle-notch animate-spin"></i>Enviando</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <div x-show="openPalette" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/80 px-4 pt-24 backdrop-blur-sm" @keydown.escape.window="openPalette = false">
+        <div class="w-full max-w-2xl rounded-3xl border border-slate-800/80 bg-slate-950/90 p-6 shadow-glow">
+            <div class="flex items-center gap-3 rounded-2xl border border-slate-800/80 bg-slate-950/60 px-4 py-3 focus-within:border-sky-500/60">
+                <i class="fas fa-magnifying-glass text-slate-500"></i>
+                <input type="text" x-model="commandQuery" placeholder="Buscar área, atalho ou comando..." class="flex-1 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none">
+                <span class="text-xs text-slate-600">Esc para sair</span>
+            </div>
+            <div class="mt-4 max-h-64 space-y-2 overflow-y-auto">
+                <template x-for="item in paletteFiltered()" :key="item.label">
+                    <button class="flex w-full items-center justify-between rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-3 text-sm text-slate-200 transition hover:border-sky-500/80 hover:text-sky-100"
+                        @click="item.action(); openPalette = false;">
+                        <span x-text="item.label"></span>
+                        <span class="text-xs text-slate-500" x-text="item.hint"></span>
+                    </button>
+                </template>
+                <div x-show="paletteFiltered().length === 0" class="rounded-xl border border-slate-800/70 bg-slate-950/60 px-4 py-6 text-center text-sm text-slate-500">
+                    Nenhum comando encontrado para "<span x-text="commandQuery"></span>".
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Time -->
-    <div id="modalTime" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <div class="bg-white rounded p-4 w-full max-w-lg">
-            <h3 class="text-lg font-semibold mb-3" id="timeFormTitle">Novo Time</h3>
-            <div class="grid grid-cols-2 gap-3">
+    <div id="modalTime" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 px-4 py-10 backdrop-blur-sm">
+        <div class="w-full max-w-xl rounded-3xl border border-slate-800/80 bg-slate-950 px-6 py-6 text-slate-100 shadow-glow">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold" id="timeFormTitle">Novo Time</h3>
+                <button onclick="closeTimeModal()" class="rounded-full border border-slate-800/70 px-3 py-1 text-xs text-slate-400 hover:border-slate-600">Fechar</button>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <input id="timeId" type="hidden">
-                <div class="col-span-2">
-                    <label class="text-xs text-gray-600">Nome</label>
-                    <input id="timeNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do time">
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Nome</label>
+                    <input id="timeNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do time">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Cor</label>
-                    <input id="timeCor" class="w-full border px-3 py-2 rounded" value="#4ECDC4">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Cor</label>
+                    <input id="timeCor" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none" value="#4ECDC4">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Chatwoot Team ID</label>
-                    <input id="timeTeamId" class="w-full border px-3 py-2 rounded" placeholder="ex: 12">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Chatwoot Team ID</label>
+                    <input id="timeTeamId" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="ex: 12">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Responsável</label>
-                    <input id="timeRespNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do responsável">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Responsável</label>
+                    <input id="timeRespNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do responsável">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">E-mail do Responsável</label>
-                    <input id="timeRespEmail" class="w-full border px-3 py-2 rounded" placeholder="email@dominio.com">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">E-mail do Responsável</label>
+                    <input id="timeRespEmail" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="email@dominio.com">
                 </div>
-                <div class="col-span-2">
-                    <label class="text-xs text-gray-600">Palavras-chave (separadas por vírgula)</label>
-                    <input id="timeKeywords" class="w-full border px-3 py-2 rounded" placeholder="buraco, iluminação, esgoto">
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Palavras-chave (separadas por vírgula)</label>
+                    <input id="timeKeywords" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="buraco, iluminação, esgoto">
                 </div>
-                <div class="col-span-2 flex items-center justify-between mt-2">
-                    <label class="text-sm"><input id="timeActive" type="checkbox" class="mr-2" checked> Ativo</label>
-                    <div class="space-x-2">
-                        <button onclick="saveTime()" class="bg-blue-600 text-white px-3 py-2 rounded">Salvar</button>
-                        <button onclick="closeTimeModal()" class="bg-gray-200 px-3 py-2 rounded">Cancelar</button>
+                <div class="sm:col-span-2 flex items-center justify-between pt-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input id="timeActive" type="checkbox" class="h-4 w-4 rounded border-slate-700 bg-slate-900 accent-sky-500" checked>
+                        Ativo
+                    </label>
+                    <div class="flex gap-2">
+                        <button onclick="saveTime()" class="rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 hover:border-sky-500 hover:bg-sky-500/30">Salvar</button>
+                        <button onclick="closeTimeModal()" class="rounded-full border border-slate-800/70 px-4 py-2 text-sm text-slate-300 hover:border-slate-600">Cancelar</button>
                     </div>
                 </div>
             </div>
@@ -290,18 +489,21 @@
     </div>
 
     <!-- Modal Agente -->
-    <div id="modalAgente" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-        <div class="bg-white rounded p-4 w-full max-w-lg">
-            <h3 class="text-lg font-semibold mb-3" id="agenteFormTitle">Novo Agente</h3>
-            <div class="grid grid-cols-2 gap-3">
+    <div id="modalAgente" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 px-4 py-10 backdrop-blur-sm">
+        <div class="w-full max-w-xl rounded-3xl border border-slate-800/80 bg-slate-950 px-6 py-6 text-slate-100 shadow-glow border border-slate-800/80 bg-slate-950">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold" id="agenteFormTitle">Novo Agente</h3>
+                <button onclick="closeAgenteModal()" class="rounded-full border border-slate-800/70 px-3 py-1 text-xs text-slate-400 hover:border-slate-600">Fechar</button>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <input id="agenteId" type="hidden">
-                <div class="col-span-2">
-                    <label class="text-xs text-gray-600">Nome</label>
-                    <input id="agenteNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do agente">
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Nome</label>
+                    <input id="agenteNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do agente">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Tipo</label>
-                    <select id="agenteTipo" class="w-full border px-3 py-2 rounded">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Tipo</label>
+                    <select id="agenteTipo" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
                         <option value="humano">Humano</option>
                         <option value="ia_geral">IA Geral</option>
                         <option value="ia_infraestrutura">IA Infraestrutura</option>
@@ -310,44 +512,190 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Chatwoot Agent ID</label>
-                    <input id="agenteCwId" class="w-full border px-3 py-2 rounded" placeholder="ex: 34">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Chatwoot Agent ID</label>
+                    <input id="agenteCwId" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="ex: 34">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">E-mail</label>
-                    <input id="agenteEmail" class="w-full border px-3 py-2 rounded" placeholder="email@dominio.com">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">E-mail</label>
+                    <input id="agenteEmail" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="email@dominio.com">
                 </div>
                 <div>
-                    <label class="text-xs text-gray-600">Telefone</label>
-                    <input id="agenteTelefone" class="w-full border px-3 py-2 rounded" placeholder="+55...">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Telefone</label>
+                    <input id="agenteTelefone" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="+55...">
                 </div>
-                <div class="col-span-2">
-                    <label class="text-xs text-gray-600">Times (selecione um ou mais)</label>
-                    <select id="agenteTimeId" class="w-full border px-3 py-2 rounded" multiple size="5"></select>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Times (selecione um ou mais)</label>
+                    <select id="agenteTimeId" class="mt-1 h-40 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none" multiple size="5"></select>
                 </div>
-                <div class="col-span-2 flex items-center justify-between mt-2">
-                    <label class="text-sm"><input id="agenteActive" type="checkbox" class="mr-2" checked> Ativo</label>
-                    <div class="space-x-2">
-                        <button onclick="saveAgente()" class="bg-blue-600 text-white px-3 py-2 rounded">Salvar</button>
-                        <button onclick="closeAgenteModal()" class="bg-gray-200 px-3 py-2 rounded">Cancelar</button>
+                <div class="sm:col-span-2 flex items-center justify-between pt-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input id="agenteActive" type="checkbox" class="h-4 w-4 rounded border-slate-700 bg-slate-900 accent-sky-500" checked>
+                        Ativo
+                    </label>
+                    <div class="flex gap-2">
+                        <button onclick="saveAgente()" class="rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 hover:border-sky-500 hover:bg-sky-500/30">Salvar</button>
+                        <button onclick="closeAgenteModal()" class="rounded-full border border-slate-800/70 px-4 py-2 text-sm text-slate-300 hover:border-slate-600">Cancelar</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script>
-        // Carregar dados ao inicializar
+        function adminShell() {
+            return {
+                activeTab: 'cidadaos',
+                openPalette: false,
+                commandQuery: '',
+                showChatOnMobile: false,
+                init() {
+                    const shortcutHandler = (event) => {
+                        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+                            event.preventDefault();
+                            this.openPalette = true;
+                        }
+                        if (event.shiftKey && event.key === '?') {
+                            event.preventDefault();
+                            this.openPalette = true;
+                        }
+                    };
+                    window.addEventListener('keydown', shortcutHandler);
+                    this.$watch('openPalette', (value) => {
+                        if (!value) {
+                            this.commandQuery = '';
+                        }
+                    });
+                    window.addEventListener('resize', () => {
+                        if (window.innerWidth >= 1280) {
+                            this.showChatOnMobile = false;
+                        }
+                    });
+                },
+                selectTab(tab) {
+                    this.activeTab = tab;
+                    if (tab === 'times') {
+                        loadAdminTimes();
+                    } else if (tab === 'agentes') {
+                        loadAdminAgentes();
+                    } else if (tab === 'chamados') {
+                        loadChamados();
+                    } else if (tab === 'cidadaos') {
+                        loadCidadaos();
+                    }
+                },
+                paletteActions() {
+                    return [
+                        { label: 'Ir para Cidadãos', hint: 'Enter', search: 'cidadaos cidadãos citizens', action: () => this.selectTab('cidadaos') },
+                        { label: 'Ir para Chamados', hint: 'Enter', search: 'chamados chamados tickets', action: () => this.selectTab('chamados') },
+                        { label: 'Ir para Times', hint: 'Enter', search: 'times squads equipes', action: () => this.selectTab('times') },
+                        { label: 'Ir para Agentes', hint: 'Enter', search: 'agentes agents ia', action: () => this.selectTab('agentes') },
+                        { label: 'Ver status do Sistema', hint: 'Enter', search: 'status sistema infraestrutura', action: () => this.selectTab('system') },
+                        { label: 'Abrir assistente IA', hint: 'Ctrl+/', search: 'assistente chat ia', action: () => { this.showChatOnMobile = true; window.dispatchEvent(new CustomEvent('assistente-sugestao', { detail: { prompt: 'Quais são as principais prioridades agora?' } })); } }
+                    ];
+                },
+                paletteFiltered() {
+                    const query = this.commandQuery.trim().toLowerCase();
+                    if (!query) {
+                        return this.paletteActions();
+                    }
+                    return this.paletteActions().filter(item => item.search.includes(query) || item.label.toLowerCase().includes(query));
+                }
+            };
+        }
+
+        function chatPanel() {
+            return {
+                messages: [
+                    {
+                        id: Date.now(),
+                        role: 'assistant',
+                        content: 'Olá! Estou monitorando os chamados críticos e posso te ajudar com resumos, alertas e respostas automáticas. Como posso ajudar agora?',
+                        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    }
+                ],
+                draft: '',
+                sending: false,
+                suggestions: [
+                    'Quais chamados estão sem resposta há mais de 1 hora?',
+                    'Há cidadãos esperando retorno da ouvidoria?',
+                    'Algum serviço externo está instável?'
+                ],
+                useSuggestion(prompt, autoSend) {
+                    this.draft = prompt;
+                    this.$nextTick(() => {
+                        this.$refs.input?.focus();
+                        if (autoSend) {
+                            this.sendMessage();
+                        }
+                    });
+                },
+                scrollToEnd() {
+                    this.$nextTick(() => {
+                        if (this.$refs.scroll) {
+                            this.$refs.scroll.scrollTo({
+                                top: this.$refs.scroll.scrollHeight,
+                                behavior: 'smooth'
+                            });
+                        }
+                    });
+                },
+                sendMessage() {
+                    const content = (this.draft || '').trim();
+                    if (!content || this.sending) {
+                        return;
+                    }
+                    this.messages.push({
+                        id: Date.now(),
+                        role: 'user',
+                        content,
+                        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    });
+                    this.draft = '';
+                    this.sending = true;
+                    this.scrollToEnd();
+
+                    setTimeout(() => {
+                        this.appendAssistantResponse(content);
+                    }, 600);
+                },
+                appendAssistantResponse() {
+                    const insights = [
+                        'Identifiquei 4 chamados críticos aguardando tratativa: iluminação pública (2), coleta de lixo (1) e pavimentação (1). Recomendo priorizar os que estão prestes a expirar SLA.',
+                        'Sugiro enviar uma atualização automática aos cidadãos que aguardam resposta há mais de 40 minutos. Posso compor a mensagem com base no protocolo correspondente.',
+                        'Nenhuma degradação encontrada nos serviços externos. Último heartbeat recebido há 2 minutos do provedor de IA.'
+                    ];
+                    const followUps = [
+                        'Deseja que eu envie um resumo por e-mail aos responsáveis?',
+                        'Posso abrir um ticket interno para o time responsável?',
+                        'Quer que eu atualize o painel técnico com essas informações?'
+                    ];
+                    const response = `${insights[Math.floor(Math.random() * insights.length)]} ${followUps[Math.floor(Math.random() * followUps.length)]}`;
+
+                    this.messages.push({
+                        id: Date.now() + 1,
+                        role: 'assistant',
+                        content: response,
+                        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    });
+                    this.sending = false;
+                    this.scrollToEnd();
+                }
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             loadMetrics();
             loadCidadaos();
             loadChamados();
             checkSystemStatus();
             
-            // Atualizar a cada 30 segundos
             setInterval(() => {
                 loadMetrics();
                 checkSystemStatus();
             }, 30000);
+
+            window.loadAdminTimes = loadAdminTimes;
+            window.loadAdminAgentes = loadAdminAgentes;
         });
 
         async function loadMetrics() {
@@ -375,19 +723,19 @@
                 
                 if (data.status === 'success' && data.data.length > 0) {
                     tableBody.innerHTML = data.data.map(cidadao => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.id}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.nome}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.telefone}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${cidadao.email || '-'}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(cidadao.created_at).toLocaleString('pt-BR')}</td>
+                        <tr class="hover:bg-slate-900/60 transition">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.nome}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.telefone}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.email || '-'}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${new Date(cidadao.created_at).toLocaleString('pt-BR')}</td>
                         </tr>
                     `).join('');
                 } else {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                Nenhum cidadão encontrado
+                            <td colspan="5" class="px-6 py-5 text-center text-sm text-slate-500">
+                                Nenhum cidadão encontrado no período selecionado.
                             </td>
                         </tr>
                     `;
@@ -397,8 +745,8 @@
                 const tableBody = document.getElementById('cidadaos-table');
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-red-500 text-center">
-                            Erro ao carregar dados
+                        <td colspan="5" class="px-6 py-5 text-center text-sm text-rose-400">
+                            Erro ao carregar dados. Tente novamente.
                         </td>
                     </tr>
                 `;
@@ -413,27 +761,32 @@
                 const tableBody = document.getElementById('chamados-table');
                 
                 if (data.status === 'success' && data.data.length > 0) {
-                    tableBody.innerHTML = data.data.map(chamado => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${chamado.protocolo}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${chamado.titulo}</td>
+                    tableBody.innerHTML = data.data.map(chamado => {
+                        const classes = chamado.status === 'resolvido'
+                            ? 'border border-emerald-400/30 bg-emerald-500/10 text-emerald-200'
+                            : chamado.status === 'em_andamento'
+                                ? 'border border-amber-400/30 bg-amber-500/10 text-amber-200'
+                                : 'border border-slate-700/60 bg-slate-900/80 text-slate-300';
+
+                        return `
+                            <tr class="hover:bg-slate-900/60 transition">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${chamado.protocolo}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${chamado.titulo}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                    chamado.status === 'resolvido' ? 'bg-green-100 text-green-800' :
-                                    chamado.status === 'em_andamento' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-gray-100 text-gray-800'
-                                }">
+                                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${classes}">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
                                     ${chamado.status}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(chamado.created_at).toLocaleString('pt-BR')}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${new Date(chamado.created_at).toLocaleString('pt-BR')}</td>
                         </tr>
-                    `).join('');
+                        `;
+                    }).join('');
                 } else {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                Nenhum chamado encontrado
+                            <td colspan="4" class="px-6 py-5 text-center text-sm text-slate-500">
+                                Nenhum chamado encontrado.
                             </td>
                         </tr>
                     `;
@@ -443,8 +796,8 @@
                 const tableBody = document.getElementById('chamados-table');
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-red-500 text-center">
-                            Erro ao carregar dados
+                        <td colspan="4" class="px-6 py-5 text-center text-sm text-rose-400">
+                            Erro ao carregar dados. Tente novamente.
                         </td>
                     </tr>
                 `;
@@ -458,98 +811,116 @@
                 
                 const dbStatus = document.getElementById('db-status');
                 const aiStatus = document.getElementById('ai-status');
+                const dbStatusSystem = document.getElementById('db-status-system');
+                const aiStatusSystem = document.getElementById('ai-status-system');
                 
                 if (data.database_connected) {
-                    dbStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div><span class="text-sm text-green-600">Conectado</span>';
+                    const html = '<span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-sm text-emerald-300">Conectado</span>';
+                    dbStatus.innerHTML = html;
+                    dbStatusSystem.textContent = 'Conectado';
+                    dbStatusSystem.className = 'text-sm text-emerald-300';
                 } else {
-                    dbStatus.innerHTML = '<div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div><span class="text-sm text-red-600">Desconectado</span>';
+                    const html = '<span class="h-2.5 w-2.5 rounded-full bg-rose-400 animate-pulse"></span><span class="text-sm text-rose-300">Desconectado</span>';
+                    dbStatus.innerHTML = html;
+                    dbStatusSystem.textContent = 'Desconectado';
+                    dbStatusSystem.className = 'text-sm text-rose-300';
                 }
                 
                 if (data.chamados_ai_available) {
-                    aiStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div><span class="text-sm text-green-600">Disponível</span>';
+                    const html = '<span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-sm text-emerald-300">Disponível</span>';
+                    aiStatus.innerHTML = html;
+                    aiStatusSystem.textContent = 'Disponível';
+                    aiStatusSystem.className = 'text-sm text-emerald-300';
                 } else {
-                    aiStatus.innerHTML = '<div class="w-3 h-3 bg-red-400 rounded-full mr-2"></div><span class="text-sm text-red-600">Indisponível</span>';
+                    const html = '<span class="h-2.5 w-2.5 rounded-full bg-rose-400 animate-pulse"></span><span class="text-sm text-rose-300">Indisponível</span>';
+                    aiStatus.innerHTML = html;
+                    aiStatusSystem.textContent = 'Indisponível';
+                    aiStatusSystem.className = 'text-sm text-rose-300';
                 }
             } catch (error) {
                 console.error('Erro ao verificar status:', error);
             }
         }
 
-        // --------- Admin Times/Agentes (reuso dos endpoints técnico) ---------
-        document.addEventListener('DOMContentLoaded', ()=>{
-            // pré-carregar se o usuário mudar de aba
-            window.loadAdminTimes = loadAdminTimes;
-            window.loadAdminAgentes = loadAdminAgentes;
-        });
-
-        async function loadAdminTimes(){
-            try{
+        async function loadAdminTimes() {
+            try {
                 const res = await fetch('/api/tecnico/times');
                 const data = await res.json();
                 const tb = document.getElementById('admin-times-table');
-                if(!tb) return;
+                if (!tb) return;
                 tb.innerHTML = '';
-                if(data.status==='success'){
-                    data.data.forEach(t=>{
+                if (data.status === 'success') {
+                    data.data.forEach(t => {
                         const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-900/60 transition';
                         tr.innerHTML = `
-                          <td class="px-6 py-4">${t.nome}</td>
-                          <td class="px-6 py-4"><span class="inline-block w-4 h-4 rounded" style="background:${t.cor}"></span></td>
-                          <td class="px-6 py-4">${t.responsavel_nome || '-'}</td>
-                          <td class="px-6 py-4">${t.active ? 'Ativo' : 'Inativo'}</td>
-                          <td class="px-6 py-4 text-right">
-                            <button class="text-blue-600 hover:underline mr-3" onclick="openTimeModal(${t.id})">Editar</button>
-                            <button class="text-red-600 hover:underline" onclick="deleteTime(${t.id})">Excluir</button>
-                          </td>`;
+                            <td class="px-6 py-4 text-sm text-slate-200">${t.nome}</td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-800/70" style="background:${t.cor}"></span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${t.responsavel_nome || '-'}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${t.active ? 'Ativo' : 'Inativo'}</td>
+                            <td class="px-6 py-4 text-right text-sm">
+                                <button class="mr-3 text-sky-300 hover:text-sky-200" onclick="openTimeModal(${t.id})">Editar</button>
+                                <button class="text-rose-300 hover:text-rose-200" onclick="deleteTime(${t.id})">Excluir</button>
+                            </td>
+                        `;
                         tb.appendChild(tr);
                     });
                 }
-            }catch(e){ console.error(e); }
+            } catch (error) {
+                console.error('Erro ao carregar times:', error);
+            }
         }
 
-        async function loadAdminAgentes(){
-            try{
+        async function loadAdminAgentes() {
+            try {
                 const res = await fetch('/api/tecnico/agentes');
                 const data = await res.json();
                 const tb = document.getElementById('admin-agentes-table');
-                if(!tb) return;
+                if (!tb) return;
                 tb.innerHTML = '';
-                if(data.status==='success'){
-                    data.data.forEach(a=>{
+                if (data.status === 'success') {
+                    data.data.forEach(a => {
                         const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-900/60 transition';
                         tr.innerHTML = `
-                          <td class="px-6 py-4">${a.nome}</td>
-                          <td class="px-6 py-4">${a.tipo}</td>
-                          <td class="px-6 py-4">${a.time_nome || '-'}</td>
-                          <td class="px-6 py-4">${a.email || '-'}</td>
-                          <td class="px-6 py-4">${a.telefone || '-'}</td>
-                          <td class="px-6 py-4 text-right">
-                            <button class="text-blue-600 hover:underline mr-3" onclick="openAgenteModal(${a.id})">Editar</button>
-                            <button class="text-red-600 hover:underline" onclick="deleteAgente(${a.id})">Excluir</button>
-                          </td>`;
+                            <td class="px-6 py-4 text-sm text-slate-200">${a.nome}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${a.tipo}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${a.time_nome || '-'}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${a.email || '-'}</td>
+                            <td class="px-6 py-4 text-sm text-slate-200">${a.telefone || '-'}</td>
+                            <td class="px-6 py-4 text-right text-sm">
+                                <button class="mr-3 text-sky-300 hover:text-sky-200" onclick="openAgenteModal(${a.id})">Editar</button>
+                                <button class="text-rose-300 hover:text-rose-200" onclick="deleteAgente(${a.id})">Excluir</button>
+                            </td>
+                        `;
                         tb.appendChild(tr);
                     });
                 }
-            }catch(e){ console.error(e); }
+            } catch (error) {
+                console.error('Erro ao carregar agentes:', error);
+            }
         }
         
-        // --------- Funções Modal Time ---------
-        function openTimeModal(id){
+        function openTimeModal(id) {
             document.getElementById('timeFormTitle').innerText = id ? 'Editar Time' : 'Novo Time';
             const modal = document.getElementById('modalTime');
-            if(id){
-                fetch('/api/tecnico/times').then(r=>r.json()).then(d=>{
-                    const t = (d.data||[]).find(x=>x.id===id);
-                    if(t){
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (id) {
+                fetch('/api/tecnico/times').then(r => r.json()).then(d => {
+                    const t = (d.data || []).find(x => x.id === id);
+                    if (t) {
                         timeId.value = t.id;
-                        timeNome.value = t.nome||'';
-                        timeCor.value = t.cor||'#4ECDC4';
-                        timeTeamId.value = t.chatwoot_team_id||'';
-                        timeRespNome.value = t.responsavel_nome||'';
-                        timeRespEmail.value = t.responsavel_email||'';
-                        timeKeywords.value = (t.keywords||[]).join(', ');
+                        timeNome.value = t.nome || '';
+                        timeCor.value = t.cor || '#4ECDC4';
+                        timeTeamId.value = t.chatwoot_team_id || '';
+                        timeRespNome.value = t.responsavel_nome || '';
+                        timeRespEmail.value = t.responsavel_email || '';
+                        timeKeywords.value = (t.keywords || []).join(', ');
                         timeActive.checked = !!t.active;
-                        modal.classList.remove('hidden');
                     }
                 });
             } else {
@@ -561,99 +932,125 @@
                 timeRespEmail.value = '';
                 timeKeywords.value = '';
                 timeActive.checked = true;
-                modal.classList.remove('hidden');
             }
         }
-        function closeTimeModal(){ document.getElementById('modalTime').classList.add('hidden'); }
-        async function saveTime(){
+
+        function closeTimeModal() {
+            const modal = document.getElementById('modalTime');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveTime() {
             const payload = {
                 nome: timeNome.value.trim(),
-                chatwoot_team_id: timeTeamId.value? Number(timeTeamId.value): null,
+                chatwoot_team_id: timeTeamId.value ? Number(timeTeamId.value) : null,
                 cor: timeCor.value.trim(),
-                responsavel_nome: timeRespNome.value.trim()||null,
-                responsavel_email: timeRespEmail.value.trim()||null,
-                keywords: timeKeywords.value? timeKeywords.value.split(',').map(s=>s.trim()).filter(Boolean):[],
+                responsavel_nome: timeRespNome.value.trim() || null,
+                responsavel_email: timeRespEmail.value.trim() || null,
+                keywords: timeKeywords.value ? timeKeywords.value.split(',').map(s => s.trim()).filter(Boolean) : [],
                 active: timeActive.checked
             };
-            const id = timeId.value? Number(timeId.value): null;
-            const url = id? `/api/tecnico/times/${id}` : '/api/tecnico/times';
-            const method = id? 'PUT' : 'POST';
-            await fetch(url,{method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+            const id = timeId.value ? Number(timeId.value) : null;
+            const url = id ? `/api/tecnico/times/${id}` : '/api/tecnico/times';
+            const method = id ? 'PUT' : 'POST';
+            await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             closeTimeModal();
             loadAdminTimes();
         }
-        function deleteTime(id){ if(confirm('Excluir time?')) fetch(`/api/tecnico/times/${id}`,{method:'DELETE'}).then(()=>loadAdminTimes()); }
 
-        // --------- Funções Modal Agente ---------
-        async function populateTimesSelect(selectedIds){
+        function deleteTime(id) {
+            if (confirm('Excluir time?')) {
+                fetch(`/api/tecnico/times/${id}`, { method: 'DELETE' }).then(() => loadAdminTimes());
+            }
+        }
+
+        async function populateTimesSelect(selectedIds) {
             const sel = document.getElementById('agenteTimeId');
             sel.innerHTML = '';
             const res = await fetch('/api/tecnico/times');
             const data = await res.json();
-            const selected = Array.isArray(selectedIds) ? selectedIds.map(Number) : (selectedIds? [Number(selectedIds)]: []);
-            (data.data||[]).forEach(t=>{
+            const selected = Array.isArray(selectedIds) ? selectedIds.map(Number) : (selectedIds ? [Number(selectedIds)] : []);
+            (data.data || []).forEach(t => {
                 const opt = document.createElement('option');
                 opt.value = t.id;
                 opt.textContent = t.nome;
-                if(selected.includes(Number(t.id))) opt.selected = true;
+                if (selected.includes(Number(t.id))) opt.selected = true;
                 sel.appendChild(opt);
             });
         }
 
-        function openAgenteModal(id){
+        function openAgenteModal(id) {
             document.getElementById('agenteFormTitle').innerText = id ? 'Editar Agente' : 'Novo Agente';
             const modal = document.getElementById('modalAgente');
-            if(id){
-                fetch('/api/tecnico/agentes').then(r=>r.json()).then(async d=>{
-                    const a = (d.data||[]).find(x=>x.id===id);
-                    if(a){
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (id) {
+                fetch('/api/tecnico/agentes').then(r => r.json()).then(async d => {
+                    const a = (d.data || []).find(x => x.id === id);
+                    if (a) {
                         await populateTimesSelect(a.time_ids || a.time_id);
                         agenteId.value = a.id;
-                        agenteNome.value = a.nome||'';
-                        agenteTipo.value = a.tipo||'humano';
-                        agenteCwId.value = a.chatwoot_agent_id||'';
-                        agenteEmail.value = a.email||'';
-                        agenteTelefone.value = a.telefone||'';
+                        agenteNome.value = a.nome || '';
+                        agenteTipo.value = a.tipo || 'humano';
+                        agenteCwId.value = a.chatwoot_agent_id || '';
+                        agenteEmail.value = a.email || '';
+                        agenteTelefone.value = a.telefone || '';
                         agenteActive.checked = !!a.active;
-                        modal.classList.remove('hidden');
                     }
                 });
             } else {
                 populateTimesSelect([]);
                 agenteId.value = '';
-                agenteNome.value='';
-                agenteTipo.value='humano';
-                agenteCwId.value='';
-                agenteEmail.value='';
-                agenteTelefone.value='';
-                agenteActive.checked=true;
-                modal.classList.remove('hidden');
+                agenteNome.value = '';
+                agenteTipo.value = 'humano';
+                agenteCwId.value = '';
+                agenteEmail.value = '';
+                agenteTelefone.value = '';
+                agenteActive.checked = true;
             }
         }
-        function closeAgenteModal(){ document.getElementById('modalAgente').classList.add('hidden'); }
-        async function saveAgente(){
+
+        function closeAgenteModal() {
+            const modal = document.getElementById('modalAgente');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveAgente() {
             const selTimes = document.getElementById('agenteTimeId');
-            const timeVals = Array.from(selTimes.selectedOptions).map(o=>Number(o.value));
-            if(!timeVals.length){ alert('Selecione pelo menos um time.'); return; }
+            const timeVals = Array.from(selTimes.selectedOptions).map(o => Number(o.value));
+            if (!timeVals.length) {
+                alert('Selecione pelo menos um time.');
+                return;
+            }
             const payload = {
                 nome: agenteNome.value.trim(),
                 tipo: agenteTipo.value,
-                chatwoot_agent_id: agenteCwId.value? Number(agenteCwId.value): null,
-                email: agenteEmail.value.trim()||null,
-                telefone: agenteTelefone.value.trim()||null,
+                chatwoot_agent_id: agenteCwId.value ? Number(agenteCwId.value) : null,
+                email: agenteEmail.value.trim() || null,
+                telefone: agenteTelefone.value.trim() || null,
                 active: agenteActive.checked,
                 time_ids: timeVals
             };
-            const id = agenteId.value? Number(agenteId.value): null;
-            const url = id? `/api/tecnico/agentes/${id}` : '/api/tecnico/agentes';
-            const method = id? 'PUT' : 'POST';
-            const resp = await fetch(url,{method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
-            const json = await resp.json().catch(()=>({}));
-            if(json && json.status==='error'){ alert(json.message||'Erro ao salvar'); return; }
+            const id = agenteId.value ? Number(agenteId.value) : null;
+            const url = id ? `/api/tecnico/agentes/${id}` : '/api/tecnico/agentes';
+            const method = id ? 'PUT' : 'POST';
+            const resp = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const json = await resp.json().catch(() => ({}));
+            if (json && json.status === 'error') {
+                alert(json.message || 'Erro ao salvar');
+                return;
+            }
             closeAgenteModal();
             loadAdminAgentes();
         }
-        function deleteAgente(id){ if(confirm('Excluir agente?')) fetch(`/api/tecnico/agentes/${id}`,{method:'DELETE'}).then(()=>loadAdminAgentes()); }
+
+        function deleteAgente(id) {
+            if (confirm('Excluir agente?')) {
+                fetch(`/api/tecnico/agentes/${id}`, { method: 'DELETE' }).then(() => loadAdminAgentes());
+            }
+        }
     </script>
 </body>
 </html>
