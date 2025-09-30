@@ -434,7 +434,7 @@
                         tr.innerHTML = `
                           <td class="px-6 py-4">${a.nome}</td>
                           <td class="px-6 py-4">${a.tipo}</td>
-                          <td class="px-6 py-4">-</td>
+                          <td class="px-6 py-4">${a.time_nome || '-'}</td>
                           <td class="px-6 py-4">${a.email || '-'}</td>
                           <td class="px-6 py-4">${a.telefone || '-'}</td>
                           <td class="px-6 py-4 text-right">
@@ -450,7 +450,18 @@
         // Abrir modais definidos no Painel Técnico (reuso simples)
         function openTimeModal(id){ alert('Modal Time (reuso) — vou unificar modais em próxima etapa.'); }
         function deleteTime(id){ if(confirm('Excluir time?')) fetch(`/api/tecnico/times/${id}`,{method:'DELETE'}).then(()=>loadAdminTimes()); }
-        function openAgenteModal(id){ alert('Modal Agente (reuso) — vou unificar modais em próxima etapa.'); }
+        function openAgenteModal(id){
+            const nome = prompt('Nome do agente:');
+            if(!nome) return;
+            const tipo = prompt('Tipo (humano|ia):','humano');
+            const time_id = prompt('ID do Time (obrigatório):');
+            if(!time_id){ alert('time_id é obrigatório'); return; }
+            const payload = { nome, tipo, time_id: Number(time_id) };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/tecnico/agentes/${id}` : '/api/tecnico/agentes';
+            fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                .then(r=>r.json()).then(()=>loadAdminAgentes());
+        }
         function deleteAgente(id){ if(confirm('Excluir agente?')) fetch(`/api/tecnico/agentes/${id}`,{method:'DELETE'}).then(()=>loadAdminAgentes()); }
     </script>
 </body>
