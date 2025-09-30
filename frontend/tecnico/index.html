@@ -177,6 +177,90 @@
         </div>
     </div>
 
+    <!-- Modal Time -->
+    <div id="modalTime" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+        <div class="bg-white rounded p-4 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3" id="timeFormTitle">Novo Time</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <input id="timeId" type="hidden">
+                <div class="col-span-2">
+                    <label class="text-xs text-gray-600">Nome</label>
+                    <input id="timeNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do time">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Cor</label>
+                    <input id="timeCor" class="w-full border px-3 py-2 rounded" value="#4ECDC4">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Chatwoot Team ID</label>
+                    <input id="timeTeamId" class="w-full border px-3 py-2 rounded" placeholder="ex: 12">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Responsável</label>
+                    <input id="timeRespNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do responsável">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">E-mail do Responsável</label>
+                    <input id="timeRespEmail" class="w-full border px-3 py-2 rounded" placeholder="email@dominio.com">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-xs text-gray-600">Palavras-chave (separadas por vírgula)</label>
+                    <input id="timeKeywords" class="w-full border px-3 py-2 rounded" placeholder="buraco, iluminação, esgoto">
+                </div>
+                <div class="col-span-2 flex items-center justify-between mt-2">
+                    <label class="text-sm"><input id="timeActive" type="checkbox" class="mr-2" checked> Ativo</label>
+                    <div class="space-x-2">
+                        <button onclick="saveTime()" class="bg-blue-600 text-white px-3 py-2 rounded">Salvar</button>
+                        <button onclick="closeTimeModal()" class="bg-gray-200 px-3 py-2 rounded">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agente -->
+    <div id="modalAgente" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+        <div class="bg-white rounded p-4 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3" id="agenteFormTitle">Novo Agente</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <input id="agenteId" type="hidden">
+                <div class="col-span-2">
+                    <label class="text-xs text-gray-600">Nome</label>
+                    <input id="agenteNome" class="w-full border px-3 py-2 rounded" placeholder="Nome do agente">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Tipo</label>
+                    <select id="agenteTipo" class="w-full border px-3 py-2 rounded">
+                        <option value="humano">Humano</option>
+                        <option value="ia_geral">IA Geral</option>
+                        <option value="ia_infraestrutura">IA Infraestrutura</option>
+                        <option value="ia_saude">IA Saúde</option>
+                        <option value="ia_educacao">IA Educação</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Chatwoot Agent ID</label>
+                    <input id="agenteCwId" class="w-full border px-3 py-2 rounded" placeholder="ex: 34">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">E-mail</label>
+                    <input id="agenteEmail" class="w-full border px-3 py-2 rounded" placeholder="email@dominio.com">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-600">Telefone</label>
+                    <input id="agenteTelefone" class="w-full border px-3 py-2 rounded" placeholder="+55...">
+                </div>
+                <div class="col-span-2 flex items-center justify-between mt-2">
+                    <label class="text-sm"><input id="agenteActive" type="checkbox" class="mr-2" checked> Ativo</label>
+                    <div class="space-x-2">
+                        <button onclick="saveAgente()" class="bg-blue-600 text-white px-3 py-2 rounded">Salvar</button>
+                        <button onclick="closeAgenteModal()" class="bg-gray-200 px-3 py-2 rounded">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Navegação simples entre páginas
         const pageConversations = document.getElementById('pageConversations');
@@ -204,8 +288,8 @@
                         <td class="px-4 py-2">${t.responsavel_nome || '-'}</td>
                         <td class="px-4 py-2">${t.active ? 'Ativo' : 'Inativo'}</td>
                         <td class="px-4 py-2 text-right">
-                            <button class="text-blue-600 hover:underline mr-2">Editar</button>
-                            <button class="text-red-600 hover:underline">Excluir</button>
+                            <button class="text-blue-600 hover:underline mr-2" onclick="openTimeModal(${t.id})">Editar</button>
+                            <button class="text-red-600 hover:underline" onclick="deleteTime(${t.id})">Excluir</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
@@ -229,13 +313,123 @@
                         <td class="px-4 py-2">${a.telefone || '-'}</td>
                         <td class="px-4 py-2">${a.active ? 'Ativo' : 'Inativo'}</td>
                         <td class="px-4 py-2 text-right">
-                            <button class="text-blue-600 hover:underline mr-2">Editar</button>
-                            <button class="text-red-600 hover:underline">Excluir</button>
+                            <button class="text-blue-600 hover:underline mr-2" onclick="openAgenteModal(${a.id})">Editar</button>
+                            <button class="text-red-600 hover:underline" onclick="deleteAgente(${a.id})">Excluir</button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
+        }
+        // Modal handlers wired up
+        document.getElementById('btnNovoTime').addEventListener('click', ()=> openTimeModal());
+        document.getElementById('btnNovoAgente').addEventListener('click', ()=> openAgenteModal());
+
+        // --------- Funções Modal Time ---------
+        function openTimeModal(id){
+            document.getElementById('timeFormTitle').innerText = id ? 'Editar Time' : 'Novo Time';
+            const modal = document.getElementById('modalTime');
+            if(id){
+                fetch('/api/tecnico/times').then(r=>r.json()).then(d=>{
+                    const t = (d.data||[]).find(x=>x.id===id);
+                    if(t){
+                        timeId.value = t.id;
+                        timeNome.value = t.nome||'';
+                        timeCor.value = t.cor||'#4ECDC4';
+                        timeTeamId.value = t.chatwoot_team_id||'';
+                        timeRespNome.value = t.responsavel_nome||'';
+                        timeRespEmail.value = t.responsavel_email||'';
+                        timeKeywords.value = (t.keywords||[]).join(', ');
+                        timeActive.checked = !!t.active;
+                        modal.classList.remove('hidden');
+                    }
+                });
+            } else {
+                timeId.value = '';
+                timeNome.value = '';
+                timeCor.value = '#4ECDC4';
+                timeTeamId.value = '';
+                timeRespNome.value = '';
+                timeRespEmail.value = '';
+                timeKeywords.value = '';
+                timeActive.checked = true;
+                modal.classList.remove('hidden');
+            }
+        }
+        function closeTimeModal(){ document.getElementById('modalTime').classList.add('hidden'); }
+        async function saveTime(){
+            const payload = {
+                nome: timeNome.value.trim(),
+                chatwoot_team_id: timeTeamId.value? Number(timeTeamId.value): null,
+                cor: timeCor.value.trim(),
+                responsavel_nome: timeRespNome.value.trim()||null,
+                responsavel_email: timeRespEmail.value.trim()||null,
+                keywords: timeKeywords.value? timeKeywords.value.split(',').map(s=>s.trim()).filter(Boolean):[],
+                active: timeActive.checked
+            };
+            const id = timeId.value? Number(timeId.value): null;
+            const url = id? `/api/tecnico/times/${id}` : '/api/tecnico/times';
+            const method = id? 'PUT' : 'POST';
+            await fetch(url,{method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+            closeTimeModal();
+            loadTimes();
+        }
+        async function deleteTime(id){
+            if(!confirm('Excluir este time?')) return;
+            await fetch(`/api/tecnico/times/${id}`,{method:'DELETE'});
+            loadTimes();
+        }
+
+        // --------- Funções Modal Agente ---------
+        function openAgenteModal(id){
+            document.getElementById('agenteFormTitle').innerText = id ? 'Editar Agente' : 'Novo Agente';
+            const modal = document.getElementById('modalAgente');
+            if(id){
+                fetch('/api/tecnico/agentes').then(r=>r.json()).then(d=>{
+                    const a = (d.data||[]).find(x=>x.id===id);
+                    if(a){
+                        agenteId.value = a.id;
+                        agenteNome.value = a.nome||'';
+                        agenteTipo.value = a.tipo||'humano';
+                        agenteCwId.value = a.chatwoot_agent_id||'';
+                        agenteEmail.value = a.email||'';
+                        agenteTelefone.value = a.telefone||'';
+                        agenteActive.checked = !!a.active;
+                        modal.classList.remove('hidden');
+                    }
+                });
+            } else {
+                agenteId.value = '';
+                agenteNome.value='';
+                agenteTipo.value='humano';
+                agenteCwId.value='';
+                agenteEmail.value='';
+                agenteTelefone.value='';
+                agenteActive.checked=true;
+                modal.classList.remove('hidden');
+            }
+        }
+        function closeAgenteModal(){ document.getElementById('modalAgente').classList.add('hidden'); }
+        async function saveAgente(){
+            const payload = {
+                nome: agenteNome.value.trim(),
+                tipo: agenteTipo.value,
+                chatwoot_agent_id: agenteCwId.value? Number(agenteCwId.value): null,
+                email: agenteEmail.value.trim()||null,
+                telefone: agenteTelefone.value.trim()||null,
+                active: agenteActive.checked
+            };
+            const id = agenteId.value? Number(agenteId.value): null;
+            const url = id? `/api/tecnico/agentes/${id}` : '/api/tecnico/agentes';
+            const method = id? 'PUT' : 'POST';
+            await fetch(url,{method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+            closeAgenteModal();
+            loadAgentes();
+        }
+        async function deleteAgente(id){
+            if(!confirm('Excluir este agente?')) return;
+            await fetch(`/api/tecnico/agentes/${id}`,{method:'DELETE'});
+            loadAgentes();
         }
     </script>
 
