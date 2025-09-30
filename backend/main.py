@@ -213,10 +213,13 @@ async def list_agentes(prefeitura_id: int = 1):
                 """
                 SELECT 
                     a.id, a.prefeitura_id, a.nome, a.tipo, a.chatwoot_agent_id, a.email, a.telefone, a.config, a.active, a.created_at,
-                    (SELECT at.time_id FROM agente_times at WHERE at.agente_id = a.id LIMIT 1) AS time_id,
-                    (SELECT t.nome FROM times t WHERE t.id = (SELECT at2.time_id FROM agente_times at2 WHERE at2.agente_id = a.id LIMIT 1)) AS time_nome
+                    COALESCE(array_agg(at.time_id) FILTER (WHERE at.time_id IS NOT NULL), '{}') AS time_ids,
+                    COALESCE(array_agg(t.nome) FILTER (WHERE t.id IS NOT NULL), '{}') AS time_nomes
                 FROM agentes a
+                LEFT JOIN agente_times at ON at.agente_id = a.id
+                LEFT JOIN times t ON t.id = at.time_id
                 WHERE a.prefeitura_id = $1
+                GROUP BY a.id, a.prefeitura_id, a.nome, a.tipo, a.chatwoot_agent_id, a.email, a.telefone, a.config, a.active, a.created_at
                 ORDER BY a.created_at DESC
                 """,
                 prefeitura_id,
@@ -235,8 +238,8 @@ async def list_agentes(prefeitura_id: int = 1):
                         "config": r["config"] if isinstance(r["config"], dict) else json.loads(r["config"] or "{}"),
                         "active": r["active"],
                         "created_at": r["created_at"].isoformat() if r["created_at"] else None,
-                        "time_id": r["time_id"],
-                        "time_nome": r["time_nome"],
+                        "time_ids": list(r["time_ids"]) if r["time_ids"] else [],
+                        "time_nomes": list(r["time_nomes"]) if r["time_nomes"] else [],
                     }
                 )
             return {"status": "success", "data": data}
@@ -249,10 +252,12 @@ async def list_agentes(prefeitura_id: int = 1):
 async def create_agente(payload: dict):
     try:
         async with chamados_service.pool.acquire() as conn:
-            # time obrigatório
-            time_id = payload.get("time_id")
-            if not time_id:
-                return {"status": "error", "message": "time_id é obrigatório"}
+            # ao menos um time obrigatório
+            time_ids = payload.get("time_ids") or payload.get("time_id")
+            if isinstance(time_ids, int):
+                time_ids = [time_ids]
+            if not time_ids or len(time_ids) == 0:
+                return {"status": "error", "message": "Informe pelo menos um time em time_ids"}
 
             result = await conn.fetchrow(
                 """
@@ -271,17 +276,18 @@ async def create_agente(payload: dict):
             )
             agente_id = result["id"]
 
-            # Vincular ao time (obrigatório)
-            await conn.execute(
-                """
-                INSERT INTO agente_times (agente_id, time_id, created_at)
-                VALUES ($1, $2, NOW())
-                ON CONFLICT (agente_id, time_id) DO NOTHING
-                """,
-                agente_id,
-                time_id,
-            )
-            return {"status": "success", "id": agente_id, "nome": result["nome"], "time_id": time_id}
+            # Vincular aos times
+            for tid in time_ids:
+                await conn.execute(
+                    """
+                    INSERT INTO agente_times (agente_id, time_id, created_at)
+                    VALUES ($1, $2, NOW())
+                    ON CONFLICT (agente_id, time_id) DO NOTHING
+                    """,
+                    agente_id,
+                    int(tid),
+                )
+            return {"status": "success", "id": agente_id, "nome": result["nome"], "time_ids": time_ids}
     except Exception as e:
         logger.error(f"Erro ao criar agente: {e}")
         return {"status": "error", "message": str(e)}
@@ -312,15 +318,19 @@ async def update_agente(agente_id: int, payload: dict):
                 json.dumps(payload.get("config")) if payload.get("config") is not None else None,
                 payload.get("active"),
             )
-            # atualizar vínculo se enviado
-            if payload.get("time_id") is not None:
-                time_id = payload.get("time_id")
-                # substituir vínculos existentes por um
+            # atualizar vínculos se enviado time_ids/time_id
+            if payload.get("time_ids") is not None or payload.get("time_id") is not None:
+                time_ids = payload.get("time_ids") or payload.get("time_id")
+                if isinstance(time_ids, int):
+                    time_ids = [time_ids]
+                if not time_ids:
+                    return {"status": "error", "message": "Agente deve permanecer vinculado a pelo menos um time"}
                 await conn.execute("DELETE FROM agente_times WHERE agente_id = $1", agente_id)
-                await conn.execute(
-                    "INSERT INTO agente_times (agente_id, time_id, created_at) VALUES ($1, $2, NOW())",
-                    agente_id, time_id
-                )
+                for tid in time_ids:
+                    await conn.execute(
+                        "INSERT INTO agente_times (agente_id, time_id, created_at) VALUES ($1, $2, NOW())",
+                        agente_id, int(tid)
+                    )
             return {"status": "success"}
     except Exception as e:
         logger.error(f"Erro ao atualizar agente: {e}")

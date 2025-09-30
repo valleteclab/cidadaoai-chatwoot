@@ -250,6 +250,10 @@
                     <label class="text-xs text-gray-600">Telefone</label>
                     <input id="agenteTelefone" class="w-full border px-3 py-2 rounded" placeholder="+55...">
                 </div>
+                <div class="col-span-2">
+                    <label class="text-xs text-gray-600">Times (selecione um ou mais)</label>
+                    <select id="agenteTimeIds" class="w-full border px-3 py-2 rounded" multiple size="5"></select>
+                </div>
                 <div class="col-span-2 flex items-center justify-between mt-2">
                     <label class="text-sm"><input id="agenteActive" type="checkbox" class="mr-2" checked> Ativo</label>
                     <div class="space-x-2">
@@ -381,6 +385,20 @@
         }
 
         // --------- Funções Modal Agente ---------
+        async function populateTimesSelectTecnico(selectedIds){
+            const sel = document.getElementById('agenteTimeIds');
+            sel.innerHTML='';
+            const res = await fetch('/api/tecnico/times');
+            const data = await res.json();
+            const selected = Array.isArray(selectedIds) ? selectedIds.map(Number) : (selectedIds? [Number(selectedIds)]: []);
+            (data.data||[]).forEach(t=>{
+                const opt = document.createElement('option');
+                opt.value = t.id; opt.textContent = t.nome;
+                if(selected.includes(Number(t.id))) opt.selected=true;
+                sel.appendChild(opt);
+            });
+        }
+
         function openAgenteModal(id){
             document.getElementById('agenteFormTitle').innerText = id ? 'Editar Agente' : 'Novo Agente';
             const modal = document.getElementById('modalAgente');
@@ -388,6 +406,7 @@
                 fetch('/api/tecnico/agentes').then(r=>r.json()).then(d=>{
                     const a = (d.data||[]).find(x=>x.id===id);
                     if(a){
+                        populateTimesSelectTecnico(a.time_ids || a.time_id);
                         agenteId.value = a.id;
                         agenteNome.value = a.nome||'';
                         agenteTipo.value = a.tipo||'humano';
@@ -399,6 +418,7 @@
                     }
                 });
             } else {
+                populateTimesSelectTecnico([]);
                 agenteId.value = '';
                 agenteNome.value='';
                 agenteTipo.value='humano';
@@ -411,13 +431,17 @@
         }
         function closeAgenteModal(){ document.getElementById('modalAgente').classList.add('hidden'); }
         async function saveAgente(){
+            const sel = document.getElementById('agenteTimeIds');
+            const timeVals = Array.from(sel.selectedOptions).map(o=>Number(o.value));
+            if(!timeVals.length){ alert('Selecione pelo menos um time.'); return; }
             const payload = {
                 nome: agenteNome.value.trim(),
                 tipo: agenteTipo.value,
                 chatwoot_agent_id: agenteCwId.value? Number(agenteCwId.value): null,
                 email: agenteEmail.value.trim()||null,
                 telefone: agenteTelefone.value.trim()||null,
-                active: agenteActive.checked
+                active: agenteActive.checked,
+                time_ids: timeVals
             };
             const id = agenteId.value? Number(agenteId.value): null;
             const url = id? `/api/tecnico/agentes/${id}` : '/api/tecnico/agentes';
