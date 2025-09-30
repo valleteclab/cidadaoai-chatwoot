@@ -113,6 +113,16 @@
                                 class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                             <i class="fas fa-cog mr-2"></i>Sistema
                         </button>
+                        <button @click="activeTab = 'times'" 
+                                :class="activeTab === 'times' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <i class="fas fa-users mr-2"></i>Times
+                        </button>
+                        <button @click="activeTab = 'agentes'" 
+                                :class="activeTab === 'agentes' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <i class="fas fa-user-gear mr-2"></i>Agentes
+                        </button>
                     </nav>
                 </div>
 
@@ -142,6 +152,54 @@
                     </div>
                 </div>
 
+                <!-- Times Tab -->
+                <div x-show="activeTab === 'times'" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Times</h3>
+                        <button onclick="openTimeModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Novo Time
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cor</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsável</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-times-table" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Agentes Tab -->
+                <div x-show="activeTab === 'agentes'" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Agentes</h3>
+                        <button onclick="openAgenteModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>Novo Agente
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">E-mail</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefone</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-agentes-table" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
                 <!-- Chamados Tab -->
                 <div x-show="activeTab === 'chamados'" class="p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -330,6 +388,70 @@
                 console.error('Erro ao verificar status:', error);
             }
         }
+
+        // --------- Admin Times/Agentes (reuso dos endpoints técnico) ---------
+        document.addEventListener('DOMContentLoaded', ()=>{
+            // pré-carregar se o usuário mudar de aba
+            window.loadAdminTimes = loadAdminTimes;
+            window.loadAdminAgentes = loadAdminAgentes;
+        });
+
+        async function loadAdminTimes(){
+            try{
+                const res = await fetch('/api/tecnico/times');
+                const data = await res.json();
+                const tb = document.getElementById('admin-times-table');
+                if(!tb) return;
+                tb.innerHTML = '';
+                if(data.status==='success'){
+                    data.data.forEach(t=>{
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                          <td class="px-6 py-4">${t.nome}</td>
+                          <td class="px-6 py-4"><span class="inline-block w-4 h-4 rounded" style="background:${t.cor}"></span></td>
+                          <td class="px-6 py-4">${t.responsavel_nome || '-'}</td>
+                          <td class="px-6 py-4">${t.active ? 'Ativo' : 'Inativo'}</td>
+                          <td class="px-6 py-4 text-right">
+                            <button class="text-blue-600 hover:underline mr-3" onclick="openTimeModal(${t.id})">Editar</button>
+                            <button class="text-red-600 hover:underline" onclick="deleteTime(${t.id})">Excluir</button>
+                          </td>`;
+                        tb.appendChild(tr);
+                    });
+                }
+            }catch(e){ console.error(e); }
+        }
+
+        async function loadAdminAgentes(){
+            try{
+                const res = await fetch('/api/tecnico/agentes');
+                const data = await res.json();
+                const tb = document.getElementById('admin-agentes-table');
+                if(!tb) return;
+                tb.innerHTML = '';
+                if(data.status==='success'){
+                    data.data.forEach(a=>{
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                          <td class="px-6 py-4">${a.nome}</td>
+                          <td class="px-6 py-4">${a.tipo}</td>
+                          <td class="px-6 py-4">-</td>
+                          <td class="px-6 py-4">${a.email || '-'}</td>
+                          <td class="px-6 py-4">${a.telefone || '-'}</td>
+                          <td class="px-6 py-4 text-right">
+                            <button class="text-blue-600 hover:underline mr-3" onclick="openAgenteModal(${a.id})">Editar</button>
+                            <button class="text-red-600 hover:underline" onclick="deleteAgente(${a.id})">Excluir</button>
+                          </td>`;
+                        tb.appendChild(tr);
+                    });
+                }
+            }catch(e){ console.error(e); }
+        }
+        
+        // Abrir modais definidos no Painel Técnico (reuso simples)
+        function openTimeModal(id){ alert('Modal Time (reuso) — vou unificar modais em próxima etapa.'); }
+        function deleteTime(id){ if(confirm('Excluir time?')) fetch(`/api/tecnico/times/${id}`,{method:'DELETE'}).then(()=>loadAdminTimes()); }
+        function openAgenteModal(id){ alert('Modal Agente (reuso) — vou unificar modais em próxima etapa.'); }
+        function deleteAgente(id){ if(confirm('Excluir agente?')) fetch(`/api/tecnico/agentes/${id}`,{method:'DELETE'}).then(()=>loadAdminAgentes()); }
     </script>
 </body>
 </html>
