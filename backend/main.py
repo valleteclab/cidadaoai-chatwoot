@@ -93,6 +93,219 @@ async def index():
 async def tecnico():
     return FileResponse("frontend/tecnico/index.html")
 
+# =============================
+# Painel Técnico - CRUD Times & Agentes
+# =============================
+
+@app.get("/api/tecnico/times", tags=["Painel Técnico"])
+async def list_times(prefeitura_id: int = 1):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, prefeitura_id, nome, chatwoot_team_id, cor, keywords, responsavel_nome,
+                       responsavel_email, config, active, created_at
+                FROM times
+                WHERE prefeitura_id = $1
+                ORDER BY created_at DESC
+                """,
+                prefeitura_id,
+            )
+            data = []
+            for r in rows:
+                data.append(
+                    {
+                        "id": r["id"],
+                        "prefeitura_id": r["prefeitura_id"],
+                        "nome": r["nome"],
+                        "chatwoot_team_id": r["chatwoot_team_id"],
+                        "cor": r["cor"],
+                        "keywords": list(r["keywords"]) if r["keywords"] else [],
+                        "responsavel_nome": r["responsavel_nome"],
+                        "responsavel_email": r["responsavel_email"],
+                        "config": r["config"] if isinstance(r["config"], dict) else json.loads(r["config"] or "{}"),
+                        "active": r["active"],
+                        "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                    }
+                )
+            return {"status": "success", "data": data}
+    except Exception as e:
+        logger.error(f"Erro ao listar times: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/tecnico/times", tags=["Painel Técnico"])
+async def create_time(payload: dict):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            result = await conn.fetchrow(
+                """
+                INSERT INTO times (
+                    prefeitura_id, nome, chatwoot_team_id, cor, keywords, responsavel_nome,
+                    responsavel_email, config, active, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW())
+                RETURNING id, nome
+                """,
+                payload.get("prefeitura_id", 1),
+                payload.get("nome"),
+                payload.get("chatwoot_team_id"),
+                payload.get("cor", "#4ECDC4"),
+                payload.get("keywords", []),
+                payload.get("responsavel_nome"),
+                payload.get("responsavel_email"),
+                json.dumps(payload.get("config", {})),
+            )
+            return {"status": "success", "id": result["id"], "nome": result["nome"]}
+    except Exception as e:
+        logger.error(f"Erro ao criar time: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.put("/api/tecnico/times/{time_id}", tags=["Painel Técnico"])
+async def update_time(time_id: int, payload: dict):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE times SET
+                    nome = COALESCE($2, nome),
+                    chatwoot_team_id = COALESCE($3, chatwoot_team_id),
+                    cor = COALESCE($4, cor),
+                    keywords = COALESCE($5, keywords),
+                    responsavel_nome = COALESCE($6, responsavel_nome),
+                    responsavel_email = COALESCE($7, responsavel_email),
+                    config = COALESCE($8, config),
+                    active = COALESCE($9, active)
+                WHERE id = $1
+                """,
+                time_id,
+                payload.get("nome"),
+                payload.get("chatwoot_team_id"),
+                payload.get("cor"),
+                payload.get("keywords"),
+                payload.get("responsavel_nome"),
+                payload.get("responsavel_email"),
+                json.dumps(payload.get("config")) if payload.get("config") is not None else None,
+                payload.get("active"),
+            )
+            return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Erro ao atualizar time: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.delete("/api/tecnico/times/{time_id}", tags=["Painel Técnico"])
+async def delete_time(time_id: int):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            await conn.execute("DELETE FROM times WHERE id = $1", time_id)
+            return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Erro ao deletar time: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/tecnico/agentes", tags=["Painel Técnico"])
+async def list_agentes(prefeitura_id: int = 1):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT id, prefeitura_id, nome, tipo, chatwoot_agent_id, email, telefone, config, active, created_at
+                FROM agentes
+                WHERE prefeitura_id = $1
+                ORDER BY created_at DESC
+                """,
+                prefeitura_id,
+            )
+            data = []
+            for r in rows:
+                data.append(
+                    {
+                        "id": r["id"],
+                        "prefeitura_id": r["prefeitura_id"],
+                        "nome": r["nome"],
+                        "tipo": r["tipo"],
+                        "chatwoot_agent_id": r["chatwoot_agent_id"],
+                        "email": r["email"],
+                        "telefone": r["telefone"],
+                        "config": r["config"] if isinstance(r["config"], dict) else json.loads(r["config"] or "{}"),
+                        "active": r["active"],
+                        "created_at": r["created_at"].isoformat() if r["created_at"] else None,
+                    }
+                )
+            return {"status": "success", "data": data}
+    except Exception as e:
+        logger.error(f"Erro ao listar agentes: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/tecnico/agentes", tags=["Painel Técnico"])
+async def create_agente(payload: dict):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            result = await conn.fetchrow(
+                """
+                INSERT INTO agentes (
+                    prefeitura_id, nome, tipo, chatwoot_agent_id, email, telefone, config, active, created_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, NOW())
+                RETURNING id, nome
+                """,
+                payload.get("prefeitura_id", 1),
+                payload.get("nome"),
+                payload.get("tipo", "humano"),
+                payload.get("chatwoot_agent_id"),
+                payload.get("email"),
+                payload.get("telefone"),
+                json.dumps(payload.get("config", {})),
+            )
+            return {"status": "success", "id": result["id"], "nome": result["nome"]}
+    except Exception as e:
+        logger.error(f"Erro ao criar agente: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.put("/api/tecnico/agentes/{agente_id}", tags=["Painel Técnico"])
+async def update_agente(agente_id: int, payload: dict):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE agentes SET
+                    nome = COALESCE($2, nome),
+                    tipo = COALESCE($3, tipo),
+                    chatwoot_agent_id = COALESCE($4, chatwoot_agent_id),
+                    email = COALESCE($5, email),
+                    telefone = COALESCE($6, telefone),
+                    config = COALESCE($7, config),
+                    active = COALESCE($8, active)
+                WHERE id = $1
+                """,
+                agente_id,
+                payload.get("nome"),
+                payload.get("tipo"),
+                payload.get("chatwoot_agent_id"),
+                payload.get("email"),
+                payload.get("telefone"),
+                json.dumps(payload.get("config")) if payload.get("config") is not None else None,
+                payload.get("active"),
+            )
+            return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Erro ao atualizar agente: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.delete("/api/tecnico/agentes/{agente_id}", tags=["Painel Técnico"])
+async def delete_agente(agente_id: int):
+    try:
+        async with chamados_service.pool.acquire() as conn:
+            await conn.execute("DELETE FROM agentes WHERE id = $1", agente_id)
+            return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Erro ao deletar agente: {e}")
+        return {"status": "error", "message": str(e)}
+
 # Configurações
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 CHATWOOT_URL = os.getenv("CHATWOOT_URL")
