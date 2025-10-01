@@ -126,6 +126,45 @@
             border-radius: 999px;
         }
         [x-cloak] { display: none !important; }
+        body.theme-classic aside {
+            background: #ffffff;
+            border-right: 1px solid rgba(226, 232, 240, 0.85);
+        }
+        body.theme-classic aside .sidebar-link {
+            color: #475569;
+        }
+        body.theme-classic aside .sidebar-link.active,
+        body.theme-classic aside .sidebar-link:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-left-color: #2563eb;
+            color: #2563eb;
+        }
+        body.theme-classic .surface-card,
+        body.theme-classic .surface-panel {
+            background: #ffffff;
+            border-color: rgba(148, 163, 184, 0.45);
+            color: #1e293b;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+        }
+        body.theme-classic .surface-chip {
+            background: #edf2f7;
+            color: #1e293b;
+            border-color: rgba(148, 163, 184, 0.35);
+        }
+        body.theme-classic .surface-chip:hover {
+            border-color: rgba(37, 99, 235, 0.6);
+        }
+        body.theme-classic table tbody tr {
+            background: #ffffff;
+            color: #1f2937;
+        }
+        body.theme-classic table tbody tr:hover {
+            background: #eff6ff;
+        }
+        body.theme-classic .input-surface {
+            background: #ffffff;
+            border-color: rgba(203, 213, 225, 0.8);
+        }
     </style>
 </head>
 <body x-data="adminShell()" x-init="init()" :class="['theme-wrapper', theme]">
@@ -601,6 +640,89 @@
         </div>
     </div>
 
+    <!-- Modal Cidadão -->
+    <div id="modalCitizen" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 px-4 py-10 backdrop-blur-sm">
+        <div class="surface-panel w-full max-w-2xl rounded-3xl px-6 py-6 text-slate-100 shadow-glow">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold" id="citizenFormTitle">Novo Cidadão</h3>
+                <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-3 py-1 text-xs text-slate-400">Fechar</button>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <input id="citizenId" type="hidden">
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Nome Completo *</label>
+                    <input id="citizenNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome completo do cidadão" required>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">CPF</label>
+                    <input id="citizenCpf" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="000.000.000-00">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Telefone *</label>
+                    <input id="citizenTelefone" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="+55 (00) 00000-0000" required>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">E-mail</label>
+                    <input id="citizenEmail" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="email@exemplo.com">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">CEP</label>
+                    <div class="flex gap-2">
+                        <input id="citizenCep" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="00000-000" maxlength="9">
+                        <button type="button" class="surface-chip px-3 py-2 text-xs" onclick="lookupCep()">Buscar CEP</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Estado</label>
+                    <input id="citizenEstado" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="UF" maxlength="2">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Cidade</label>
+                    <input id="citizenCidade" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da cidade">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Logradouro</label>
+                    <input id="citizenLogradouro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da rua, avenida, etc.">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Número</label>
+                    <input id="citizenNumero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Número">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Bairro</label>
+                    <input id="citizenBairro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do bairro">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Complemento</label>
+                    <input id="citizenComplemento" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Complemento, referência, etc.">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Data de Nascimento</label>
+                    <input id="citizenDataNascimento" type="date" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Gênero</label>
+                    <select id="citizenGenero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                        <option value="">Não informado</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2 flex items-center justify-between pt-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input id="citizenActive" type="checkbox" class="h-4 w-4 rounded border-slate-700 bg-slate-900 accent-sky-500" checked>
+                        Ativo
+                    </label>
+                    <div class="flex gap-2">
+                        <button onclick="saveCitizen()" class="rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 hover:border-sky-500 hover:bg-sky-500/30">Salvar</button>
+                        <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-4 py-2 text-sm text-slate-300">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function adminShell() {
             return {
@@ -610,6 +732,12 @@
                 showChatOnMobile: false,
                 theme: 'theme-modern',
                 userThemeSet: false,
+                metricCards: [
+                    { id: 'citizens', label: 'Cidadãos', value: '-', caption: 'Registros ativos', icon: 'fas fa-users' },
+                    { id: 'tickets', label: 'Chamados', value: '-', caption: 'Chamados totais', icon: 'fas fa-ticket-alt' },
+                    { id: 'running', label: 'Em Andamento', value: '-', caption: 'Chamados em execução', icon: 'fas fa-clock' },
+                    { id: 'solved', label: 'Resolvidos', value: '-', caption: 'Chamados resolvidos', icon: 'fas fa-circle-check' }
+                ],
                 init() {
                     this.initializeTheme();
                     const shortcutHandler = (event) => {
@@ -806,12 +934,23 @@
             try {
                 const response = await fetch('/api/chamados/metrics');
                 const data = await response.json();
-                
+
                 if (data.status === 'success') {
                     document.getElementById('total-cidadaos').textContent = data.metrics.total_cidadaos || 0;
                     document.getElementById('total-chamados').textContent = data.metrics.total_chamados || 0;
                     document.getElementById('chamados-andamento').textContent = data.metrics.chamados_em_andamento || 0;
                     document.getElementById('chamados-resolvidos').textContent = data.metrics.chamados_resolvidos || 0;
+
+                    const cardMap = {
+                        citizens: data.metrics.total_cidadaos || 0,
+                        tickets: data.metrics.total_chamados || 0,
+                        running: data.metrics.chamados_em_andamento || 0,
+                        solved: data.metrics.chamados_resolvidos || 0
+                    };
+                    this.metricCards = this.metricCards.map(card => ({
+                        ...card,
+                        value: cardMap[card.id] !== undefined ? cardMap[card.id] : card.value
+                    }));
                 }
             } catch (error) {
                 console.error('Erro ao carregar métricas:', error);
@@ -1175,24 +1314,29 @@
             modal.classList.remove('flex');
         }
 
-        async function saveCitizen() {
-            const cep = citizenCep.value.trim();
-            if (cep && cep.length >= 8) {
-                // Buscar endereço automaticamente via ViaCEP
-                try {
-                    const response = await fetch(`/api/utils/viacep/${cep}`);
-                    const dados = await response.json();
-                    if (dados && !dados.erro) {
-                        citizenLogradouro.value = dados.logradouro || '';
-                        citizenBairro.value = dados.bairro || '';
-                        citizenCidade.value = dados.localidade || '';
-                        citizenEstado.value = dados.uf || '';
-                    }
-                } catch (error) {
-                    console.error('Erro ao buscar CEP:', error);
-                }
+        async function lookupCep() {
+            const cep = citizenCep.value.replace(/\D/g, '');
+            if (cep.length !== 8) {
+                alert('Informe um CEP válido com 8 dígitos.');
+                return;
             }
+            try {
+                const response = await fetch(`/api/utils/viacep/${cep}`);
+                if (!response.ok) {
+                    throw new Error('CEP não encontrado');
+                }
+                const dados = await response.json();
+                citizenLogradouro.value = dados.logradouro || '';
+                citizenBairro.value = dados.bairro || '';
+                citizenCidade.value = dados.localidade || '';
+                citizenEstado.value = dados.uf || '';
+            } catch (error) {
+                alert('Não foi possível buscar o CEP informado.');
+                console.error('Erro ao buscar CEP:', error);
+            }
+        }
 
+        async function saveCitizen() {
             const payload = {
                 nome: citizenNome.value.trim(),
                 cpf: citizenCpf.value.trim() || null,
@@ -1280,85 +1424,5 @@
             }
         }
     </script>
-
-    <!-- Modal Cidadão -->
-    <div id="modalCitizen" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 px-4 py-10 backdrop-blur-sm">
-        <div class="surface-panel w-full max-w-2xl rounded-3xl px-6 py-6 text-slate-100 shadow-glow">
-            <div class="mb-4 flex items-center justify-between">
-                <h3 class="text-lg font-semibold" id="citizenFormTitle">Novo Cidadão</h3>
-                <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-3 py-1 text-xs text-slate-400">Fechar</button>
-            </div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <input id="citizenId" type="hidden">
-                <div class="sm:col-span-2">
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Nome Completo *</label>
-                    <input id="citizenNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome completo do cidadão" required>
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">CPF</label>
-                    <input id="citizenCpf" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="000.000.000-00">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Telefone *</label>
-                    <input id="citizenTelefone" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="+55 (00) 00000-0000" required>
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs uppercase tracking-wider text-slate-500">E-mail</label>
-                    <input id="citizenEmail" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="email@exemplo.com">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">CEP</label>
-                    <input id="citizenCep" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="00000-000" maxlength="9">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Estado</label>
-                    <input id="citizenEstado" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="UF" maxlength="2">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Cidade</label>
-                    <input id="citizenCidade" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da cidade">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Logradouro</label>
-                    <input id="citizenLogradouro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da rua, avenida, etc.">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Número</label>
-                    <input id="citizenNumero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Número">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Bairro</label>
-                    <input id="citizenBairro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do bairro">
-                </div>
-                <div class="sm:col-span-2">
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Complemento</label>
-                    <input id="citizenComplemento" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Complemento, referência, etc.">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Data de Nascimento</label>
-                    <input id="citizenDataNascimento" type="date" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="text-xs uppercase tracking-wider text-slate-500">Gênero</label>
-                    <select id="citizenGenero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
-                        <option value="">Não informado</option>
-                        <option value="masculino">Masculino</option>
-                        <option value="feminino">Feminino</option>
-                        <option value="outro">Outro</option>
-                    </select>
-                </div>
-                <div class="sm:col-span-2 flex items-center justify-between pt-2">
-                    <label class="flex items-center gap-2 text-sm text-slate-300">
-                        <input id="citizenActive" type="checkbox" class="h-4 w-4 rounded border-slate-700 bg-slate-900 accent-sky-500" checked>
-                        Ativo
-                    </label>
-                    <div class="flex gap-2">
-                        <button onclick="saveCitizen()" class="rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 hover:border-sky-500 hover:bg-sky-500/30">Salvar</button>
-                        <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-4 py-2 text-sm text-slate-300">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
