@@ -6,13 +6,34 @@
 ## 🎯 Tarefa Atual
 [X] Refinar modo clássico do admin (gov.br) com ajustes de cores e contraste
 [X] Ajustar integração ViaCEP e máscaras do modal de cidadão
-[X] Corrigir erros de console (`metricCards`, status DOM)
-[ ] Aguardando deploy no servidor web pelo usuário
+[X] Corrigir erros de console (`metricCards`, status DOM, `showToast`)
+[X] Implementar função showToast e null checks completos
+[ ] Testar no servidor web após deploy (aguardando pull + restart)
 
-### Última sessão (commit 7d3ed31)
-- [X] Corrigir erros de console (`metricCards`, status DOM)
-- [X] Ajustar integração ViaCEP (botão + preenchimento campos + toasts)
-- [X] Afinar paleta do modo clássico conforme gov.br (contraste e fundos)
+### Última sessão - 01/Out/2025 (commits 7d3ed31 + f5a8667)
+**O que foi feito:**
+- [X] Corrigir Alpine.js: `metricCards` agora usa estado global (`adminApp`)
+- [X] Adicionar null checks em `loadMetrics`, `checkSystemStatus`, `loadChamados`, `loadCidadaos`
+- [X] Implementar função `showToast()` para notificações visuais (success/error/info)
+- [X] Ajustar integração ViaCEP: validação de CEP, toasts informativos, limpeza de máscaras
+- [X] Refinar modo clássico: gradientes azul-marinho gov.br, contraste melhorado em cards/tabelas/sidebar
+- [X] Validação client-side no modal de cidadão (nome e telefone obrigatórios)
+- [X] Máscaras automáticas para CPF e telefone com limpeza antes do POST/PUT
+
+**Commits realizados:**
+- `7d3ed31` - Ajusta admin: métricas seguras, ViaCEP e modo clássico gov.br
+- `f5a8667` - Fix showToast e null checks em loadChamados/loadCidadaos
+
+**Arquivos modificados:**
+- `.cursorrules` - Atualização do scratchpad
+- `frontend/admin/index.html` - Todas as correções e melhorias de UX
+
+**Próximos passos (amanhã):**
+1. Validar no servidor web se as alterações estão visíveis (git pull + docker restart se necessário)
+2. Testar modo clássico (cores gov.br), moderno e escuro
+3. Validar fluxo completo de cadastro de cidadão com ViaCEP
+4. Verificar se erros do console sumiram completamente
+5. Possível próxima evolução: implementar features da Fase 2 (relatórios, dashboards avançados)
 
 ## 📋 Status do Projeto
 
