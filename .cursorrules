@@ -4,14 +4,15 @@
 # Scratchpad - Status Atual (Janeiro 2025)
 
 ## 🎯 Tarefa Atual
-[ ] Refinar modo clássico do admin (gov.br) com ajustes de cores e contraste
-[ ] Ajustar integração ViaCEP e máscaras do modal de cidadão
-[ ] Validar UX geral (dark/light/modern) após correções
+[X] Refinar modo clássico do admin (gov.br) com ajustes de cores e contraste
+[X] Ajustar integração ViaCEP e máscaras do modal de cidadão
+[X] Corrigir erros de console (`metricCards`, status DOM)
+[ ] Aguardando deploy no servidor web pelo usuário
 
-### Andamento
+### Última sessão (commit 7d3ed31)
 - [X] Corrigir erros de console (`metricCards`, status DOM)
-- [ ] Ajustar integração ViaCEP (botão + preenchimento campos)
-- [ ] Afinar paleta do modo clássico conforme gov.br (contraste e fundos)
+- [X] Ajustar integração ViaCEP (botão + preenchimento campos + toasts)
+- [X] Afinar paleta do modo clássico conforme gov.br (contraste e fundos)
 
 ## 📋 Status do Projeto
 
