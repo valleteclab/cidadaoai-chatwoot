@@ -49,6 +49,10 @@
             --shadow-highlight: 0 10px 25px rgba(59, 130, 246, 0.15);
             --header-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 100%);
         }
+        body.theme-classic {
+            background: radial-gradient(circle at top, #f5f7fc 0%, #e7ecf8 40%, #dae3f5 75%, #d1dbf0 100%);
+            color: var(--text-primary);
+        }
         .theme-dark {
             color-scheme: dark;
             --bg-body: #0b1120;
@@ -141,35 +145,63 @@
         }
         body.theme-classic .surface-card,
         body.theme-classic .surface-panel {
-            background: #ffffff;
-            border-color: rgba(148, 163, 184, 0.45);
-            color: #1e293b;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.97) 0%, rgba(242, 247, 255, 0.96) 100%);
+            border-color: rgba(154, 178, 220, 0.58);
+            color: #1f2a44;
+            box-shadow: 0 20px 44px rgba(24, 56, 128, 0.12);
         }
         body.theme-classic .surface-chip {
-            background: #edf2f7;
-            color: #1e293b;
-            border-color: rgba(148, 163, 184, 0.35);
+            background: linear-gradient(120deg, rgba(230, 238, 255, 0.95) 0%, rgba(214, 229, 255, 0.92) 100%);
+            color: #1d2f57;
+            border-color: rgba(134, 160, 212, 0.55);
         }
         body.theme-classic .surface-chip:hover {
-            border-color: rgba(37, 99, 235, 0.6);
+            border-color: rgba(31, 58, 138, 0.72);
         }
         body.theme-classic table tbody tr {
-            background: #ffffff;
-            color: #1f2937;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(233, 243, 255, 0.9));
+            color: #1f2b4d;
+            border-bottom: 1px solid rgba(160, 185, 230, 0.55);
         }
         body.theme-classic table tbody tr:hover {
-            background: #eff6ff;
+            background: linear-gradient(135deg, rgba(224, 237, 255, 0.98), rgba(205, 223, 255, 0.92));
         }
         body.theme-classic .input-surface {
-            background: #ffffff;
-            border-color: rgba(203, 213, 225, 0.8);
+            background: rgba(255, 255, 255, 0.96);
+            border-color: rgba(176, 198, 236, 0.7);
+        }
+        body.theme-classic .input-surface:focus-within {
+            border-color: rgba(31, 58, 138, 0.82);
+            box-shadow: 0 0 0 3px rgba(31, 58, 138, 0.16);
+        }
+        body.theme-classic table thead tr {
+            background: linear-gradient(120deg, rgba(233, 241, 255, 0.95), rgba(212, 227, 255, 0.95));
+        }
+        body.theme-classic table tbody tr {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.97), rgba(233, 243, 255, 0.9));
+            color: #1f2b4d;
+            border-bottom: 1px solid rgba(160, 185, 230, 0.55);
+        }
+        body.theme-classic table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(224, 237, 255, 0.98), rgba(205, 223, 255, 0.92));
+        }
+        body.theme-classic .surface-panel .border-slate-700\/40 {
+            border-color: rgba(155, 182, 230, 0.55);
+        }
+        body.theme-classic .surface-card .text-slate-400 {
+            color: #49608f;
+        }
+        body.theme-classic .surface-card .text-slate-500 {
+            color: #3e4f78;
+        }
+        body.theme-classic .surface-card .text-slate-100 {
+            color: #1d2b4f;
         }
     </style>
 </head>
 <body x-data="adminShell()" x-init="init()" :class="['theme-wrapper', theme]">
     <div class="flex min-h-screen">
-        <aside class="hidden w-72 flex-shrink-0 flex-col border-r border-slate-800/40 bg-slate-950/60 px-6 py-6 backdrop-blur-xl transition-all duration-300 lg:flex" :class="theme === 'theme-classic' ? 'bg-white border-slate-200/80' : ''">
+        <aside class="hidden w-72 flex-shrink-0 flex-col border-r border-slate-800/40 bg-slate-950/60 px-6 py-6 backdrop-blur-xl transition-all duration-300 lg:flex" :class="theme === 'theme-classic' ? 'border-blue-200/70 bg-gradient-to-b from-white via-blue-50/70 to-blue-100/40 shadow-[0_18px_38px_rgba(30,64,175,0.18)]' : ''">
             <div class="flex items-center gap-4 pb-8">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/20 shadow-lg">
                     <i class="fas fa-landmark text-xl text-sky-400"></i>
@@ -213,7 +245,7 @@
         </aside>
 
         <div class="flex flex-1 flex-col overflow-hidden">
-            <header class="sticky top-0 z-30 border-b border-slate-800/20 bg-slate-950/60 backdrop-blur-xl transition-colors duration-300" :class="theme === 'theme-classic' ? 'bg-white/95 border-slate-200 shadow-sm' : ''">
+            <header class="sticky top-0 z-30 border-b border-slate-800/20 bg-slate-950/60 backdrop-blur-xl transition-colors duration-300" :class="theme === 'theme-classic' ? 'border-blue-200/55 bg-gradient-to-r from-white via-blue-50/65 to-white shadow-[0_14px_36px_rgba(25,55,140,0.16)]' : ''">
                 <div class="flex flex-col gap-3 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
                     <div class="flex items-center gap-4">
                         <button class="rounded-2xl border border-slate-800/60 bg-slate-950/40 px-3 py-2 text-sm text-slate-400 lg:hidden" @click="sidebarOpen = !sidebarOpen">
@@ -495,7 +527,7 @@
                                         <button class="surface-chip inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="checkSystemStatus()">
                                             <i class="fas fa-sync"></i> Verificar Status
                                         </button>
-                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''" @click="openSystemModal()">
+                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500" : ''" @click="openSystemModal()">
                                             <i class="fas fa-cogs"></i> Configurar Sistema
                                         </button>
                                     </div>
@@ -724,6 +756,8 @@
     </div>
 
     <script>
+        let adminApp = null;
+
         function adminShell() {
             return {
                 activeTab: 'cidadaos',
@@ -739,6 +773,7 @@
                     { id: 'solved', label: 'Resolvidos', value: '-', caption: 'Chamados resolvidos', icon: 'fas fa-circle-check' }
                 ],
                 init() {
+                    adminApp = this;
                     this.initializeTheme();
                     const shortcutHandler = (event) => {
                         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
@@ -936,10 +971,15 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    document.getElementById('total-cidadaos').textContent = data.metrics.total_cidadaos || 0;
-                    document.getElementById('total-chamados').textContent = data.metrics.total_chamados || 0;
-                    document.getElementById('chamados-andamento').textContent = data.metrics.chamados_em_andamento || 0;
-                    document.getElementById('chamados-resolvidos').textContent = data.metrics.chamados_resolvidos || 0;
+                    const totalCidadaosEl = document.getElementById('total-cidadaos');
+                    const totalChamadosEl = document.getElementById('total-chamados');
+                    const chamadosAndamentoEl = document.getElementById('chamados-andamento');
+                    const chamadosResolvidosEl = document.getElementById('chamados-resolvidos');
+
+                    if (totalCidadaosEl) totalCidadaosEl.textContent = data.metrics.total_cidadaos || 0;
+                    if (totalChamadosEl) totalChamadosEl.textContent = data.metrics.total_chamados || 0;
+                    if (chamadosAndamentoEl) chamadosAndamentoEl.textContent = data.metrics.chamados_em_andamento || 0;
+                    if (chamadosResolvidosEl) chamadosResolvidosEl.textContent = data.metrics.chamados_resolvidos || 0;
 
                     const cardMap = {
                         citizens: data.metrics.total_cidadaos || 0,
@@ -947,10 +987,12 @@
                         running: data.metrics.chamados_em_andamento || 0,
                         solved: data.metrics.chamados_resolvidos || 0
                     };
-                    this.metricCards = this.metricCards.map(card => ({
-                        ...card,
-                        value: cardMap[card.id] !== undefined ? cardMap[card.id] : card.value
-                    }));
+                    if (adminApp) {
+                        adminApp.metricCards = adminApp.metricCards.map(card => ({
+                            ...card,
+                            value: cardMap[card.id] !== undefined ? cardMap[card.id] : card.value
+                        }));
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao carregar métricas:', error);
@@ -1067,26 +1109,34 @@
                 
                 if (data.database_connected) {
                     const html = '<span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-sm text-emerald-300">Conectado</span>';
-                    dbStatus.innerHTML = html;
-                    dbStatusSystem.textContent = 'Conectado';
-                    dbStatusSystem.className = 'text-sm text-emerald-300';
+                    if (dbStatus) dbStatus.innerHTML = html;
+                    if (dbStatusSystem) {
+                        dbStatusSystem.textContent = 'Conectado';
+                        dbStatusSystem.className = 'text-sm text-emerald-300';
+                    }
                 } else {
                     const html = '<span class="h-2.5 w-2.5 rounded-full bg-rose-400 animate-pulse"></span><span class="text-sm text-rose-300">Desconectado</span>';
-                    dbStatus.innerHTML = html;
-                    dbStatusSystem.textContent = 'Desconectado';
-                    dbStatusSystem.className = 'text-sm text-rose-300';
+                    if (dbStatus) dbStatus.innerHTML = html;
+                    if (dbStatusSystem) {
+                        dbStatusSystem.textContent = 'Desconectado';
+                        dbStatusSystem.className = 'text-sm text-rose-300';
+                    }
                 }
                 
                 if (data.chamados_ai_available) {
                     const html = '<span class="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-sm text-emerald-300">Disponível</span>';
-                    aiStatus.innerHTML = html;
-                    aiStatusSystem.textContent = 'Disponível';
-                    aiStatusSystem.className = 'text-sm text-emerald-300';
+                    if (aiStatus) aiStatus.innerHTML = html;
+                    if (aiStatusSystem) {
+                        aiStatusSystem.textContent = 'Disponível';
+                        aiStatusSystem.className = 'text-sm text-emerald-300';
+                    }
                 } else {
                     const html = '<span class="h-2.5 w-2.5 rounded-full bg-rose-400 animate-pulse"></span><span class="text-sm text-rose-300">Indisponível</span>';
-                    aiStatus.innerHTML = html;
-                    aiStatusSystem.textContent = 'Indisponível';
-                    aiStatusSystem.className = 'text-sm text-rose-300';
+                    if (aiStatus) aiStatus.innerHTML = html;
+                    if (aiStatusSystem) {
+                        aiStatusSystem.textContent = 'Indisponível';
+                        aiStatusSystem.className = 'text-sm text-rose-300';
+                    }
                 }
             } catch (error) {
                 console.error('Erro ao verificar status:', error);
@@ -1315,9 +1365,9 @@
         }
 
         async function lookupCep() {
-            const cep = citizenCep.value.replace(/\D/g, '');
-            if (cep.length !== 8) {
-                alert('Informe um CEP válido com 8 dígitos.');
+            const cep = (citizenCep.value || '').replace(/\D/g, '');
+            if (!cep || cep.length !== 8) {
+                showToast('error', 'Digite um CEP válido com 8 dígitos.');
                 return;
             }
             try {
@@ -1330,29 +1380,39 @@
                 citizenBairro.value = dados.bairro || '';
                 citizenCidade.value = dados.localidade || '';
                 citizenEstado.value = dados.uf || '';
+                showToast('success', 'Endereço localizado pelo CEP.');
             } catch (error) {
-                alert('Não foi possível buscar o CEP informado.');
                 console.error('Erro ao buscar CEP:', error);
+                showToast('error', 'Não foi possível buscar o CEP informado.');
             }
         }
 
         async function saveCitizen() {
             const payload = {
                 nome: citizenNome.value.trim(),
-                cpf: citizenCpf.value.trim() || null,
+                cpf: citizenCpf.value.replace(/\D/g, '') || null,
                 telefone: citizenTelefone.value.trim(),
                 email: citizenEmail.value.trim() || null,
-                cep: citizenCep.value.trim() || null,
+                cep: citizenCep.value.replace(/\D/g, '') || null,
                 endereco: citizenLogradouro.value.trim() || null,
                 numero: citizenNumero.value.trim() || null,
                 bairro: citizenBairro.value.trim() || null,
                 cidade: citizenCidade.value.trim() || null,
-                estado: citizenEstado.value.trim() || null,
+                estado: citizenEstado.value.trim().toUpperCase() || null,
                 complemento: citizenComplemento.value.trim() || null,
-                data_nascimento: citizenDataNascimento.value.trim() || null,
-                genero: citizenGenero.value.trim() || null,
+                data_nascimento: citizenDataNascimento.value || null,
+                genero: citizenGenero.value || null,
                 active: citizenActive.checked
             };
+
+            if (!payload.nome) {
+                showToast('error', 'Informe o nome completo do cidadão.');
+                return;
+            }
+            if (!payload.telefone) {
+                showToast('error', 'Informe um telefone para contato.');
+                return;
+            }
 
             const id = citizenId.value ? Number(citizenId.value) : null;
             const url = id ? `/api/chamados/cidadaos/${id}` : '/api/chamados/cidadaos';
@@ -1366,14 +1426,15 @@
                 });
                 const json = await resp.json();
                 if (json.status === 'error') {
-                    alert(json.message || 'Erro ao salvar');
+                    showToast('error', json.message || 'Erro ao salvar cidadão.');
                     return;
                 }
+                showToast('success', id ? 'Dados do cidadão atualizados.' : 'Cidadão cadastrado com sucesso.');
                 closeCitizenModal();
                 loadCidadaos();
             } catch (error) {
-                alert('Erro ao salvar cidadão');
-                console.error(error);
+                console.error('Erro ao salvar cidadão:', error);
+                showToast('error', 'Não foi possível salvar o cidadão.');
             }
         }
 

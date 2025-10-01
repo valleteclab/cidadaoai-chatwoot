@@ -4,8 +4,14 @@
 # Scratchpad - Status Atual (Janeiro 2025)
 
 ## 🎯 Tarefa Atual
-[X] Verificar onde paramos ontem e continuar desenvolvimento
-[X] Completar AI Builder - Interface visual para criar e gerenciar agentes IA
+[ ] Refinar modo clássico do admin (gov.br) com ajustes de cores e contraste
+[ ] Ajustar integração ViaCEP e máscaras do modal de cidadão
+[ ] Validar UX geral (dark/light/modern) após correções
+
+### Andamento
+- [X] Corrigir erros de console (`metricCards`, status DOM)
+- [ ] Ajustar integração ViaCEP (botão + preenchimento campos)
+- [ ] Afinar paleta do modo clássico conforme gov.br (contraste e fundos)
 
 ## 📋 Status do Projeto
 
