@@ -3,566 +3,483 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cidadão.AI - Admin</title>
+    <title>Cidadão.AI - Administração</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --transition-duration: 0.4s;
+            --transition-speed: 320ms;
         }
         body {
             font-family: 'Inter', sans-serif;
         }
-        .theme-dark {
+        .theme-modern {
             color-scheme: dark;
-            --body-bg: #020617;
+            --bg-body: #020617;
+            --bg-surface: rgba(15, 23, 42, 0.85);
+            --bg-surface-alt: rgba(15, 23, 42, 0.92);
+            --bg-muted: rgba(30, 41, 59, 0.6);
+            --border-soft: rgba(51, 65, 85, 0.6);
+            --border-strong: rgba(56, 189, 248, 0.35);
             --text-primary: #e2e8f0;
             --text-secondary: #94a3b8;
             --text-muted: #64748b;
-            --header-gradient: linear-gradient(120deg, #020617 0%, #111827 52%, #020617 100%);
-            --card-gradient: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(56, 189, 248, 0.12));
-            --surface-bg: rgba(15, 23, 42, 0.78);
-            --surface-alt: rgba(15, 23, 42, 0.88);
-            --surface-soft: rgba(30, 41, 59, 0.6);
-            --border-color: rgba(30, 41, 59, 0.82);
-            --border-strong: rgba(30, 41, 59, 0.92);
-            --chat-bg: rgba(15, 23, 42, 0.78);
-            --scrollbar-thumb: rgba(148, 163, 184, 0.32);
+            --accent-primary: #38bdf8;
+            --accent-secondary: #a855f7;
+            --shadow-highlight: 0 16px 45px rgba(56, 189, 248, 0.18);
+            --header-gradient: linear-gradient(120deg, #0f172a 0%, #0b1120 45%, #111827 90%);
         }
-        .theme-light {
+        .theme-classic {
             color-scheme: light;
-            --body-bg: #f8fafc;
+            --bg-body: #f3f4f6;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #f9fafb;
+            --bg-muted: rgba(226, 232, 240, 0.6);
+            --border-soft: rgba(209, 213, 219, 0.9);
+            --border-strong: rgba(37, 99, 235, 0.55);
             --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --header-gradient: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 45%, #ede9fe 100%);
-            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(219, 234, 254, 0.65));
-            --surface-bg: rgba(255, 255, 255, 0.85);
-            --surface-alt: #ffffff;
-            --surface-soft: rgba(226, 232, 240, 0.6);
-            --border-color: rgba(148, 163, 184, 0.4);
-            --border-strong: rgba(148, 163, 184, 0.55);
-            --chat-bg: rgba(255, 255, 255, 0.92);
-            --scrollbar-thumb: rgba(148, 163, 184, 0.45);
+            --text-secondary: #1f2937;
+            --text-muted: #4b5563;
+            --accent-primary: #2563eb;
+            --accent-secondary: #0ea5e9;
+            --shadow-highlight: 0 12px 32px rgba(37, 99, 235, 0.16);
+            --header-gradient: linear-gradient(135deg, #0f172a 0%, #1d4ed8 50%, #0f172a 100%);
+        }
+        .theme-dark {
+            color-scheme: dark;
+            --bg-body: #0b1120;
+            --bg-surface: rgba(15, 23, 42, 0.9);
+            --bg-surface-alt: rgba(15, 23, 42, 0.78);
+            --bg-muted: rgba(30, 41, 59, 0.52);
+            --border-soft: rgba(71, 85, 105, 0.72);
+            --border-strong: rgba(96, 165, 250, 0.28);
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5f5;
+            --text-muted: #94a3b8;
+            --accent-primary: #60a5fa;
+            --accent-secondary: #34d399;
+            --shadow-highlight: 0 18px 40px rgba(96, 165, 250, 0.18);
+            --header-gradient: linear-gradient(125deg, #0b1120 0%, #1e293b 55%, #0b1120 100%);
         }
         body {
-            background-color: var(--body-bg);
+            background: var(--bg-body);
             color: var(--text-primary);
-            transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
+            transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
         }
-        .app-header {
-            background: var(--header-gradient);
-            border-bottom: 1px solid var(--border-strong);
-            transition: background var(--transition-duration), border-color var(--transition-duration), box-shadow var(--transition-duration);
+        .surface-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            transition: background var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
         }
-        .glass-card {
-            background: var(--card-gradient);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(18px);
-            transition: background var(--transition-duration), border-color var(--transition-duration), box-shadow var(--transition-duration);
+        .surface-card:hover {
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-highlight);
         }
         .surface-panel {
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
-            transition: background var(--transition-duration), border-color var(--transition-duration);
+            background: var(--bg-surface-alt);
+            border-radius: 26px;
+            border: 1px solid var(--border-soft);
+            transition: background var(--transition-speed), border-color var(--transition-speed);
         }
         .surface-chip {
-            background: var(--surface-bg);
-            border: 1px solid var(--border-color);
-            transition: background var(--transition-duration), border-color var(--transition-duration), color var(--transition-duration);
+            background: var(--bg-muted);
+            border-radius: 999px;
+            border: 1px solid transparent;
+            transition: border-color var(--transition-speed), color var(--transition-speed);
         }
         .surface-chip:hover {
-            border-color: rgba(56, 189, 248, 0.6);
+            border-color: var(--border-strong);
         }
-        .input-surface {
-            background: var(--surface-bg);
-            border: 1px solid var(--border-color);
-            transition: border-color var(--transition-duration), background var(--transition-duration);
-        }
-        .chat-panel {
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(18px);
-            transition: background var(--transition-duration), border-color var(--transition-duration);
-        }
-        .chat-stream {
-            background: var(--chat-bg);
-            border: 1px solid var(--border-color);
-            transition: background var(--transition-duration), border-color var(--transition-duration);
-        }
-        .command-palette {
-            background: var(--surface-alt);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(22px);
-            transition: background var(--transition-duration), border-color var(--transition-duration);
-        }
-        .table-head {
-            background: var(--surface-soft);
-            transition: background var(--transition-duration);
-        }
-        .theme-dark .shadow-glow {
-            box-shadow: 0 18px 45px rgba(56, 189, 248, 0.18);
-        }
-        .theme-light .shadow-glow {
-            box-shadow: 0 18px 45px rgba(79, 70, 229, 0.18);
-        }
-        .theme-dark .shadow-surface {
-            box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.08);
-        }
-        .theme-light .shadow-surface {
-            box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.18);
-        }
-        .theme-toggle {
-            border: 1px solid var(--border-color);
-            background: var(--surface-bg);
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            border-radius: 16px;
             color: var(--text-secondary);
-            transition: background var(--transition-duration), border-color var(--transition-duration), color var(--transition-duration);
+            transition: background var(--transition-speed), color var(--transition-speed), border var(--transition-speed);
         }
-        .theme-toggle:hover {
-            border-color: rgba(56, 189, 248, 0.6);
-            color: var(--text-primary);
+        .sidebar-link i {
+            width: 16px;
+            text-align: center;
         }
-        .surface-label {
-            color: var(--text-muted);
+        .sidebar-link.active,
+        .sidebar-link:hover {
+            color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.08);
+            border-left: 3px solid var(--accent-primary);
+        }
+        .gov-badge {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.12em;
         }
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 10px;
         }
-        .theme-dark ::-webkit-scrollbar-thumb,
-        .theme-light ::-webkit-scrollbar-thumb {
-            background: var(--scrollbar-thumb);
-            border-radius: 9999px;
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(148, 163, 184, 0.45);
+            border-radius: 999px;
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        [x-cloak] {
-            display: none !important;
-        }
-        .theme-light .text-gradient {
-            background: linear-gradient(120deg, #0284c7 0%, #0ea5e9 40%, #6366f1 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .theme-light .bg-slate-950 {
-            background-color: #ffffff !important;
-        }
-        .theme-light .bg-slate-950\/90 {
-            background-color: rgba(255, 255, 255, 0.95) !important;
-        }
-        .theme-light .bg-slate-950\/80 {
-            background-color: rgba(15, 23, 42, 0.35) !important;
-        }
-        .theme-light .bg-slate-950\/70 {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-        }
-        .theme-light .bg-slate-950\/60 {
-            background-color: rgba(255, 255, 255, 0.86) !important;
-        }
-        .theme-light .bg-slate-950\/40 {
-            background-color: rgba(255, 255, 255, 0.75) !important;
-        }
-        .theme-light .bg-slate-900\/70 {
-            background-color: rgba(226, 232, 240, 0.82) !important;
-        }
-        .theme-light .bg-slate-900\/60 {
-            background-color: rgba(241, 245, 249, 0.82) !important;
-        }
-        .theme-light .border-slate-800\/80,
-        .theme-light .border-slate-800\/70,
-        .theme-light .border-slate-800 {
-            border-color: rgba(148, 163, 184, 0.45) !important;
-        }
-        .theme-light .border-slate-700 {
-            border-color: rgba(148, 163, 184, 0.38) !important;
-        }
-        .theme-light .text-slate-100 {
-            color: #0f172a !important;
-        }
-        .theme-light .text-slate-200 {
-            color: #1e293b !important;
-        }
-        .theme-light .text-slate-300 {
-            color: #334155 !important;
-        }
-        .theme-light .text-slate-400 {
-            color: #475569 !important;
-        }
-        .theme-light .text-slate-500,
-        .theme-light .text-slate-600 {
-            color: #64748b !important;
-        }
-        .theme-light .chat-panel .text-sky-100 {
-            color: #0f172a !important;
-        }
-        .theme-light .hover\:bg-slate-900\/60:hover {
-            background-color: rgba(248, 250, 252, 0.75) !important;
-        }
-        .theme-light .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
-        .theme-light .divide-slate-800\/70 > :not([hidden]) ~ :not([hidden]) {
-            border-color: rgba(203, 213, 225, 0.7) !important;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased transition-colors duration-300" x-data="adminShell()" x-init="init()" :class="theme === 'dark' ? 'theme-dark' : 'theme-light'">
-    <div class="min-h-screen flex flex-col">
-        <header class="app-header border-b">
-            <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8 md:flex-row md:items-center md:justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/20 text-sky-300">
-                        <i class="fas fa-robot text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-semibold tracking-tight text-slate-50 sm:text-2xl">Cidadão.AI — Painel Assistido</h1>
-                        <p class="text-sm text-slate-400">Gerencie chamados com apoio contextual da IA.</p>
-                    </div>
+<body x-data="adminShell()" x-init="init()" :class="['theme-wrapper', theme]">
+    <div class="flex min-h-screen">
+        <aside class="hidden w-72 flex-shrink-0 flex-col border-r border-slate-800/40 bg-slate-950/60 px-6 py-6 backdrop-blur-xl transition-all duration-300 lg:flex" :class="theme === 'theme-classic' ? 'bg-white border-slate-200/80' : ''">
+            <div class="flex items-center gap-4 pb-8">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/20 shadow-lg">
+                    <i class="fas fa-landmark text-xl text-sky-400"></i>
                 </div>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center md:gap-4">
-                    <button class="theme-toggle inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition" @click="toggleTheme()" :aria-label="theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
-                        <i :class="theme === 'dark' ? 'fas fa-sun text-amber-300' : 'fas fa-moon text-indigo-500'"></i>
-                        <span class="hidden sm:inline" x-text="theme === 'dark' ? 'Modo claro' : 'Modo escuro'"></span>
-                    </button>
-                    <button class="theme-toggle inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition" @click="openPalette = true">
-                        <i class="fas fa-magnifying-glass"></i>
-                        <span>Command Palette</span>
-                        <span class="hidden rounded-md surface-chip px-2 py-0.5 text-xs text-slate-500 sm:inline-flex">Ctrl + K</span>
-                    </button>
-                    <button class="theme-toggle inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition xl:hidden" @click="showChatOnMobile = !showChatOnMobile">
-                        <i class="fas fa-comments text-sky-300"></i>
-                        <span x-text="showChatOnMobile ? 'Fechar Assistente' : 'Abrir Assistente'"></span>
-                    </button>
-            </div>
-            </div>
-        </header>
-
-        <main class="flex-1">
-            <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-                <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <div class="glass-card rounded-3xl p-5 shadow-glow">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-slate-400">Cidadãos</p>
-                                <p id="total-cidadaos" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
-                            </div>
-                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-300">
-                                <i class="fas fa-users text-lg"></i>
-                            </span>
-                            </div>
-                        </div>
-                    <div class="glass-card rounded-3xl p-5 shadow-glow">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-slate-400">Chamados</p>
-                                <p id="total-chamados" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
-                    </div>
-                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-500/15 text-purple-300">
-                                <i class="fas fa-ticket-alt text-lg"></i>
-                            </span>
-                </div>
-                            </div>
-                    <div class="glass-card rounded-3xl p-5 shadow-glow">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-slate-400">Em Andamento</p>
-                                <p id="chamados-andamento" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
-                            </div>
-                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-300">
-                                <i class="fas fa-clock text-lg"></i>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="glass-card rounded-3xl p-5 shadow-glow">
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <p class="text-xs uppercase tracking-wider text-slate-400">Resolvidos</p>
-                                <p id="chamados-resolvidos" class="mt-2 text-2xl font-semibold text-slate-50">-</p>
-                </div>
-                            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-300">
-                                <i class="fas fa-check-circle text-lg"></i>
-                            </span>
-                            </div>
-                            </div>
-                </section>
-
-                <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26rem] 2xl:grid-cols-[minmax(0,1fr)_30rem]">
-                    <div class="space-y-6">
-                        <div class="surface-panel rounded-3xl p-6 shadow-surface">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                <div>
-                                    <h2 class="text-base font-semibold text-slate-100">Assistente Sugere</h2>
-                                    <p class="text-sm text-slate-400">Atalhos prontos para conversar com a IA contextual.</p>
-                        </div>
-                                <span class="surface-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-slate-400">
-                                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
-                                    IA ativa
-                                </span>
-                            </div>
-                            <div class="mt-4 flex flex-wrap gap-2">
-                                <button class="group inline-flex items-center gap-2 surface-chip rounded-full px-4 py-2 text-sm font-medium text-slate-300" @click="$dispatch('assistente-sugestao', { prompt: 'Gere um resumo das últimas 24 horas com alertas críticos.' }); showChatOnMobile = true;">
-                                    <i class="fas fa-bolt text-amber-300 transition group-hover:text-amber-200"></i>
-                                    Resumo das últimas 24h
-                                </button>
-                                <button class="group inline-flex items-center gap-2 surface-chip rounded-full px-4 py-2 text-sm font-medium text-slate-300" @click="$dispatch('assistente-sugestao', { prompt: 'Liste os chamados pendentes por equipe destacando prioridades altas.' }); showChatOnMobile = true;">
-                                    <i class="fas fa-layer-group text-sky-300 transition group-hover:text-sky-200"></i>
-                                    Pendências por equipe
-                                </button>
-                                <button class="group inline-flex items-center gap-2 surface-chip rounded-full px-4 py-2 text-sm font-medium text-slate-300" @click="$dispatch('assistente-sugestao', { prompt: 'Sugira respostas automáticas para os chamados sem movimentação nas últimas 2 horas.' }); showChatOnMobile = true;">
-                                    <i class="fas fa-wand-magic-sparkles text-purple-300 transition group-hover:text-purple-200"></i>
-                                    Respostas automáticas
-                                </button>
-                    </div>
-                </div>
-
-                        <div class="surface-panel rounded-3xl p-6 shadow-surface">
-                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <h2 class="text-base font-semibold text-slate-100">Infraestrutura Monitorada</h2>
-                                    <p class="text-sm text-slate-400">Status atualizado automaticamente a cada 30 segundos.</p>
-                            </div>
-                                <span class="text-xs uppercase tracking-wider text-slate-500">Monitoramento</span>
-                            </div>
-                            <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                                <div class="surface-chip flex items-center justify-between rounded-2xl px-4 py-3">
-                                    <span class="text-sm font-medium text-slate-300">Banco de Dados</span>
-                                    <div id="db-status" class="flex items-center gap-2 text-sm text-slate-500">
-                                        <span class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
-                                        <span>Verificando...</span>
-                                    </div>
-                                </div>
-                                <div class="surface-chip flex items-center justify-between rounded-2xl px-4 py-3">
-                                    <span class="text-sm font-medium text-slate-300">IA Service</span>
-                                    <div id="ai-status" class="flex items-center gap-2 text-sm text-slate-500">
-                                        <span class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
-                                        <span>Verificando...</span>
-                        </div>
-                    </div>
+                <div>
+                    <span class="gov-badge text-xs uppercase tracking-[0.35em] text-slate-400">GOVERNO MUNICIPAL</span>
+                    <h1 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Cidadão.AI</h1>
+                    <p class="text-xs text-slate-500" :class="theme === 'theme-classic' ? 'text-slate-400' : ''">Gestão integrada de chamados</p>
                 </div>
             </div>
-
-                        <div class="surface-panel rounded-3xl p-6 shadow-surface">
-                            <div class="flex flex-col gap-4 border-b border-slate-800/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <h2 class="text-base font-semibold text-slate-100">Central de Dados Operacionais</h2>
-                                    <p class="text-sm text-slate-400">Visualize cidadãos, chamados, times e agentes em um só lugar.</p>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button @click="selectTab('cidadaos')" :class="activeTab === 'cidadaos' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'" class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
-                                        <i class="fas fa-users"></i>
-                                        Cidadãos
-                        </button>
-                                    <button @click="selectTab('chamados')" :class="activeTab === 'chamados' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'" class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
-                                        <i class="fas fa-ticket-alt"></i>
-                                        Chamados
-                        </button>
-                                    <button @click="selectTab('times')" :class="activeTab === 'times' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'" class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
-                                        <i class="fas fa-users-gear"></i>
-                                        Times
-                        </button>
-                                    <button @click="selectTab('agentes')" :class="activeTab === 'agentes' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'" class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
-                                        <i class="fas fa-user-robot"></i>
-                                        Agentes
-                        </button>
-                                    <button @click="selectTab('system')" :class="activeTab === 'system' ? 'border-sky-400/50 bg-sky-500/10 text-sky-200' : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:text-slate-200'" class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition">
-                                        <i class="fas fa-cog"></i>
-                                        Sistema
-                        </button>
-                                </div>
-                </div>
-
-                            <div class="mt-6 space-y-6">
-                                <div x-show="activeTab === 'cidadaos'" x-cloak class="space-y-4">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-slate-100">Cidadãos Cadastrados</h3>
-                                            <p class="text-sm text-slate-400">Dados sincronizados com o atendimento.</p>
-                                        </div>
-                                        <button onclick="loadCidadaos()" class="surface-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-300">
-                                            <i class="fas fa-rotate-right"></i>
-                                            Atualizar
-                        </button>
-                    </div>
-                                    <div class="overflow-hidden rounded-3xl surface-panel shadow-surface">
-                                        <table class="min-w-full divide-y divide-slate-800/70">
-                                            <thead class="table-head">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">ID</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Telefone</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Email</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Cadastrado em</th>
-                                </tr>
-                            </thead>
-                                            <tbody id="cidadaos-table" class="divide-y divide-slate-800/60"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                                <div x-show="activeTab === 'chamados'" x-cloak class="space-y-4">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-slate-100">Chamados</h3>
-                                            <p class="text-sm text-slate-400">Lista priorizada com status e data de criação.</p>
-                                        </div>
-                                        <button onclick="loadChamados()" class="surface-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-300">
-                                            <i class="fas fa-rotate-right"></i>
-                                            Atualizar
-                        </button>
-                    </div>
-                                    <div class="overflow-hidden rounded-3xl surface-panel shadow-surface">
-                                        <table class="min-w-full divide-y divide-slate-800/70">
-                                            <thead class="table-head">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Protocolo</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Título</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Criado em</th>
-                                </tr>
-                            </thead>
-                                            <tbody id="chamados-table" class="divide-y divide-slate-800/60"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                                <div x-show="activeTab === 'times'" x-cloak class="space-y-4">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-slate-100">Times</h3>
-                                            <p class="text-sm text-slate-400">Organize squads responsáveis pelos chamados.</p>
-                                        </div>
-                                        <button onclick="openTimeModal()" class="surface-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-300">
-                                            <i class="fas fa-plus"></i>
-                                            Novo Time
-                        </button>
-                    </div>
-                                    <div class="overflow-hidden rounded-3xl surface-panel shadow-surface">
-                                        <table class="min-w-full divide-y divide-slate-800/70">
-                                            <thead class="table-head">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Cor</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Responsável</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Status</th>
-                                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Ações</th>
-                                </tr>
-                            </thead>
-                                            <tbody id="admin-times-table" class="divide-y divide-slate-800/60"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                                <div x-show="activeTab === 'agentes'" x-cloak class="space-y-4">
-                                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-slate-100">Agentes</h3>
-                                            <p class="text-sm text-slate-400">Controle humanos e IAs conectados ao Chatwoot.</p>
-                                        </div>
-                                        <button onclick="openAgenteModal()" class="surface-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-300">
-                                            <i class="fas fa-plus"></i>
-                                            Novo Agente
-                        </button>
-                    </div>
-                                    <div class="overflow-hidden rounded-3xl surface-panel shadow-surface">
-                                        <table class="min-w-full divide-y divide-slate-800/70">
-                                            <thead class="table-head">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Nome</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Tipo</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Time</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">E-mail</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">Telefone</th>
-                                                    <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">Ações</th>
-                                </tr>
-                            </thead>
-                                            <tbody id="admin-agentes-table" class="divide-y divide-slate-800/60"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                                <div x-show="activeTab === 'system'" x-cloak>
-                                    <h3 class="text-lg font-semibold text-slate-100">Status do Sistema</h3>
-                                    <p class="mb-4 text-sm text-slate-400">Resumo visual dos serviços críticos do ecossistema.</p>
-                                    <div class="grid gap-4 sm:grid-cols-2">
-                                        <div class="surface-panel rounded-3xl p-5">
-                                            <h4 class="text-sm font-semibold text-slate-200">Banco de Dados</h4>
-                                            <p class="mt-2 text-xs text-slate-500">Sincronização e armazenamento de chamados.</p>
-                                            <div class="mt-4 flex items-center gap-3 text-sm text-slate-300">
-                                                <i class="fas fa-database text-slate-500"></i>
-                                                <span id="db-status-system" class="text-slate-400">Verificando...</span>
-                            </div>
-                        </div>
-                                        <div class="surface-panel rounded-3xl p-5">
-                                            <h4 class="text-sm font-semibold text-slate-200">Serviço de IA</h4>
-                                            <p class="mt-2 text-xs text-slate-500">Agentes inteligentes conectados ao atendimento.</p>
-                                            <div class="mt-4 flex items-center gap-3 text-sm text-slate-300">
-                                                <i class="fas fa-brain text-slate-500"></i>
-                                                <span id="ai-status-system" class="text-slate-400">Verificando...</span>
-                            </div>
-                        </div>
-                    </div>
+            <nav class="flex flex-1 flex-col gap-1">
+                <button class="sidebar-link" :class="activeTab === 'dashboard' ? 'active' : ''" @click="selectTab('dashboard')">
+                    <i class="fas fa-grid-2"></i>Visão Geral
+                </button>
+                <button class="sidebar-link" :class="activeTab === 'cidadaos' ? 'active' : ''" @click="selectTab('cidadaos')">
+                    <i class="fas fa-id-card"></i>Cadastro de Cidadãos
+                </button>
+                <button class="sidebar-link" :class="activeTab === 'chamados' ? 'active' : ''" @click="selectTab('chamados')">
+                    <i class="fas fa-ticket"></i>Chamados
+                </button>
+                <button class="sidebar-link" :class="activeTab === 'times' ? 'active' : ''" @click="selectTab('times')">
+                    <i class="fas fa-users-gear"></i>Times
+                </button>
+                <button class="sidebar-link" :class="activeTab === 'agentes' ? 'active' : ''" @click="selectTab('agentes')">
+                    <i class="fas fa-user-tie"></i>Agentes
+                </button>
+                <button class="sidebar-link" :class="activeTab === 'system' ? 'active' : ''" @click="selectTab('system')">
+                    <i class="fas fa-cogs"></i>Sistema
+                </button>
+            </nav>
+            <div class="mt-8 space-y-4">
+                <div class="rounded-2xl border border-slate-700/60 p-4 text-sm" :class="theme === 'theme-classic' ? 'border-slate-200 bg-white shadow-sm' : ''">
+                    <h3 class="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Atalhos</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><span class="font-medium text-slate-300" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Ctrl + K</span> – Command Palette</li>
+                        <li><span class="font-medium text-slate-300" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">CTRL + /</span> – Assistente IA</li>
+                        <li><span class="font-medium text-slate-300" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">F</span> – Filtrar Chamados</li>
+                    </ul>
                 </div>
             </div>
-        </div>
-    </div>
+        </aside>
 
-                    <div class="chat-panel flex flex-col rounded-3xl p-5 shadow-glow transition-all duration-300 xl:sticky xl:top-24 xl:max-h-[calc(100vh-9rem)]" :class="showChatOnMobile ? '' : 'hidden xl:flex'" x-data="chatPanel()" x-on:assistente-sugestao.window="useSuggestion($event.detail.prompt, true)">
-                        <div class="flex items-center justify-between gap-3 border-b border-slate-800/70 pb-4">
-                            <div>
-                                <h2 class="text-base font-semibold text-slate-100">Assistente Operacional</h2>
-                                <p class="text-xs text-slate-400">Contexto vivo para acelerar decisões.</p>
-                            </div>
-                            <span class="surface-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-slate-400">
-                                <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span>
-                                Online
-                            </span>
+        <div class="flex flex-1 flex-col overflow-hidden">
+            <header class="sticky top-0 z-30 border-b border-slate-800/20 bg-slate-950/60 backdrop-blur-xl transition-colors duration-300" :class="theme === 'theme-classic' ? 'bg-white/95 border-slate-200 shadow-sm' : ''">
+                <div class="flex flex-col gap-3 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
+                    <div class="flex items-center gap-4">
+                        <button class="rounded-2xl border border-slate-800/60 bg-slate-950/40 px-3 py-2 text-sm text-slate-400 lg:hidden" @click="sidebarOpen = !sidebarOpen">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.45em] text-slate-500" :class="theme === 'theme-classic' ? 'text-slate-400' : ''">Painel de Controle</p>
+                            <h2 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Prefeitura de Barreiras/BA</h2>
                         </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="inline-flex rounded-full border border-slate-700/60 bg-slate-950/30 p-1 text-xs font-semibold text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100/80 border-slate-200 text-slate-600' : ''">
+                            <button class="rounded-full px-3 py-1" :class="theme === 'theme-modern' ? 'bg-sky-500/20 text-sky-200 border border-sky-400/60' : ''" @click="switchTheme('theme-modern')">Moderno</button>
+                            <button class="rounded-full px-3 py-1" :class="theme === 'theme-classic' ? 'bg-sky-500/10 text-sky-700 border border-sky-400/50' : ''" @click="switchTheme('theme-classic')">Clássico</button>
+                            <button class="rounded-full px-3 py-1" :class="theme === 'theme-dark' ? 'bg-sky-500/20 text-sky-100 border border-sky-400/60' : ''" @click="switchTheme('theme-dark')">Escuro</button>
+                        </div>
+                        <button class="inline-flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-950/40 px-4 py-2 text-sm text-slate-300 transition hover:text-sky-200" :class="theme === 'theme-classic' ? 'border-slate-200 bg-white text-slate-600 hover:text-sky-600' : ''" @click="openPalette = true">
+                            <i class="fas fa-magnifying-glass"></i>Buscar
+                        </button>
+                        <button class="inline-flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-950/40 px-4 py-2 text-sm text-slate-300 transition hover:text-sky-200 xl:hidden" :class="theme === 'theme-classic' ? 'border-slate-200 bg-white text-slate-600 hover:text-sky-600' : ''" @click="showChatOnMobile = !showChatOnMobile">
+                            <i class="fas fa-comments"></i>
+                            <span x-text="showChatOnMobile ? 'Fechar Assistente' : 'Assistente IA'"></span>
+                        </button>
+                    </div>
+                </div>
+            </header>
 
-                        <div class="chat-stream mt-4 flex-1 overflow-hidden rounded-2xl shadow-surface">
-                            <div x-ref="scroll" class="flex h-full flex-col gap-4 overflow-y-auto px-4 py-5">
-                                <template x-for="message in messages" :key="message.id">
-                                    <div :class="message.role === 'assistant' ? 'ml-0 mr-auto max-w-[82%]' : 'ml-auto mr-0 max-w-[82%]'">
-                                        <div :class="message.role === 'assistant' ? 'rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100 shadow-glow' : 'rounded-3xl border border-slate-800/80 bg-slate-950/70 px-4 py-3 text-sm text-slate-200 shadow-surface'">
-                                            <div class="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-400">
-                                                <i :class="message.role === 'assistant' ? 'fas fa-robot text-sky-300' : 'fas fa-user text-slate-500'"></i>
-                                                <span x-text="message.role === 'assistant' ? 'Assistente' : 'Você'"></span>
-                                                <span class="text-slate-500">·</span>
-                                                <span x-text="message.timestamp"></span>
+            <main class="flex-1 overflow-y-auto">
+                <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+                    <template x-if="activeTab === 'dashboard'">
+                        <section class="space-y-6">
+                            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                                <template x-for="card in metricCards" :key="card.id">
+                                    <div class="surface-card p-6">
+                                        <div class="flex items-start justify-between">
+                                            <div>
+                                                <p class="text-sm uppercase tracking-[0.25em] text-slate-500">{{ card.label }}</p>
+                                                <h3 class="text-3xl font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''" x-text="card.value"></h3>
+                                                <p class="mt-2 text-xs text-slate-500" x-text="card.caption"></p>
                                             </div>
-                                            <p class="mt-2 leading-relaxed text-slate-100" x-text="message.content"></p>
+                                            <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900/40 text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-500' : ''">
+                                                <i :class="card.icon"></i>
+                                            </span>
                                         </div>
                                     </div>
                                 </template>
                             </div>
-                        </div>
 
-                        <form class="mt-4 space-y-3" @submit.prevent="sendMessage">
-                            <div class="input-surface rounded-2xl px-4 py-3 focus-within:border-sky-500/60">
-                                <textarea x-model="draft" x-ref="input" rows="3" placeholder="Pergunte algo ao assistente ou use / para atalhos..." class="w-full resize-none bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"></textarea>
-                            </div>
-                            <div class="flex flex-wrap items-center justify-between gap-3">
-                                <div class="flex flex-wrap gap-2">
-                                    <template x-for="suggestion in suggestions" :key="suggestion">
-                                        <button type="button" class="surface-chip rounded-full px-3 py-1 text-xs text-slate-400" @click="useSuggestion(suggestion, false)">
-                                            <span x-text="suggestion"></span>
-                                        </button>
-                                    </template>
+                            <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_28rem]">
+                                <div class="surface-panel p-6">
+                                    <div class="flex flex-col gap-4 border-b border-slate-700/40 pb-4 lg:flex-row lg:items-center lg:justify-between" :class="theme === 'theme-classic' ? 'border-slate-200/70' : ''">
+                                        <div>
+                                            <h3 class="text-base font-semibold" :class="theme === 'theme-classic' ? 'text-slate-700' : 'text-slate-100'">Monitoramento Operacional</h3>
+                                            <p class="text-sm text-slate-500">Acompanhe os serviços críticos em tempo real</p>
+                                        </div>
+                                        <div class="inline-flex items-center gap-2 rounded-full border border-slate-700/60 bg-slate-950/40 px-3 py-1 text-xs text-slate-400" :class="theme === 'theme-classic' ? 'border-slate-200 bg-white text-slate-600' : ''">
+                                            <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span> Monitoramento ativo
+                                        </div>
+                                    </div>
+                                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                                        <div class="surface-card p-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Banco de Dados</p>
+                                                    <p class="mt-1 text-sm text-slate-400">Sincronização e integridade</p>
+                                                </div>
+                                                <div id="dashboard-db-pulse" class="relative h-10 w-10">
+                                                    <span class="absolute inset-0 animate-ping rounded-full bg-emerald-500/30"></span>
+                                                    <span class="relative flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                                                        <i class="fas fa-database"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <span id="db-status" class="inline-flex items-center gap-2 rounded-full bg-slate-950/40 px-3 py-1 text-xs text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600' : ''">
+                                                    Verificando...
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="surface-card p-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">IA Operacional</p>
+                                                    <p class="mt-1 text-sm text-slate-400">Modelos e agentes conectados</p>
+                                                </div>
+                                                <div id="dashboard-ai-pulse" class="relative h-10 w-10">
+                                                    <span class="absolute inset-0 animate-ping rounded-full bg-sky-500/30"></span>
+                                                    <span class="relative flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/20 text-sky-200">
+                                                        <i class="fas fa-robot"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4">
+                                                <span id="ai-status" class="inline-flex items-center gap-2 rounded-full bg-slate-950/40 px-3 py-1 text-xs text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600' : ''">
+                                                    Verificando...
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button type="submit" :disabled="sending" class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:bg-sky-500/30 disabled:cursor-not-allowed disabled:opacity-50">
-                                    <span x-show="!sending"><i class="fas fa-paper-plane"></i>Enviar</span>
-                                    <span x-show="sending"><i class="fas fa-circle-notch animate-spin"></i>Enviando</span>
-                                </button>
+                                <div class="surface-panel p-6" x-data="chatPanel()" :class="showChatOnMobile ? '' : 'hidden xl:flex xl:flex-col'" x-on:assistente-sugestao.window="useSuggestion($event.detail.prompt, true)">
+                                    <div class="flex items-center justify-between border-b border-slate-700/40 pb-4" :class="theme === 'theme-classic' ? 'border-slate-200/70' : ''">
+                                        <div>
+                                            <h3 class="text-base font-semibold" :class="theme === 'theme-classic' ? 'text-slate-700' : 'text-slate-100'">Assistente IA</h3>
+                                            <p class="text-xs text-slate-500">Conselhos rápidos com base nos dados atuais</p>
+                                        </div>
+                                        <span class="surface-chip inline-flex items-center gap-2 px-3 py-1 text-xs text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600' : ''">
+                                            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400"></span> Online
+                                        </span>
+                                    </div>
+                                    <div class="mt-4 flex-1 overflow-hidden rounded-2xl border border-slate-700/30" :class="theme === 'theme-classic' ? 'border-slate-200/70 bg-white/40' : 'bg-slate-950/40'">
+                                        <div x-ref="scroll" class="flex h-80 flex-col gap-4 overflow-y-auto px-4 py-5">
+                                            <template x-for="message in messages" :key="message.id">
+                                                <div :class="message.role === 'assistant' ? 'mr-auto max-w-[82%]' : 'ml-auto max-w-[82%]'">
+                                                    <div :class="message.role === 'assistant'
+                                                            ? 'rounded-3xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-100 shadow-xl'
+                                                            : 'rounded-3xl border border-slate-700/50 bg-slate-900/70 px-4 py-3 text-sm text-slate-200 shadow-lg'"
+                                                         :class="theme === 'theme-classic' ? (message.role === 'assistant' ? 'bg-sky-50 border-sky-200 text-slate-700' : 'bg-slate-100 border-slate-200 text-slate-600') : ''">
+                                                        <div class="flex items-center gap-2 text-xs uppercase tracking-[0.35em] text-slate-500">
+                                                            <i :class="message.role === 'assistant' ? 'fas fa-robot text-sky-300' : 'fas fa-user text-slate-500'" :class="theme === 'theme-classic' ? 'text-slate-400' : ''"></i>
+                                                            <span x-text="message.role === 'assistant' ? 'Assistente' : 'Você'"></span>
+                                                            <span class="text-slate-600">·</span>
+                                                            <span x-text="message.timestamp"></span>
+                                                        </div>
+                                                        <p class="mt-2 leading-relaxed" x-text="message.content" :class="theme === 'theme-classic' ? 'text-slate-600' : 'text-slate-100'"></p>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <form class="mt-4 space-y-3" @submit.prevent="sendMessage">
+                                        <div class="input-surface rounded-2xl px-4 py-3 focus-within:border-sky-500/60" :class="theme === 'theme-classic' ? 'border-slate-200 bg-white' : ''">
+                                            <textarea x-model="draft" x-ref="input" rows="3" placeholder="Pergunte algo ao assistente ou use / para comandos" class="w-full resize-none bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none" :class="theme === 'theme-classic' ? 'text-slate-700' : ''"></textarea>
+                                        </div>
+                                        <div class="flex flex-wrap items-center justify-between gap-3">
+                                            <div class="flex flex-wrap gap-2">
+                                                <template x-for="suggestion in suggestions" :key="suggestion">
+                                                    <button type="button" class="surface-chip rounded-full px-3 py-1 text-xs text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="useSuggestion(suggestion, false)">
+                                                        <span x-text="suggestion"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                            <button type="submit" :disabled="sending" class="inline-flex items-center gap-2 rounded-full border border-sky-500/60 bg-sky-500/20 px-4 py-1.5 text-sm font-semibold text-sky-100 transition hover:border-sky-400 hover:bg-sky-500/30 disabled:cursor-not-allowed disabled:opacity-50" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''">
+                                                <span x-show="!sending"><i class="fas fa-paper-plane"></i> Enviar</span>
+                                                <span x-show="sending"><i class="fas fa-circle-notch animate-spin"></i> Enviando</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                        </form>
-                    </div>
-                </section>
-            </div>
-        </main>
+                        </section>
+                    </template>
+
+                    <!-- Citizens Tab -->
+                    <template x-if="activeTab === 'cidadaos'">
+                        <section class="space-y-6">
+                            <div class="surface-panel p-6">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Cidadãos Cadastrados</h3>
+                                        <p class="text-sm text-slate-500">Gerencie cadastros, endereços e dados de contato.
+                                            <span class="ml-2 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-300" :class="theme === 'theme-classic' ? 'bg-emerald-100 text-emerald-700' : ''">{{ citizens.length }} ativos</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button class="surface-chip inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="loadCitadaos()">
+                                            <i class="fas fa-rotate-right"></i> Atualizar
+                                        </button>
+                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''" @click="openCitizenModal()">
+                                            <i class="fas fa-user-plus"></i> Novo Cidadão
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-slate-800/40" :class="theme === 'theme-classic' ? 'divide-slate-200' : ''">
+                                        <thead class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-500' : ''">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left">ID</th>
+                                                <th class="px-4 py-3 text-left">Nome</th>
+                                                <th class="px-4 py-3 text-left">CPF</th>
+                                                <th class="px-4 py-3 text-left">Telefone</th>
+                                                <th class="px-4 py-3 text-left">Email</th>
+                                                <th class="px-4 py-3 text-left">Cadastrado em</th>
+                                                <th class="px-4 py-3 text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="cidadaos-table" class="divide-y divide-slate-800/60"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </template>
+
+                    <!-- Times Tab -->
+                    <template x-if="activeTab === 'times'">
+                        <section class="space-y-6">
+                            <div class="surface-panel p-6">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Times</h3>
+                                        <p class="text-sm text-slate-500">Gerencie times responsáveis pelos chamados.</p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button class="surface-chip inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="loadTimes()">
+                                            <i class="fas fa-rotate-right"></i> Atualizar
+                                        </button>
+                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''" @click="openTimeModal()">
+                                            <i class="fas fa-plus"></i> Novo Time
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-slate-800/40" :class="theme === 'theme-classic' ? 'divide-slate-200' : ''">
+                                        <thead class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-500' : ''">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left">ID</th>
+                                                <th class="px-4 py-3 text-left">Nome</th>
+                                                <th class="px-4 py-3 text-left">Cor</th>
+                                                <th class="px-4 py-3 text-left">Responsável</th>
+                                                <th class="px-4 py-3 text-left">Status</th>
+                                                <th class="px-4 py-3 text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-times-table" class="divide-y divide-slate-800/60"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </template>
+
+                    <!-- Agentes Tab -->
+                    <template x-if="activeTab === 'agentes'">
+                        <section class="space-y-6">
+                            <div class="surface-panel p-6">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Agentes</h3>
+                                        <p class="text-sm text-slate-500">Gerencie agentes humanos e IAs conectados ao Chatwoot.</p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button class="surface-chip inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="loadAgentes()">
+                                            <i class="fas fa-rotate-right"></i> Atualizar
+                                        </button>
+                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''" @click="openAgenteModal()">
+                                            <i class="fas fa-plus"></i> Novo Agente
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-slate-800/40" :class="theme === 'theme-classic' ? 'divide-slate-200' : ''">
+                                        <thead class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-500' : ''">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left">ID</th>
+                                                <th class="px-4 py-3 text-left">Nome</th>
+                                                <th class="px-4 py-3 text-left">Tipo</th>
+                                                <th class="px-4 py-3 text-left">Time</th>
+                                                <th class="px-4 py-3 text-left">Email</th>
+                                                <th class="px-4 py-3 text-left">Telefone</th>
+                                                <th class="px-4 py-3 text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-agentes-table" class="divide-y divide-slate-800/60"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </template>
+
+                    <!-- System Tab -->
+                    <template x-if="activeTab === 'system'">
+                        <section class="space-y-6">
+                            <div class="surface-panel p-6">
+                                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-slate-100" :class="theme === 'theme-classic' ? 'text-slate-700' : ''">Status do Sistema</h3>
+                                        <p class="text-sm text-slate-500">Resumo visual dos serviços críticos do ecossistema.</p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <button class="surface-chip inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-300" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-600 hover:border-slate-300' : ''" @click="checkSystemStatus()">
+                                            <i class="fas fa-sync"></i> Verificar Status
+                                        </button>
+                                        <button class="inline-flex items-center gap-2 rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100" :class="theme === 'theme-classic' ? 'bg-sky-600 text-white border-sky-500 hover:bg-sky-500' : ''" @click="openSystemModal()">
+                                            <i class="fas fa-cogs"></i> Configurar Sistema
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-slate-800/40" :class="theme === 'theme-classic' ? 'divide-slate-200' : ''">
+                                        <thead class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400" :class="theme === 'theme-classic' ? 'bg-slate-100 text-slate-500' : ''">
+                                            <tr>
+                                                <th class="px-4 py-3 text-left">Serviço</th>
+                                                <th class="px-4 py-3 text-left">Status</th>
+                                                <th class="px-4 py-3 text-left">Último Heartbeat</th>
+                                                <th class="px-4 py-3 text-right">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="system-status-table" class="divide-y divide-slate-800/60"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </template>
+                </div>
+            </main>
+        </div>
     </div>
 
     <div x-show="openPalette" x-cloak class="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/80 px-4 pt-24 backdrop-blur-sm" @keydown.escape.window="openPalette = false">
@@ -691,7 +608,7 @@
                 openPalette: false,
                 commandQuery: '',
                 showChatOnMobile: false,
-                theme: 'dark',
+                theme: 'theme-modern',
                 userThemeSet: false,
                 init() {
                     this.initializeTheme();
@@ -720,11 +637,11 @@
                 initializeTheme() {
                     if (typeof window === 'undefined') return;
                     const stored = localStorage.getItem('adminTheme');
-                    if (stored === 'dark' || stored === 'light') {
+                    if (stored === 'theme-modern' || stored === 'theme-classic' || stored === 'theme-dark') {
                         this.theme = stored;
                         this.userThemeSet = true;
-                    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                        this.theme = 'light';
+                    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: theme-light)').matches) {
+                        this.theme = 'theme-classic';
                     }
                     this.applyTheme();
                     this.$watch('theme', (value) => {
@@ -742,10 +659,10 @@
                 },
                 attachSystemThemeListener() {
                     if (!window.matchMedia) return;
-                    const query = window.matchMedia('(prefers-color-scheme: dark)');
+                    const query = window.matchMedia('(prefers-color-scheme: theme-dark)');
                     const handler = (event) => {
                         if (!this.userThemeSet) {
-                            this.theme = event.matches ? 'dark' : 'light';
+                            this.theme = event.matches ? 'theme-dark' : 'theme-classic';
                         }
                     };
                     if (query.addEventListener) {
@@ -754,9 +671,9 @@
                         query.addListener(handler);
                     }
                 },
-                toggleTheme() {
+                switchTheme(theme) {
                     this.userThemeSet = true;
-                    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                    this.theme = theme;
                 },
                 selectTab(tab) {
                     this.activeTab = tab;
@@ -916,12 +833,16 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.telefone}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-200">${cidadao.email || '-'}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${new Date(cidadao.created_at).toLocaleString('pt-BR')}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button class="text-sky-300 hover:text-sky-200" onclick="openCitizenModal(${cidadao.id})">Editar</button>
+                                <button class="text-rose-300 hover:text-rose-200" onclick="deleteCitizen(${cidadao.id})">Excluir</button>
+                            </td>
                         </tr>
                     `).join('');
                 } else {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="5" class="px-6 py-5 text-center text-sm text-slate-500">
+                            <td colspan="6" class="px-6 py-5 text-center text-sm text-slate-500">
                                 Nenhum cidadão encontrado no período selecionado.
                             </td>
                         </tr>
@@ -932,7 +853,7 @@
                 const tableBody = document.getElementById('cidadaos-table');
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-6 py-5 text-center text-sm text-rose-400">
+                        <td colspan="6" class="px-6 py-5 text-center text-sm text-rose-400">
                             Erro ao carregar dados. Tente novamente.
                         </td>
                     </tr>
@@ -966,13 +887,17 @@
                                 </span>
                             </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${new Date(chamado.created_at).toLocaleString('pt-BR')}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-sky-300 hover:text-sky-200" onclick="openChamadoModal(${chamado.id})">Editar</button>
+                                    <button class="text-rose-300 hover:text-rose-200" onclick="deleteChamado(${chamado.id})">Excluir</button>
+                                </td>
                         </tr>
                         `;
                     }).join('');
                 } else {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="px-6 py-5 text-center text-sm text-slate-500">
+                            <td colspan="6" class="px-6 py-5 text-center text-sm text-slate-500">
                                 Nenhum chamado encontrado.
                             </td>
                         </tr>
@@ -983,7 +908,7 @@
                 const tableBody = document.getElementById('chamados-table');
                 tableBody.innerHTML = `
                     <tr>
-                        <td colspan="4" class="px-6 py-5 text-center text-sm text-rose-400">
+                        <td colspan="6" class="px-6 py-5 text-center text-sm text-rose-400">
                             Erro ao carregar dados. Tente novamente.
                         </td>
                     </tr>

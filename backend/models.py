@@ -147,12 +147,15 @@ class Cidadao(BaseModel):
     prefeitura_id: int
     nome: str
     cpf: Optional[str] = None
-    telefone: str
+    telefone: Optional[str] = None
     email: Optional[str] = None
     endereco: Optional[str] = None
+    numero: Optional[str] = None
     bairro: Optional[str] = None
     cidade: Optional[str] = None
+    estado: Optional[str] = None
     cep: Optional[str] = None
+    complemento: Optional[str] = None
     chatwoot_contact_id: Optional[int] = None
     data_nascimento: Optional[datetime] = None
     genero: Optional[str] = None
@@ -318,16 +321,19 @@ class CriarChamadoResponse(BaseModel):
 class CadastrarCidadaoRequest(BaseModel):
     """Request para cadastrar cidadão"""
     
-    telefone: str
     nome: str
-    cpf: Optional[str] = None
-    email: Optional[str] = None
-    endereco: Optional[str] = None
-    bairro: Optional[str] = None
-    cidade: Optional[str] = None
-    cep: Optional[str] = None
-    data_nascimento: Optional[datetime] = None
-    genero: Optional[str] = None
+    cpf: Optional[str]
+    telefone: str
+    email: Optional[str]
+    endereco: Optional[str]
+    numero: Optional[str]
+    bairro: Optional[str]
+    cidade: Optional[str]
+    estado: Optional[str]
+    cep: Optional[str]
+    complemento: Optional[str]
+    data_nascimento: Optional[str]
+    genero: Optional[str]
 
 
 class CadastrarCidadaoResponse(BaseModel):

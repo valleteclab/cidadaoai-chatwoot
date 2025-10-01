@@ -98,35 +98,107 @@ class ChamadosService:
         try:
             async with self.pool.acquire() as conn:
                 # Verificar se cidadão já existe
-                existing = await conn.fetchrow("""
-                    SELECT id FROM cidadaos 
-                    WHERE telefone = $1 AND prefeitura_id = $2 AND active = true
-                """, request.telefone, prefeitura_id)
-                
+                existing = await conn.fetchrow(
+                    """
+                    SELECT c.id,
+                           e.id AS endereco_id
+                    FROM cidadaos c
+                    LEFT JOIN LATERAL (
+                        SELECT id
+                        FROM cidadao_enderecos ce
+                        WHERE ce.cidadao_id = c.id
+                        ORDER BY ce.is_principal DESC, ce.created_at DESC
+                        LIMIT 1
+                    ) e ON TRUE
+                    WHERE c.telefone = $1
+                      AND c.prefeitura_id = $2
+                      AND c.active = TRUE
+                    """,
+                    request.telefone,
+                    prefeitura_id,
+                )
+
                 if existing:
-                    # Atualizar dados existentes
-                    await conn.execute("""
+                    await conn.execute(
+                        """
                         UPDATE cidadaos SET
                             nome = $1,
                             cpf = $2,
                             email = $3,
-                            endereco = $4,
-                            bairro = $5,
-                            cidade = $6,
-                            cep = $7,
-                            data_nascimento = $8,
-                            genero = $9,
+                            data_nascimento = $4,
+                            genero = $5,
                             updated_at = NOW()
-                        WHERE id = $10
-                    """, request.nome, request.cpf, request.email, request.endereco,
-                         request.bairro, request.cidade, request.cep, request.data_nascimento,
-                         request.genero, existing['id'])
-                    
-                    # Buscar cidadão atualizado
-                    cidadao_data = await conn.fetchrow("""
-                        SELECT * FROM cidadaos WHERE id = $1
-                    """, existing['id'])
-                    
+                        WHERE id = $6
+                        """,
+                        request.nome,
+                        request.cpf,
+                        request.email,
+                        request.data_nascimento,
+                        request.genero,
+                        existing["id"],
+                    )
+
+                    if existing["endereco_id"]:
+                        await conn.execute(
+                            """
+                            UPDATE cidadao_enderecos SET
+                                cep = $1,
+                                logradouro = $2,
+                                numero = $3,
+                                bairro = $4,
+                                cidade = $5,
+                                estado = $6,
+                                complemento = $7,
+                                updated_at = NOW()
+                            WHERE id = $8
+                            """,
+                            request.cep,
+                            request.endereco,
+                            request.numero,
+                            request.bairro,
+                            request.cidade,
+                            request.estado,
+                            request.complemento,
+                            existing["endereco_id"],
+                        )
+                    else:
+                        await conn.execute(
+                            """
+                            INSERT INTO cidadao_enderecos (
+                                cidadao_id, cep, logradouro, numero, bairro,
+                                cidade, estado, complemento, is_principal,
+                                created_at
+                            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW())
+                            """,
+                            existing["id"],
+                            request.cep,
+                            request.endereco,
+                            request.numero,
+                            request.bairro,
+                            request.cidade,
+                            request.estado,
+                            request.complemento,
+                        )
+
+                    cidadao_data = await conn.fetchrow(
+                        """
+                        SELECT
+                            c.*,
+                            e.cep,
+                            e.logradouro,
+                            e.numero,
+                            e.bairro,
+                            e.cidade,
+                            e.estado,
+                            e.complemento
+                        FROM cidadaos c
+                        LEFT JOIN cidadao_enderecos e ON e.cidadao_id = c.id
+                                                           AND e.is_principal = TRUE
+                        WHERE c.id = $1
+                        """,
+                        existing["id"],
+                    )
+
                     # Converter config se necessário
                     cidadao_dict = dict(cidadao_data)
                     if isinstance(cidadao_dict.get('config'), str):
@@ -138,20 +210,53 @@ class ChamadosService:
                     
                     return CadastrarCidadaoResponse(
                         status="success",
-                        cidadao=Cidadao(**cidadao_dict),
-                        message="Dados do cidadão atualizados com sucesso"
+                        cidadao=Cidadao(
+                            **cidadao_dict,
+                            endereco=request.endereco,
+                            numero=request.numero,
+                            bairro=request.bairro,
+                            cidade=request.cidade,
+                            estado=request.estado,
+                            cep=request.cep,
+                            complemento=request.complemento,
+                        ),
+                        message="Dados do cidadão atualizados com sucesso",
                     )
                 else:
                     # Inserir novo cidadão
                     cidadao_data = await conn.fetchrow("""
                         INSERT INTO cidadaos (
-                            prefeitura_id, nome, cpf, telefone, email, endereco,
-                            bairro, cidade, cep, data_nascimento, genero
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                            prefeitura_id, nome, cpf, telefone, email,
+                            data_nascimento, genero
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
                         RETURNING *
-                    """, prefeitura_id, request.nome, request.cpf, request.telefone,
-                         request.email, request.endereco, request.bairro, request.cidade,
-                         request.cep, request.data_nascimento, request.genero)
+                        """,
+                        prefeitura_id,
+                        request.nome,
+                        request.cpf,
+                        request.telefone,
+                        request.email,
+                        request.data_nascimento,
+                        request.genero,
+                    )
+
+                    await conn.execute(
+                        """
+                        INSERT INTO cidadao_enderecos (
+                            cidadao_id, cep, logradouro, numero, bairro,
+                            cidade, estado, complemento, is_principal,
+                            created_at
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW())
+                        """,
+                        cidadao_data["id"],
+                        request.cep,
+                        request.endereco,
+                        request.numero,
+                        request.bairro,
+                        request.cidade,
+                        request.estado,
+                        request.complemento,
+                    )
                     
                     # Converter config se necessário
                     cidadao_dict = dict(cidadao_data)
@@ -164,8 +269,17 @@ class ChamadosService:
                     
                     return CadastrarCidadaoResponse(
                         status="success",
-                        cidadao=Cidadao(**cidadao_dict),
-                        message="Cidadão cadastrado com sucesso"
+                        cidadao=Cidadao(
+                            **cidadao_dict,
+                            endereco=request.endereco,
+                            numero=request.numero,
+                            bairro=request.bairro,
+                            cidade=request.cidade,
+                            estado=request.estado,
+                            cep=request.cep,
+                            complemento=request.complemento,
+                        ),
+                        message="Cidadão cadastrado com sucesso",
                     )
                     
         except Exception as e:
@@ -445,13 +559,36 @@ class ChamadosService:
         """Listar todos os cidadãos cadastrados"""
         try:
             async with self.pool.acquire() as conn:
-                cidadaos_data = await conn.fetch("""
-                    SELECT id, nome, telefone, email, endereco, bairro, cidade, 
-                           chatwoot_contact_id, created_at, updated_at
-                    FROM cidadaos 
-                    WHERE prefeitura_id = $1 AND active = true
-                    ORDER BY created_at DESC
-                """, prefeitura_id)
+                cidadaos_data = await conn.fetch(
+                    """
+                    SELECT
+                        c.id,
+                        c.nome,
+                        c.telefone,
+                        c.email,
+                        c.chatwoot_contact_id,
+                        c.created_at,
+                        c.updated_at,
+                        e.cep,
+                        e.logradouro,
+                        e.numero,
+                        e.bairro,
+                        e.cidade,
+                        e.estado,
+                        e.complemento
+                    FROM cidadaos c
+                    LEFT JOIN LATERAL (
+                        SELECT *
+                        FROM cidadao_enderecos ce
+                        WHERE ce.cidadao_id = c.id
+                        ORDER BY ce.is_principal DESC, ce.created_at DESC
+                        LIMIT 1
+                    ) e ON TRUE
+                    WHERE c.prefeitura_id = $1 AND c.active = true
+                    ORDER BY c.created_at DESC
+                    """,
+                    prefeitura_id,
+                )
                 
                 cidadaos = []
                 for row in cidadaos_data:
@@ -460,9 +597,15 @@ class ChamadosService:
                         "nome": row["nome"],
                         "telefone": row["telefone"],
                         "email": row["email"],
-                        "endereco": row["endereco"],
-                        "bairro": row["bairro"],
-                        "cidade": row["cidade"],
+                        "endereco": {
+                            "cep": row["cep"],
+                            "logradouro": row["logradouro"],
+                            "numero": row["numero"],
+                            "bairro": row["bairro"],
+                            "cidade": row["cidade"],
+                            "estado": row["estado"],
+                            "complemento": row["complemento"],
+                        },
                         "chatwoot_contact_id": row["chatwoot_contact_id"],
                         "created_at": row["created_at"].isoformat() if row["created_at"] else None,
                         "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None

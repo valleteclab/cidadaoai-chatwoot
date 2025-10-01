@@ -642,28 +642,22 @@ async def consultar_chamado(request: dict):
             "timestamp": datetime.now().isoformat()
         }
 
-@app.post("/api/chamados/cadastrar-cidadao", tags=["Chamados"])
-async def cadastrar_cidadao(request: dict):
-    """Cadastrar novo cidadão"""
+@app.post("/api/chamados/cidadaos", tags=["Chamados"])
+async def cadastrar_cidadao(payload: CadastrarCidadaoRequest):
     try:
-        from .models import CadastrarCidadaoRequest
-        
-        cidadao_request = CadastrarCidadaoRequest(**request)
-        response = await chamados_service.cadastrar_cidadao(cidadao_request)
-        
+        result = await chamados_service.cadastrar_cidadao(payload)
+        if result.status != "success":
+            raise HTTPException(status_code=400, detail=result.message or "Erro ao cadastrar cidadão")
         return {
-            "status": response.status,
-            "cidadao": response.cidadao.dict() if response.cidadao else None,
-            "message": response.message,
-            "timestamp": datetime.now().isoformat()
+            "status": "success",
+            "data": result.cidadao.dict() if result.cidadao else None,
+            "message": result.message,
         }
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error registering cidadao: {str(e)}")
-        return {
-            "status": "error",
-            "message": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
+        logger.error(f"Erro ao cadastrar cidadão: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro ao cadastrar cidadão")
 
 # Webhook endpoint para Chatwoot
 @app.post("/webhook/chatwoot", tags=["Webhooks"])
@@ -1947,6 +1941,20 @@ async def test_agent(message_data: dict):
     except Exception as e:
         logger.error(f"Erro no teste do agente: {str(e)}")
         return {"status": "error", "message": str(e)}
+
+@app.get("/api/utils/viacep/{cep}", tags=["Utils"])
+async def viacep_lookup(cep: str):
+    cep = ''.join(filter(str.isdigit, cep))
+    if len(cep) != 8:
+        raise HTTPException(status_code=400, detail="CEP inválido. Deve conter 8 dígitos.")
+    async with httpx.AsyncClient(timeout=10) as client:
+        response = await client.get(f"https://viacep.com.br/ws/{cep}/json/")
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail="Erro ao consultar ViaCEP")
+    dados = response.json()
+    if dados.get("erro"):
+        raise HTTPException(status_code=404, detail="CEP não encontrado")
+    return dados
 
 if __name__ == "__main__":
     import uvicorn
