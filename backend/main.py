@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import UploadFile, File, Form
 from backend.websocket_manager import ws_manager, app as socketio_app
 from backend.attachment_service import AttachmentService
-from backend.models import ChatwootAttachment, ImageUploadRequest, ImageUploadResponse
+from backend.models import ChatwootAttachment, ImageUploadRequest, ImageUploadResponse, CadastrarCidadaoRequest
 from fastapi.responses import FileResponse
 import httpx
 import json
