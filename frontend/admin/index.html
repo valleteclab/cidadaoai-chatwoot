@@ -35,19 +35,19 @@
         }
         .theme-classic {
             color-scheme: light;
-            --bg-body: #f3f4f6;
+            --bg-body: #f8fafc;
             --bg-surface: #ffffff;
             --bg-surface-alt: #f9fafb;
-            --bg-muted: rgba(226, 232, 240, 0.6);
-            --border-soft: rgba(209, 213, 219, 0.9);
-            --border-strong: rgba(37, 99, 235, 0.55);
-            --text-primary: #0f172a;
-            --text-secondary: #1f2937;
-            --text-muted: #4b5563;
+            --bg-muted: rgba(248, 250, 252, 0.8);
+            --border-soft: rgba(148, 163, 184, 0.4);
+            --border-strong: rgba(59, 130, 246, 0.6);
+            --text-primary: #1e293b;
+            --text-secondary: #374151;
+            --text-muted: #6b7280;
             --accent-primary: #2563eb;
             --accent-secondary: #0ea5e9;
-            --shadow-highlight: 0 12px 32px rgba(37, 99, 235, 0.16);
-            --header-gradient: linear-gradient(135deg, #0f172a 0%, #1d4ed8 50%, #0f172a 100%);
+            --shadow-highlight: 0 10px 25px rgba(59, 130, 246, 0.15);
+            --header-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 45%, #f1f5f9 100%);
         }
         .theme-dark {
             color-scheme: dark;
@@ -1123,6 +1123,122 @@
             }
         }
 
+        function openCitizenModal(id) {
+            document.getElementById('citizenFormTitle').innerText = id ? 'Editar Cidadão' : 'Novo Cidadão';
+            const modal = document.getElementById('modalCitizen');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (id) {
+                fetch('/api/chamados/cidadaos').then(r => r.json()).then(d => {
+                    const c = (d.data || []).find(x => x.id === id);
+                    if (c) {
+                        citizenId.value = c.id;
+                        citizenNome.value = c.nome || '';
+                        citizenCpf.value = c.cpf || '';
+                        citizenTelefone.value = c.telefone || '';
+                        citizenEmail.value = c.email || '';
+                        citizenCep.value = c.endereco?.cep || '';
+                        citizenLogradouro.value = c.endereco?.logradouro || '';
+                        citizenNumero.value = c.endereco?.numero || '';
+                        citizenBairro.value = c.endereco?.bairro || '';
+                        citizenCidade.value = c.endereco?.cidade || '';
+                        citizenEstado.value = c.endereco?.estado || '';
+                        citizenComplemento.value = c.endereco?.complemento || '';
+                        citizenDataNascimento.value = c.data_nascimento || '';
+                        citizenGenero.value = c.genero || '';
+                        citizenActive.checked = !!c.active;
+                    }
+                });
+            } else {
+                citizenId.value = '';
+                citizenNome.value = '';
+                citizenCpf.value = '';
+                citizenTelefone.value = '';
+                citizenEmail.value = '';
+                citizenCep.value = '';
+                citizenLogradouro.value = '';
+                citizenNumero.value = '';
+                citizenBairro.value = '';
+                citizenCidade.value = '';
+                citizenEstado.value = '';
+                citizenComplemento.value = '';
+                citizenDataNascimento.value = '';
+                citizenGenero.value = '';
+                citizenActive.checked = true;
+            }
+        }
+
+        function closeCitizenModal() {
+            const modal = document.getElementById('modalCitizen');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveCitizen() {
+            const cep = citizenCep.value.trim();
+            if (cep && cep.length >= 8) {
+                // Buscar endereço automaticamente via ViaCEP
+                try {
+                    const response = await fetch(`/api/utils/viacep/${cep}`);
+                    const dados = await response.json();
+                    if (dados && !dados.erro) {
+                        citizenLogradouro.value = dados.logradouro || '';
+                        citizenBairro.value = dados.bairro || '';
+                        citizenCidade.value = dados.localidade || '';
+                        citizenEstado.value = dados.uf || '';
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar CEP:', error);
+                }
+            }
+
+            const payload = {
+                nome: citizenNome.value.trim(),
+                cpf: citizenCpf.value.trim() || null,
+                telefone: citizenTelefone.value.trim(),
+                email: citizenEmail.value.trim() || null,
+                cep: citizenCep.value.trim() || null,
+                endereco: citizenLogradouro.value.trim() || null,
+                numero: citizenNumero.value.trim() || null,
+                bairro: citizenBairro.value.trim() || null,
+                cidade: citizenCidade.value.trim() || null,
+                estado: citizenEstado.value.trim() || null,
+                complemento: citizenComplemento.value.trim() || null,
+                data_nascimento: citizenDataNascimento.value.trim() || null,
+                genero: citizenGenero.value.trim() || null,
+                active: citizenActive.checked
+            };
+
+            const id = citizenId.value ? Number(citizenId.value) : null;
+            const url = id ? `/api/chamados/cidadaos/${id}` : '/api/chamados/cidadaos';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const resp = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await resp.json();
+                if (json.status === 'error') {
+                    alert(json.message || 'Erro ao salvar');
+                    return;
+                }
+                closeCitizenModal();
+                loadCidadaos();
+            } catch (error) {
+                alert('Erro ao salvar cidadão');
+                console.error(error);
+            }
+        }
+
+        function deleteCitizen(id) {
+            if (confirm('Excluir cidadão?')) {
+                fetch(`/api/chamados/cidadaos/${id}`, { method: 'DELETE' }).then(() => loadCidadaos());
+            }
+        }
+
         function closeAgenteModal() {
             const modal = document.getElementById('modalAgente');
             modal.classList.add('hidden');
@@ -1164,5 +1280,85 @@
             }
         }
     </script>
+
+    <!-- Modal Cidadão -->
+    <div id="modalCitizen" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-950/80 px-4 py-10 backdrop-blur-sm">
+        <div class="surface-panel w-full max-w-2xl rounded-3xl px-6 py-6 text-slate-100 shadow-glow">
+            <div class="mb-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold" id="citizenFormTitle">Novo Cidadão</h3>
+                <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-3 py-1 text-xs text-slate-400">Fechar</button>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <input id="citizenId" type="hidden">
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Nome Completo *</label>
+                    <input id="citizenNome" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome completo do cidadão" required>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">CPF</label>
+                    <input id="citizenCpf" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="000.000.000-00">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Telefone *</label>
+                    <input id="citizenTelefone" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="+55 (00) 00000-0000" required>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">E-mail</label>
+                    <input id="citizenEmail" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="email@exemplo.com">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">CEP</label>
+                    <input id="citizenCep" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="00000-000" maxlength="9">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Estado</label>
+                    <input id="citizenEstado" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="UF" maxlength="2">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Cidade</label>
+                    <input id="citizenCidade" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da cidade">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Logradouro</label>
+                    <input id="citizenLogradouro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome da rua, avenida, etc.">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Número</label>
+                    <input id="citizenNumero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Número">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Bairro</label>
+                    <input id="citizenBairro" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Nome do bairro">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Complemento</label>
+                    <input id="citizenComplemento" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none" placeholder="Complemento, referência, etc.">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Data de Nascimento</label>
+                    <input id="citizenDataNascimento" type="date" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-slate-500">Gênero</label>
+                    <select id="citizenGenero" class="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-sky-500 focus:outline-none">
+                        <option value="">Não informado</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-2 flex items-center justify-between pt-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-300">
+                        <input id="citizenActive" type="checkbox" class="h-4 w-4 rounded border-slate-700 bg-slate-900 accent-sky-500" checked>
+                        Ativo
+                    </label>
+                    <div class="flex gap-2">
+                        <button onclick="saveCitizen()" class="rounded-full border border-sky-500/70 bg-sky-500/20 px-4 py-2 text-sm font-semibold text-sky-100 hover:border-sky-500 hover:bg-sky-500/30">Salvar</button>
+                        <button onclick="closeCitizenModal()" class="surface-chip rounded-full px-4 py-2 text-sm text-slate-300">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
